@@ -1,0 +1,97 @@
+I have created a monster and this post is about killing it off by scraping the
+contents of this blog into structured Python objects. Sometime later I will
+convert the HTML content to markdown and download the images and other
+resources locally.
+
+I want to put the contents into a ZODB object database to get a feel for
+working with object database. A greated goal is to migrate the content a new
+blog engine. I don't want to go into why I felt I need to scrape it or why I
+want to migrate to another blog engine as it's depressing.
+
+Moving on, I wanted to put the content into these classes
+
+    #!/usr/bin/python
+    class Post():
+        title = ''
+        content = ''
+        date = ''
+        tags = []
+        comments = []
+
+    class Comment():
+        content = ''
+        author = ''
+        date = ''
+        website = ''
+
+The scraping code is not elegant but was quite fun to write as I could write
+it all from an interactive console session. I found BeautifulSoup was
+fantastic in making HTML into something that was easy to work with, although I
+would have liked to have used jQuery/CSS style selectors.
+
+    #!/usr/bin/python
+    from BeautifulSoup import BeautifulSoup
+    from datetime import datetime
+    import urllib2
+    import re
+
+    def ParseComment(soup):
+        comment = Comment()
+        comment.author = soup.find('p',{"class":"author"}).first().string.strip
+        content = soup.find('p',{"class":"content"})
+        if content:
+            comment.content = content.prettify()
+        
+        website = soup.find('p',{"class":"author"}).first()
+        if website.has_key('href'):
+            comment.website = soup.find('p',{"class":"author"}).first()['href']
+        
+        r = re.compile('\d*/\d*/\d* \d*.\d*')
+        date = r.findall(soup.find('p',{"class":"date"}).renderContents())[0]
+        comment.date = datetime.strptime(date,'%d/%m/%Y %H:%M')
+        return comment
+
+    def ParsePost(postSoup):
+        post = Post()
+        post.title = postSoup.find('a',{"class":re.compile('posthead.*')}).string
+        post.content = postSoup.find('div', {"class":"entry"})
+        date = postSoup.find('div',{"class":"descr"}).contents[0][:-4]
+        post.date = datetime.strptime(date,'%B %d, %Y %H:%M')
+        post.author = postSoup.find('div',{"class":"descr"}).first().string
+        post.tags = map(lambda x: x.string, postSoup('a',{"rel":"tag"}))
+        comments = postSoup.find('div',{"id":"commentlist"})('div')
+        post.comments = [ParseComment(commentSoup) for commentSoup in comments]
+        return post
+
+    def DownloadPost(url):
+        postHtml = urllib2.urlopen('http://blog.sharpthinking.com.au/' + url).read()
+        postSoup = BeautifulSoup(postHtml)
+        return ParsePost(postSoup);
+
+    def GetPosts():
+        page = urllib2.urlopen("http://blog.sharpthinking.com.au/archive.aspx")
+        soup = BeautifulSoup(page)
+        postUrls = map(lambda x: x['href'], soup('a', href=re.compile('/post/.*')))
+        return [DownloadPost(url) for url in postUrls[:-10]]
+
+
+I'm sure there is better way, but this was better than any way I've used
+previously. Anyway I've done a lot of work untangling the mess I created.
+
+    #!/usr/bin/bash
+    >>> posts = GetPost()
+    >>> for post in posts[:5]:
+    ...     print post.date, post.title
+    ...
+
+    2010-03-17 22:16:00 OMG. It's a JavaScript Rhino
+    2010-03-12 13:53:00 Devevenings Presentation - IOC/Unit Testing/Mocking in ASP.NET MVC
+    2010-02-20 17:18:00 Revisiting Pygments in the browser with Silverlight, now with BackgroundWorker
+    2010-02-17 19:25:00 Revisiting Modal Binding an Interface, now with DictionaryAdapterFactory
+    2010-02-16 20:34:00 Modal Binding an Interface with DynamicProxy
+
+
+I wanted to put the contents into the object database tonight, but I have
+pickled it to be revisited later.
+
+

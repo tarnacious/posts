@@ -1,0 +1,90 @@
+### Introduction
+
+I've just started a small project building a simple weblog site using ASP.NET
+MVC. I know there are heaps of blog sites out there but I thought it would be
+a good project to get familiar with ASP.NET MVC, JQuery and Silverlight 2.
+
+I don't like writing about projects I'm going to build, but I'm hoping I can
+get a couple of the guys from work involved to share the learning and the
+work. I'm also going to hassle a few graphic designers I know and try to get
+little free consulting and maybe even some design work.
+
+It will be used it to drive this blog instead of BlogEngine.NET which we are
+currently using.
+
+To keep things simple the project will use the database schema and parts of
+the Metaweblog API implementation from the BlogEngine.NET project. LINQ to SQL
+will be used to quickly get some ORM mappings to the database schema. It will
+also use the standard ASP.NET Membership and Roles providers for SQL Server.
+Some Silverlight 2 will be added for some cool menus and navigational
+controls.
+
+### Tools, Technologies and Methodologies
+
+The project will use TDD, Agile methodologies and identify design patterns
+where appropriate.
+
+For now the code will be hosted on our internal Subversion server, but I would
+like to move it CodePlex eventually. I will move it sooner if anyone else is
+interested in checking out the code or contributing to the project. I would
+like to use a build machine, but I'm not sure if there is support for this at
+CodePlex, but we'll find out.
+
+The project will be developed with .NET 3.5 SP1 and ASP.NET MVC Beta. The
+Microsoft Unit Test framework will initially be used for unit testing but a
+Mock Testing framework may be introduced later.
+
+The project should be able to be run and debugged using the Visual Studios
+internal development web server and SQL Server Express, basically by pressing
+F5 after checking out the code.
+
+### Initial Requirements
+
+In agile fashion the project will start with some initial requirements,
+additional requirements can be added as the project evolves.
+
+  * A default or index page showing recent posts in reverse chronological
+order
+
+  * A post page, using the same URI routing as BlogEngine.NET
+
+  * A Metaweblog API implementation to support Windows Livewriter for
+publishing and managing content on the weblog
+
+So that's it for now, hopefully we can knock this first iteration together
+pretty quickly.
+
+### Tasks
+
+I don't want to get to far into fine grained tasks as I don't have to estimate
+the project time or cost, but I do want to cover the basic tasks as it does
+give an indication of what I expect will need to be done for this phase.
+
+  * Create the database
+
+  * Create the LINQ to SQL classes
+
+  * Create a Data Layer and a Data Layer Interface
+
+  * Write some Data Layer Tests
+
+  * Create a Model (tests?)
+
+  * Create a Controller
+
+  * Write some Controller Tests
+
+  * Setup some routes
+
+  * Create the index view
+
+  * Create the post view
+
+  * Implement the Metaweblog API
+
+### Lets Rock'n'Roll
+
+Hopefully I'll be posting the learning from phase one and the goals of phase
+two next week.
+
+

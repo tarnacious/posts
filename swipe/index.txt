@@ -1,0 +1,75 @@
+When I first tried a [Swype] [swype] keyboard I was impressed how effective it
+was. Even though I don't use the feature on my phone I was interested in how it
+could be built, so I [implemented this otherwise useless swipe-able keyboard]
+[swipe] below. It probably doesn't work on mobile devices, but works on modern
+browsers with mouse pointers (although I've only really tried Chrome and
+Firefox).
+
+<div id="swipe">
+    <canvas width="900px" height="300px" id="swipe-canvas"></canvas>
+    <div id="swipe-results"></div>
+    <div style="clear: both"></div>
+    <h2 id="swipe-loading">Loading<noscript>Javascript is Required</noscript></h2>
+</div>
+
+I initially tried to solve this using the technique Peter Norvig famously uses
+in his [spell checker] [norvig]. He takes a sequence of characters and
+generates a set of word candidates by adding, removing and swapping characters
+in the original sequence, the generated candidates are removed if they are not
+found a dictionary. This can work but to be effective too many combinations
+need to be generated.
+
+If the dictionary is indexed into a [trie] [trie] the number of combinations
+generated can be reduced significantly by traversing the trie and only
+generating valid letter combinations. This is a pretty bare implementation of
+that, it requires: 
+
+* The first and last characters of the initial sequence are used 
+* Intermediate characters in the initial sequence can be repeated or discarded 
+* No characters are added or swapped
+
+Basically, if you swipe through all the characters in a word in order, then the
+word will be found if it is in the index regardless how many characters are
+swiped in between. It is surprisingly quick and effective.
+
+This implementation uses [these 10000 words][words], I intended to use digital
+books but never got around to it as these words demonstrate the concept well
+enough.
+
+This is the first thing I've written in [ClojureScript] [clojurescript] or
+[Clojure] [clojure], so my code my vary from non-idiomatic to shamblolic. I
+initially used a [zipper] [zipper] to build the trie with immutable data
+structures, but found the indexing took to long with my zipper implementation
+so I [switched to using native Javascript maps][jsobj].
+
+I found that [core.async] [coreasync] library is really awesome, the [Google
+closure library] [library] and [compiler] integration with [Leiningen]
+[leiningen] the [cljsbuild plug-in] [cljsbuild] to be impressive. My main pains
+were the slow JVM start-up time, the advanced closure compiler build of the web
+worker script fails silently when run (but the main script works fine when
+compiled with the advanced compiler), and at times I felt some compile time
+type checking would be nice.
+
+I would like to extend this experiment to index the word occurrence counts and
+proceeding word counts in original text and rank the found words as most
+likely. Support casing, umlauts, special characters, spelling correction and
+compound words in the indexing and lookup. I think a live lookup while swiping
+would also be possible.
+
+Overall this was fun, turned out OK I think, and was a great learning
+experience.
+
+[jsobj]: https://github.com/tarnacious/swipe-keyboard/commit/6edd7b26e78121fbe8586b3f0ef54ca8277d9e32 
+[swipe]: https://github.com/tarnacious/swipe-keyboard
+[words]: https://raw.github.com/first20hours/google-10000-english/master/google-10000-english.txt
+[swype]: http://www.swype.com/
+[norvig]: http://norvig.com/spell-correct.html]
+[trie]: http://en.wikipedia.org/wiki/Trie
+[coreasync]: https://github.com/clojure/core.async
+[compiler]: https://developers.google.com/closure/compiler/
+[library]: http://docs.closure-library.googlecode.com/git/index.html
+[clojurescript]: https://github.com/clojure/clojurescript
+[zipper]: http://clojuredocs.org/clojure_core/clojure.zip/zipper
+[clojure]: https://github.com/clojure/clojurescript
+[leiningen]: http://leiningen.org/
+[cljsbuild]: https://github.com/emezeske/lein-cljsbuild

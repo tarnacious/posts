@@ -1,0 +1,37 @@
+I watched the [Zed Shaw][zedshaw] [episode from the Peepcode "Play by Play" series][peepcode] last night. Each episode in the series follows a different gun programmer doing their stuff solving a problem. Like ["Coders at work"][codersatwork] it has some interesting insights into how people go about it.
+
+
+I became interested in Zed after reading his infamous post [Rails is a Ghetto][ghetto], which ironically warns people against listening to people like himself. I also enjoyed [this entertaining video][video] of Zed talking about ACL's. More recently Zed has published ["Learn Python the Hard Way"][lpthw]  which looks like a great introduction to programming. Oh, and he wrote the [Mongrel][mongrel2] web server.
+
+
+Whilst didn't learn a lot technically from the screen cast, I did learn I should use [R for statistics and plotting][rproject], that [Fossil][fossil] is a wrapper around various source control systems which adds issue tracking, wiki and such things, and a few other little tips.
+
+What I found really interesting is the tools he used and how he went about it, mostly because I saw a lot of similarities with [how I like to code][rockandroll]. Thankfully I was also reminded that I should take breaks more often.
+
+
+The tools he used are [Screen][screen] ([which I've previously blogged about][screen1]), Vim, Python, R, gcc, Fossil and [Vimperator][vimperator]. I have used all those tools except Fossil and use all but R and gcc regularly.
+
+I also liked the way he just got in and started hacking on the problem, saying that once he understood the problem he would typically throw the code away and start again and warned against trying to refactor your way out from your inital attemp. This advice really resonates with me, of course you write code better and cleaner when you've written it before and understand the problem.
+
+I also really liked his take on testing which was to use a variety of testing methods, including building out test clients. He didn't sound like he would waste any time trying to unit-test something that was difficult to unit test. A refreshing, no dogma, take on testing.
+
+
+He also talked about how he used heuristics to improve his coding efficiency and effectiveness (such as the code metrics tools he was building in the screencast). I would like to do more of this myself as it makes more sense to me than techniques such as the pomodoro.
+
+There is no doubt I have a way to go before getting anywhere near the productivity, skill and experience of Zed but I did find it encouraging the direction I am heading is a proven one. I just need to keep enjoying building stuff, and maybe take a break more often.
+
+This rant is no more.
+
+[zedshaw]: https://twitter.com/#!/zedshaw
+[screen1]: https://tarnbarford.net/journal/oh-screen-where-have-you-been
+[peepcode]: http://peepcode.com/products/play-by-play-zed-shaw
+[mongrel2]: http://mongrel2.org/
+[codersatwork]: http://www.codersatwork.com/
+[ghetto]: http://zedshaw.com/rants/rails_is_a_ghetto.html
+[video]: http://vimeo.com/2723800
+[rproject]: http://www.r-project.org/
+[fossil]: http://fossil-scm.org/index.html/doc/trunk/www/index.wiki
+[rockandroll]: https://tarnbarford.net/journal/the-mouse-is-dead--long-live-the-keyboard
+[screen]: http://www.gnu.org/s/screen/
+[lpthw]: http://learnpythonthehardway.org/
+[vimperator]: http://vimperator.org/vimperator

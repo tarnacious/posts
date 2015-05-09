@@ -1,0 +1,26 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+I just learnt how to use PGP/GPG to sign messages, encrypt
+message for people and decrypt messages encrypted for me!
+
+If you haven't learnt about PGP yet, maybe you should. It's fun,
+easy and very useful if you want some Pretty Good Privacy.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (Darwin)
+
+iQIcBAEBAgAGBQJSATOgAAoJEAKnAXIHeOzVmz0P/RR1jVIJTtmYnj++19/nIv00
+oosR0Ib/4E7klc+8Mnzc5CdQ2NFQLqX87+sSRd+tJZScuP6NVLzK95qKA+Ci5FHY
+lWZ1sMeNun2VTuVmUmPQnoeNGl4DBM2O9O2mftNXkrtUJrmZLH4vlRoQb6eNcZF+
+82oFay2ZZHBq5+cnw+TXFFohGUeqFcUTUs+ThrqUU6FlKScIMiUzskRwIA3/q7in
+2qEhAE+0B68KWqRAgq2xvR9bemcfRTmAeGzY+pgEJTIYw1qtgOh3EN5JXXj3tzeC
+NR0STttEuSm7SEIk/hUc5eoM/rAcHF8HGrfYoKh2ZckiivfUV+yERmNZs4E8S/lr
+fMAwiDSioy0yXRB/ceZL3jv4XI5Oy//Gm35u9VU5ZPHtW2FcsLW6n1D/IhaieMLm
+9LApWNxm3uxz2na+Q+YyM4YDJMqeUdYnqCe4XTtclUNvDOY+ZK7mABnaZkYHtHir
+00Hp+2Bl/vpSZ0tzSedKvMnVJNYopNMK54iuKjgBT7GuMMirSiWtXUALer33cRII
+llbC5Gf3lVf6/SsyX+/SuaiCrZRIGou6fJuIacl3VM3/kIoPjwy5cpr1fzxPMtg0
+CYwq8MjuF0Uzyz8rHxskVQbfW0nWKPcK9JqCw89fLM/nv+LpuNB2o7mUzqvxuizi
+WqFWSMBg/bWpb5lB9nx/
+=6hUP
+-----END PGP SIGNATURE-----

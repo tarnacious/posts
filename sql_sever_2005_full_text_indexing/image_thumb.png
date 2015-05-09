@@ -1,0 +1,234 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head profile="http://gmpg.org/xfn/11"><link rel="stylesheet" href="/themes/Dirtylicious/css.axd?name=default.css&amp;v=1.4.5.0" type="text/css" /><link rel="shortcut icon" href="pics/blogengine.ico" type="image/x-icon" /><link rel="contents" title="Archive" href="/archive.aspx" /><link rel="start" title="#.think.in" href="/" /><link type="application/rdf+xml" rel="meta" title="SIOC" href="http://blog.sharpthinking.com.au/sioc.axd" /><link type="application/apml+xml" rel="meta" title="APML" href="http://blog.sharpthinking.com.au/apml.axd" /><link type="application/rdf+xml" rel="meta" title="FOAF" href="http://blog.sharpthinking.com.au/foaf.axd" /><link type="application/rss+xml" rel="alternate" title="#.think.in" href="http://feeds.feedburner.com/sharpthinking" /><link type="application/rsd+xml" rel="edituri" title="RSD" href="http://blog.sharpthinking.com.au/rsd.axd" /><meta http-equiv="content-type" content="text/html; charset=utf-8" /><script type="text/javascript">KEYhasRated='You already rated this post';KEYwebRoot='/';KEYsavingTheComment='Saving the comment...';KEYcomments='Comments';KEYcommentWasSaved='The comment was saved. Thank you for the feedback';KEYcommentWaitingModeration='Thank you for the feedback. The comment is now awaiting moderation';KEYcancel='Cancel';KEYfilter='Filter';KEYapmlDescription='Enter the URL to your website or to your APML document';</script><link type="application/opensearchdescription+xml" rel="search" title="#.think.in" href="http://blog.sharpthinking.com.au/opensearch.axd" />
+<!-- Start custom code -->
+<style type="text/css">
+    .codehilite .hll { background-color: #ffffcc }
+    .codehilite  { background: #f8f8f8; }
+    .codehilite .c { color: #408080; font-style: italic } /* Comment */
+    .codehilite .err { border: 1px solid #FF0000 } /* Error */
+    .codehilite .k { color: #008000; font-weight: bold } /* Keyword */
+    .codehilite .o { color: #666666 } /* Operator */
+    .codehilite .cm { color: #408080; font-style: italic } /* Comment.Multiline */
+    .codehilite .cp { color: #BC7A00 } /* Comment.Preproc */
+    .codehilite .c1 { color: #408080; font-style: italic } /* Comment.Single */
+    .codehilite .cs { color: #408080; font-style: italic } /* Comment.Special */
+    .codehilite .gd { color: #A00000 } /* Generic.Deleted */
+    .codehilite .ge { font-style: italic } /* Generic.Emph */
+    .codehilite .gr { color: #FF0000 } /* Generic.Error */
+    .codehilite .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+    .codehilite .gi { color: #00A000 } /* Generic.Inserted */
+    .codehilite .go { color: #808080 } /* Generic.codehilite */
+    .codehilite .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+    .codehilite .gs { font-weight: bold } /* Generic.Strong */
+    .codehilite .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+    .codehilite .gt { color: #0040D0 } /* Generic.Traceback */
+    .codehilite .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+    .codehilite .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+    .codehilite .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+    .codehilite .kp { color: #008000 } /* Keyword.Pseudo */
+    .codehilite .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+    .codehilite .kt { color: #B00040 } /* Keyword.Type */
+    .codehilite .m { color: #666666 } /* Literal.Number */
+    .codehilite .s { color: #BA2121 } /* Literal.String */
+    .codehilite .na { color: #7D9029 } /* Name.Attribute */
+    .codehilite .nb { color: #008000 } /* Name.Builtin */
+    .codehilite .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+    .codehilite .no { color: #880000 } /* Name.Constant */
+    .codehilite .nd { color: #AA22FF } /* Name.Decorator */
+    .codehilite .ni { color: #999999; font-weight: bold } /* Name.Entity */
+    .codehilite .ne { color: #D2413A; font-weight: bold } /* Name.Exception */
+    .codehilite .nf { color: #0000FF } /* Name.Function */
+    .codehilite .nl { color: #A0A000 } /* Name.Label */
+    .codehilite .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+    .codehilite .nt { color: #008000; font-weight: bold } /* Name.Tag */
+    .codehilite .nv { color: #19177C } /* Name.Variable */
+    .codehilite .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+    .codehilite .w { color: #bbbbbb } /* Text.Whitespace */
+    .codehilite .mf { color: #666666 } /* Literal.Number.Float */
+    .codehilite .mh { color: #666666 } /* Literal.Number.Hex */
+    .codehilite .mi { color: #666666 } /* Literal.Number.Integer */
+    .codehilite .mo { color: #666666 } /* Literal.Number.Oct */
+    .codehilite .sb { color: #BA2121 } /* Literal.String.Backtick */
+    .codehilite .sc { color: #BA2121 } /* Literal.String.Char */
+    .codehilite .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+    .codehilite .s2 { color: #BA2121 } /* Literal.String.Double */
+    .codehilite .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
+    .codehilite .sh { color: #BA2121 } /* Literal.String.Heredoc */
+    .codehilite .si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
+    .codehilite .sx { color: #008000 } /* Literal.String.Other */
+    .codehilite .sr { color: #BB6688 } /* Literal.String.Regex */
+    .codehilite .s1 { color: #BA2121 } /* Literal.String.Single */
+    .codehilite .ss { color: #19177C } /* Literal.String.Symbol */
+    .codehilite .bp { color: #008000 } /* Name.Builtin.Pseudo */
+    .codehilite .vc { color: #19177C } /* Name.Variable.Class */
+    .codehilite .vg { color: #19177C } /* Name.Variable.Global */
+    .codehilite .vi { color: #19177C } /* Name.Variable.Instance */
+    .codehilite .il { color: #666666 } /* Literal.Number.Integer.Long */
+</style>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-12754117-2");
+pageTracker._setDomainName(".sharpthinking.com.au");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+<!-- End custom code -->
+<script type="text/javascript" src="/js.axd?path=%2fblog.js&amp;v=1.4.5.0"></script><title>
+	 - Page not found
+</title></head>
+
+<body>
+    <form name="aspnetForm" method="post" action="/error404.aspx" id="aspnetForm">
+<div>
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwULLTE5ODA3ODUwNjcPZBYCZg9kFgICAw9kFgQCBg8WBB4EaHJlZgULL2xvZ2luLmFzcHgeCWlubmVyaHRtbAUGTG9nIGluZAIID2QWAgIHDxYCHgdWaXNpYmxlZ2RksVd9RChlycpZTvrm4KhzwP3Rurk=" />
+</div>
+
+    <div class="outer-container">
+        <div class="inner-container">
+	        <div class="header">
+	            <div class="title">
+	                <span class="sitename"><a href="./">#.think.in</a></span>
+	                <div class="slogan">learn.create.enjoy</div>
+                </div>
+            </div>
+            
+            <div class="path">
+			      <a id="ctl00_HlHome" href="default.aspx">Home</a>
+			      <a id="ctl00_HyperLink1" href="category/Links.aspx">Links</a>
+			      <ul>
+			        <li class="page_item"><a id="ctl00_HlArchive" href="archive.aspx">Archive</a></li>
+			        <li class="page_item"><a id="ctl00_linkAbout" href="page/About-Us.aspx">About</a></li>
+			        <li class="page_item"><a id="ctl00_hlContact" href="contact.aspx">Contact</a></li>
+                    <li class="page_item"> <a href="http://feeds.feedburner.com/sharpthinking" rel="alternate" type="application/rss+xml" style="margin-right:3px;">Feed</a><a href="http://feeds.feedburner.com/sharpthinking" rel="alternate" type="application/rss+xml"><img src="http://www.feedburner.com/fb/images/pub/feed-icon16x16.png" alt="" style="vertical-align:middle;border:0"/></a></li>
+                    <li class="page_item"><a href="/login.aspx" id="ctl00_aLogin">Log in</a></li>
+                  </ul>
+	        </div>
+            <div class="main">
+                <div class="mcontent">
+                    
+                    
+  <div class="post error404">
+    <h1>Ooops! I can't find the page you're looking for</h1>
+    
+    
+    
+    
+    
+    
+    <div id="ctl00_cphBody_divDirectHit">
+      <p>You might find one of the following links useful:</p>
+      <ul>
+        
+        <li><a href="archive.aspx">Archive</a></li>
+        <li><a href="/">Home page</a></li>
+      </ul>
+      
+      <p>You can also try to <strong>search for the page you were looking for</strong>:</p>
+      <div id="searchbox">
+<label for="searchfield" style="display:none">Search</label><input type="text" value="Enter search term" id="searchfield" onkeypress="if(event.keyCode==13) return Search('/')" onfocus="SearchClear('Enter search term')" onblur="SearchClear('Enter search term')" /><input type="button" value="Search" id="searchbutton" onclick="Search('/');" onkeypress="Search('/');" /><br /><input type="checkbox" id="searchcomments"  /><label for="searchcomments">include comments</label></div>
+
+      
+      <hr />
+      
+      <p><strong>You may not be able to find the page you were after because of:</strong></p>
+      <ol type="a">
+        <li>An <strong>out-of-date bookmark/favorite</strong></li>
+        <li>A search engine that has an <strong>out-of-date listing for us</strong></li>
+        <li>A <strong>miss-typed address</strong></li>
+      </ol>
+    </div>
+  </div>
+
+                </div>
+                <div class="navigation">
+                    
+                    
+                    <div class="box recent">
+                        <h2>
+                            Recent posts</h2>
+                        <ul class="recentPosts" id="recentPosts"><li><a href="/post/2010/06/16/The-Mouse-is-Dead-Long-Live-the-Keyboard.aspx">The Mouse is Dead, Long Live the Keyboard</a></li><li><a href="/post/2010/06/07/Revisiting-dragging-and-inertia-with-RxJs.aspx">Revisiting dragging and inertia with RxJs</a></li><li><a href="/post/2010/05/12/Map-Reduce-on-Mongo.aspx">Map-Reduce on Mongo</a></li><li><a href="/post/2010/04/07/DevEvening-NoSqlMongoDB-Presentation.aspx">DevEvening NoSql/MongoDB Presentation</a></li><li><a href="/post/2010/03/18/Scraping-this-blog.aspx">Scraping this blog</a></li></ul>
+                    </div>
+                    <div class="box recent">
+                        <h2>
+                            Recent links</h2>
+                        <ul class="recentPosts" id="recentPosts"><li><a href="/post/2009/10/02/thinkin-infoDose-43-(11th-September-22nd-September).aspx">#.think.in infoDose #43 (11th September - 22nd September)</a></li><li><a href="/post/2009/10/02/thinkin-infoDose-42-(3rd-September-10th-September).aspx">#.think.in infoDose #42 (3rd September - 10th September)</a></li><li><a href="/post/2009/09/02/thinkin-infoDose-41-(17th-August-2nd-September).aspx">#.think.in infoDose #41 (17th August - 2nd September)</a></li><li><a href="/post/2009/08/16/thinkin-infoDose-40-(5th-August-16th-August).aspx">#.think.in infoDose #40 (5th August - 16th August)</a></li><li><a href="/post/2009/08/05/thinkin-infoDose-39-(28th-July-4th-August).aspx">#.think.in infoDose #39 (28th July - 4th August)</a></li></ul>
+                    </div>                    
+                    <div class="box">
+                        <h2>
+                            Authors</h2>
+                        <ul id="authorlist"><li><a href="/syndication.axd?author=brodie" rel="nofollow"><img src="/pics/rssButton.gif" alt="RSS feed for brodie" class="rssButton" /></a><a href="/author/brodie.aspx" title="Author: brodie">brodie (47)</a></li><li><a href="/syndication.axd?author=tarn" rel="nofollow"><img src="/pics/rssButton.gif" alt="RSS feed for tarn" class="rssButton" /></a><a href="/author/tarn.aspx" title="Author: tarn">tarn (63)</a></li></ul>
+
+                    </div>
+                    <h4>Tweetage</h4>
+  <div class="box">
+  <h2>Tweetage</h2>
+  <div style="margin-left:3px; margin-top:2px">
+
+</div>
+</div>
+
+
+                    <br />
+                    <div>
+                        <script type="text/javascript"><!--
+                        google_ad_client = "pub-3071284823816574";
+                        /* 200x200, created 6/3/08 */
+                        google_ad_slot = "6718346623";
+                        google_ad_width = 200;
+                        google_ad_height = 200;
+                        //-->
+                        </script>
+
+                        <script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+                        </script>
+
+                    </div>
+                    <div class="box">
+                        <h2>
+                            <a href="archive.aspx" id="ctl00_A1">Archive</a></h2>
+                        <ul id="monthList"><li class="year" onclick="ToggleMonth('year2010')">2010<ul id="year2010" class="open"><li><a href="/2010/06/default.aspx">June (2)</a></li><li><a href="/2010/05/default.aspx">May (1)</a></li><li><a href="/2010/04/default.aspx">April (1)</a></li><li><a href="/2010/03/default.aspx">March (3)</a></li><li><a href="/2010/02/default.aspx">February (4)</a></li><li><a href="/2010/01/default.aspx">January (2)</a></li></ul></li><li class="year" onclick="ToggleMonth('year2009')">2009<ul id="year2009"><li><a href="/2009/12/default.aspx">December (1)</a></li><li><a href="/2009/10/default.aspx">October (2)</a></li><li><a href="/2009/09/default.aspx">September (1)</a></li><li><a href="/2009/08/default.aspx">August (2)</a></li><li><a href="/2009/07/default.aspx">July (5)</a></li><li><a href="/2009/06/default.aspx">June (6)</a></li><li><a href="/2009/05/default.aspx">May (6)</a></li><li><a href="/2009/04/default.aspx">April (2)</a></li><li><a href="/2009/03/default.aspx">March (3)</a></li><li><a href="/2009/02/default.aspx">February (4)</a></li><li><a href="/2009/01/default.aspx">January (6)</a></li></ul></li><li class="year" onclick="ToggleMonth('year2008')">2008<ul id="year2008"><li><a href="/2008/12/default.aspx">December (11)</a></li><li><a href="/2008/11/default.aspx">November (10)</a></li><li><a href="/2008/10/default.aspx">October (10)</a></li><li><a href="/2008/09/default.aspx">September (2)</a></li><li><a href="/2008/08/default.aspx">August (3)</a></li><li><a href="/2008/07/default.aspx">July (4)</a></li><li><a href="/2008/06/default.aspx">June (18)</a></li><li><a href="/2008/05/default.aspx">May (1)</a></li></ul></li></ul>
+
+                    </div>
+
+                    <br />
+                    <div class="box">
+                    <a href="http://feeds.feedburner.com/sharpthinking"><img src="http://feeds.feedburner.com/~fc/sharpthinking?bg=949490&amp;fg=444444&amp;anim=0" height="26" width="88" style="border:0" alt="" /></a>
+                    </div>
+                    <br />
+                    <div class="box">
+                        <SCRIPT charset="utf-8" type="text/javascript" src="http://ws.amazon.com/widgets/q?ServiceVersion=20070822&MarketPlace=US&ID=V20070822/US/sharpthinking-20/8001/ba49dd7e-f8aa-4f48-91ae-30b572047ee6"> </SCRIPT> <NOSCRIPT><A HREF="http://ws.amazon.com/widgets/q?ServiceVersion=20070822&MarketPlace=US&ID=V20070822%2FUS%2Fsharpthinking-20%2F8001%2Fba49dd7e-f8aa-4f48-91ae-30b572047ee6&Operation=NoScript">Amazon.com Widgets</A></NOSCRIPT>
+                    </div>
+                    <div class="box">
+                    <h3>Disclaimer</h3>
+                            <div>
+                                The opinions expressed herein are our own personal opinions and do not represent
+                                our employer's view in anyway.
+                            </div>
+                                &copy; Copyright
+                                2010
+                        </div>
+                </div>
+                <div class="clearer">
+                    &nbsp;</div>
+            </div>
+                  
+            <div class="footer">
+                <span class="left">
+                    Powered by <a href="http://www.dotnetblogengine.net/" target="_blank">BlogEngine.NET</a> 1.4.5.0 | Hosted by <a href="http://www.expressnet.com.au/">ExpressNet</a> | 
+                    Original Design by <a href="http://arcsin.se">Arcsin</a>
+                </span>
+                <div class="clearer"></div>
+            </div>
+        </div>
+    </div>
+    
+
+<script src="http://feeds.feedburner.com/~s/sharpthinking" type="text/javascript" charset="utf-8"></script></form>   
+</body>
+</html>

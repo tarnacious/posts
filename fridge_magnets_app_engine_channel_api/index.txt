@@ -1,0 +1,50 @@
+Fridge magnets have been my [playground web application][letters_repo] while learning Erlang. 
+The basic idea is some letters which you can drag around to form words or whatever. 
+It is made a little more interesting as users all use the same set of letters,
+and so users see letters being moved by other users.
+
+The application itself isn't particularly interesting, 
+there has been a [Flash version of this][flash_letters] for a long time. 
+Of course there are a couple of things I find interesting about building such an application. 
+
+* Web clients must be updated when letters are moved by other players
+* The server must signal the listening clients and maintain letter positions
+
+Web browsers have traditionally been geared to making requests and receiving responses. 
+When there is the need to go beyond that to more persistent connections there are several options (and combinations of these options)
+
+* Have the web client make periodic requests
+* [Comet][comet]/Long-polling  
+* Browser plug-ins with socket support like Flash
+* The emerging WebSockets standards
+
+At some point since I last used App Engine, Google have added a [Channel API][channel_api] for persistent connections.
+The App Engine and Python are quite fun to play with, so I decided to hack together a version of Fridge Magnets using the API.
+
+As Google serves the JavaScript and the handlers for the persistent connection they could use any of the techniques.
+It [appears][websockets] they are only currently doing long-polling.
+
+The app is at [gae-letters.appspot.com][gae_letters] and the [source][gae_letters_repo] on bitbucket. 
+
+It's all a bit hacky, but it weighs in at less than 150 lines of Python so I'm not too worried. 
+While it was fun and pretty easy, there are some pretty seriously limitations of App Engine when trying to build such applications.
+
+* No notification when clients disconnect
+* No synchronization methods I am aware of, which is probably _why_ Google can scale these apps
+* I'm also seeing problems with browsers not seeing pushes after some time, but I haven't really looked into it
+
+Although didn't use the [Task Queue API][push] which looks very useful,
+it seems traditional web frameworks suck for building _this type_ of application.
+Alternatively Erlang and probably Node.js and Twisted etc are made for it.
+
+Hopefully a robust, fast Erlang implementation will be the topic of my next post.
+
+
+[flash_letters]: http://lunchtimers.com/game/?game=letters&roomid=room1
+[gae_letters]: http://gae-letters.appspot.com
+[gae_letters_repo]: https://bitbucket.org/tarnacious/letters_gae
+[letters_repo]: https://bitbucket.org/tarnacious/letters
+[channel_api]: http://code.google.com/appengine/docs/python/channel/overview.html
+[push]: http://code.google.com/appengine/docs/python/taskqueue/
+[websockets]: http://www.quora.com/Is-Google-App-Engines-SDK-1-4-0-Channel-API-using-websockets
+[comet]: http://en.wikipedia.org/wiki/Comet_(programming)

@@ -1,0 +1,204 @@
+Ever since I saw the Deep Zoom presentations at [Remix08 Melbourne][1] I was
+gob-smacked at how cool they were I wanted to give it a try.  The smooth
+zooming and panning was incredible to watch and was much better than the
+boring old Powerpoint transitions.
+
+So how do I do this ... well, as usual the first step was to Google for the
+solution and the best links I found about the topic were ... [here ][2]and
+[here][3]
+
+
+They made it sound relatively straight forward but I struggled a little along
+the way.  In particular I couldn't find an easy way to generate high
+resolution images from powerpoint, and the high resolution images are the key
+for a decent looking deep zoom experience as I found out.
+
+Anyway's, here's what I did ...
+
+**1.** Use PowerPoint 2007 to create the presentation, which by the way has
+awesome image generation capabilities for roundpanels, arrows, smart art, etc.
+Even a humble developer such as myself can create pretty good looking slides
+that a hardened designer would take the time to glance at.
+
+**2.** Next, upgrade to latest [deep zoom composer][4], you'll probably also
+need to install some [silverlight goodies][5] to get this going.
+
+**3.** Generate some high resolution images from PowerPoint.  The higher the
+resolution the images the better experience you'll get out of DeepZoom.
+Powerpoint allows you to save each slide as an image which is great, simple
+and easy ... but I couldn't figure out how to maximize the resolution.  There
+are a few settings you can tweak and apparently some registry hacks but
+nothing I tried seemed to work.  When you view these images in your deepzoomed
+presentation they appear really blurred which is no good for anyone.
+
+So I went down the track of saving the PowerPoint presentation as a pdf using
+the [PDF995 print driver][6] which works great.
+
+Now I just needed to produce  high resolution images from the PDF ... which
+you can, but I couldn't find a tool that would do it for free without
+watermarking the images.
+
+So out of pure frustration I just used the snapshot feature of the Acrobat
+reader, and pasted each slide image into [Paint.NET][7], and saved that as a
+PNG. A little monotonous but it gave me much better resolution images than
+PowerPoint.
+
+I'm sure there is an easier way than this, so if you find one then please let
+me know.
+
+**4.** Then just use the deep zoom composer to setup you presentation and
+export it. This produces a couple of projects, Silverlight and Web
+Application, with a html page containing the silverlight deepzoom object. Open
+this up and as long as you have the Silverlight plugin installed then you away
+laughing. Well almost.
+
+
+## Increase resolution for full screen browsing.
+
+depending on your screen resolution you'll most likely want to increase the
+default resolution produced by the Deep Zoom Composer,  otherwise the deep
+zoom appears in a bounded window within the browser, and I wanted a full
+screen experience when pressing the F11 key on IE7.
+
+So you'll need to open up the solution file in Visual Studio which may mean
+installing Silverlight 2 beta 2 ... argh! More on that later.  So if you
+manage to get that installed then ...
+
+Modify the Page.xaml width and height of the UserControl ...
+
+<UserControl x:Class="DeepZoomProject.Page"
+
+    xmlns="[http://schemas.microsoft.com/winfx/2006/xaml/presentation"][8]
+
+    xmlns:x="[http://schemas.microsoft.com/winfx/2006/xaml"][9]
+
+    **Width="1280" Height="1024">**
+
+... and also the MultiScaleImage tag...
+
+<MultiScaleImage x:Name="msi" **MinHeight="480" MinWidth="640"** Height="1024"
+Width="1280"/>
+
+I also changed the width and height of the silverlight object in the html page
+of the Web Application project
+
+object data="data:application/x-silverlight,"
+type="application/x-silverlight-2-b2" **width="1280" height="1024"**
+
+... then rebuild the project.
+
+Now when viewing in the IE browser hit F11 and yet again you're away laughing.
+Well, almost, really...
+
+
+
+## H**osting a Silverlight site with IIS6**
+
+Since I wanted to access the DeepZoom presentation from other machines in the
+network I created a virtual directory in IIS6, pointed it to the DeepZoom Web
+project, but when I tried to browse the html file I experienced a javascript
+error.
+
+The contents read something like ...
+
+Unhandled Error in Silverlight 2 Application
+
+Code: 2014
+
+Category: Initialize Error
+
+Could not download the Silverlight application ... blah blah blah
+
+
+Apparently you need to do the following ...
+
+1. Enable the content expiration setting to be one minute
+
+2. Register some MIME typesand file extensions...
+
+xap  application/octet-stream
+
+.xaml application/xaml+xml
+
+> > 3. Change the execute permissions to "Script Only"
+
+then presto ... all is good.
+
+
+Solution I found was in ...
+
+[http://weblogs.asp.net/javiervillarreal/archive/2008/06/14/silverlight-
+error-2104-could-not-download-the-silverlight-application-in-iis6.aspx][10]
+
+Thank-you kind sir.
+
+
+### **Fi**xing Silverlight beta 1 to  Silverlight beta 2 problems
+
+... and there are plenty of [them][11].
+
+In getting this to work I experienced some mild unpleasantness, almost
+approaching the absolute disgust I faced when trying out the alpha releases of
+silverlight which required a complete reinstall of my OS! .. there's a couple
+of days I'll never get back!
+
+Anyway's, try here for starters ...
+
+[http://weblogs.asp.net/bradleyb/archive/2008/06/18/fixing-setup-errors-
+installing-silverlight-tools-beta-2.aspx][12]
+
+and read my contribution ...
+[http://silverlight.net/forums/p/18765/64872.aspx#64872][13], yep, not much.
+
+
+Personally though, my installation is still a little stuffed, as I can't debug
+silverlight applications ...
+
+so I'll probably end up reinstalling all VS and silverlight stuff :-( unless I
+find a solution in the next couple of days.
+
+
+Technorati Tags: [Deep Zoom][14],[Silverlight][15]
+
+
+   [1]: /post/2008/05/REMIX08-Melbourne-Review.aspx
+
+   [2]: http://vaughanknight.com/blog/2008/05/making-a-deep-zoom-slide-
+deck.html
+
+   [3]: http://blogs.msdn.com/canux/archive/2008/04/08/mini-tutorial-share-
+your-presentation-in-deep-zoom.aspx
+
+   [4]: http://www.microsoft.com/downloads/details.aspx?FamilyID=457b17b7
+-52bf-4bda-87a3-fa8a4673f8bf&displaylang=en
+
+   [5]: http://silverlight.net/GetStarted/
+
+   [6]: http://www.pdf995.com/
+
+   [7]: http://www.getpaint.net/
+
+   [8]: http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+   [9]: http://schemas.microsoft.com/winfx/2006/xaml"
+
+   [10]: http://weblogs.asp.net/javiervillarreal/archive/2008/06/14
+/silverlight-error-2104-could-not-download-the-silverlight-application-in-
+iis6.aspx (http://weblogs.asp.net/javiervillarreal/archive/2008/06/14
+/silverlight-error-2104-could-not-download-the-silverlight-application-in-
+iis6.aspx)
+
+   [11]: http://silverlight.net/forums/
+
+   [12]: http://weblogs.asp.net/bradleyb/archive/2008/06/18/fixing-setup-
+errors-installing-silverlight-tools-beta-2.aspx
+(http://weblogs.asp.net/bradleyb/archive/2008/06/18/fixing-setup-errors-
+installing-silverlight-tools-beta-2.aspx)
+
+   [13]: http://silverlight.net/forums/p/18765/64872.aspx#64872
+(http://silverlight.net/forums/p/18765/64872.aspx#64872)
+
+   [14]: http://technorati.com/tags/Deep%20Zoom
+
+   [15]: http://technorati.com/tags/Silverlight
+

@@ -1,0 +1,334 @@
+I'm right into the coding for this project at the moment, but the iteration
+one requirements are all complete so its probably a good time to write some
+posts and reflect on what has been implemented so far.
+
+As specified this project is use TDD for development. There has been a lot of
+work put into ASP.NET MVC to make it a most testable framework. I would like
+to discuss how various parts of this project have been tested.
+
+I am using Microsoft Unit Test Framework and [MOQ][1] for testing this
+project. I had never used MOQ before, but I love it. For those that don't know
+about MOQ its another mock testing framework, the thing I love about it is it
+uses C# 3.5 so you can do a lot with lambda expressions.
+
+### Controllers
+
+In the controller tests a real controller is created with a mocked
+IWeblogRepository interface. This means the controller can be tested
+independent of an IWeblogRepository implementation.
+
+    [TestInitialize]
+    public void Setup()
+    {
+        _mockRepository = new Mock<IWeblogRepository>();
+        _controller = new HomeController(_mockRepository.Object);
+    }
+
+Testing controllers is really testing two things, firstly that the controller
+renders the correct view and secondly it sends the right data to that view.
+The tests shown here validate the "Post" action on the HomeController.
+
+In this test the mock repository is setup to return a post when GetPost("Test-
+Post-1") is called on it. When we call the controller with these parameters we
+expect it to make the specified request to the mock repository. This test
+ensure that when a post is found that "Post" view is rendered.
+
+The sharp eyes will notice that I'm not using the date parameters to find the
+post from the repository. That functionality has not been implemented in this
+iteration.
+
+    [TestMethod]
+    public void Post_FindsPost_RendersPostView()
+    {
+        _mockRepository.Expect(m => m.GetPost(It.Is<string>(i => i == "Test-Post-1")))
+                       .Returns(new PostModel());
+
+        ViewResult result = _controller.Post(8,8,8,"Test-Post-1") as ViewResult;
+        Assert.AreEqual("Post", result.ViewName);
+    }
+
+
+We can also test the correct data is being sent to the view. I personally like
+to separate these two tests, this may not be a universal opinion, but I think
+its best to keep unit tests short and I think these tests are clearly testing
+different expectations.
+
+
+    [TestMethod]
+    public void Post_FindsPost_ReturnPostViewData()
+    {
+        _mockRepository.Expect(m => m.GetPost(It.Is<string>(i => i == "Test-Post-1")))
+                       .Returns(new PostModel() {
+                                                    Title = "Test Post 1",
+                                                    Content = "Test Post Content 1"
+                                                });
+
+        ViewResult result = _controller.Post(8, 8, 8, "Test-Post-1") as ViewResult;
+        PostViewData data = result.ViewData.Model as PostViewData;
+
+        Assert.IsNotNull(data);
+        Assert.AreEqual("Test Post 1", data.SelectedPost.Title);
+        Assert.AreEqual("Test Post Content 1", data.SelectedPost.Content);
+    }
+
+
+
+Two additional test were added to test other expectation of the "Post"
+controller action. These test that the "Index" view is rendered when the
+action is called with invalid parameters or can't find the post. This
+functionality may change to display an error message or alternate posts when
+the request is invalid in later iterations.
+
+
+    [TestMethod]
+    public void Post_PostNotFound_RendersIndexView()
+    {
+        _mockRepository.Expect(m => m.GetPost(It.Is<string>(i => i == "Test-Post-1")))
+                       .Returns<PostModel>(null);
+
+        ViewResult result = _controller.Post(8, 8, 8, "Non-Existing-Post") as ViewResult;
+
+        Assert.AreEqual("Index", result.ViewName);
+    }
+
+
+    [TestMethod]
+    public void Post_InvalidRequest_RendersIndexView()
+    {
+        ViewResult result = _controller.Post(null,null,null,null) as ViewResult;
+        Assert.AreEqual("Index", result.ViewName);
+    }
+
+
+### Routes
+
+Testing routes is testing Http Requests are correctly mapped to the
+appropriate controller actions with the appropriate parameters. The below is
+testing "~/Post/2008/10/20/Test-Post" request will call the HomeController
+with the Post action and will also correctly populate the parameters.
+
+
+    [TestMethod]
+    public void PostRoute_TestSuccessfullRoute()
+    {
+        var routes = new RouteCollection();
+        var context = new Mock<HttpContextBase>();
+
+        context.ExpectGet(m => m.Request.AppRelativeCurrentExecutionFilePath)
+               .Returns("~/Post/2008/10/20/Test-Post");
+
+        SharpWeblogRouting.RegisterRoutes(routes);
+        var routeData = routes.GetRouteData(context.Object);
+
+        Assert.AreEqual("Home", routeData.Values["controller"]);
+        Assert.AreEqual("Post", routeData.Values["action"]);
+        Assert.AreEqual("20", routeData.Values["day"]);
+        Assert.AreEqual("10", routeData.Values["month"]);
+        Assert.AreEqual("2008", routeData.Values["year"]);
+        Assert.AreEqual("Test-Post", routeData.Values["name"]);
+    }
+
+
+
+I can write a more route tests to test other requests when I have features
+saying what should happen.
+
+### Data Layer
+
+While I think its great we can "fake out" the IWeblogRepository to avoid using
+an actual implementation while testing other areas of the system, I strongly
+believe implementations of the IWeblogRepository should also be tested,
+separately.
+
+The IWeblogRepository interface basically has methods to save, load, update
+and delete model objects in a data storage. In this case it is storing the
+data in a SQL Express 2005 database using LINQ to SQL.
+
+NOTE: The model classes are just data objects that have no information about
+the data context or data state. This does result in some inefficiencies
+updating the database, but the design was chosen as it clearly separates the
+implementation of the data layer from the rest of the system.
+
+Anyway here are some typical tests, no mocking required here.
+
+NOTE: I think these tests should be written against an interface with our
+implementation injected in. This would mean the same tests could be applied to
+other IWeblogRepository implementations.
+
+
+    [TestMethod]
+    public void PostCRUD()
+    {
+        // Create
+        PostModel post = CreateTestPost();
+        _repository.SavePost(post);
+
+        // Read
+        PostModel findPost = _repository.GetPost(post.Id);
+        Assert.IsNotNull(findPost);
+        ValidatePosts(post, findPost);
+
+        // Update
+        findPost.Content = "Updated Content";
+        findPost.Title = "Update Content";
+        _repository.SavePost(findPost);
+
+        // Read Update
+        PostModel findUpdatedPost = _repository.GetPost(post.Id);
+        Assert.IsNotNull(findUpdatedPost);
+
+        // Delete
+        _repository.DeletePost(findUpdatedPost);
+        PostModel findDeletedPost = _repository.GetPost(post.Id);
+        Assert.IsNull(findDeletedPost);
+    }
+
+
+While I generally like small tests, I think an objects CRUD tests are best
+tied up in one test because otherwise you end up testing "create" four times
+to setup for each of the other tests. I would also generally implement the
+entire CRUD of an object even if it wasn't all required just so as CRUD tests
+can be performed and each operation can be tested.
+
+I have many more tests for the data layer but they are all pretty standard, so
+no point discussing them further here.
+
+### MetaWeblog
+
+The MetaWeblog API has also been (partly, so far) implemented for this
+project. I will discuss the implementation further in another post but for now
+we'll talk about testing it.
+
+The MetaWeblog is implemented in two clearly separate components. One part
+processes the XML-RPC request and invokes methods on a IMetaWeblog interface
+and returns XML-RPC responses to Http Response. The other is an implementation
+of the IMetaWeblog, both can be tested separately.
+
+Testing the IMetaWeblog implementation is pretty straight forward. As the
+IMetaWeblog implementation uses the repository through the IWeblogRepository
+interface we can mock the repository and test the expected calls are made
+against the interface.
+
+NOTE: Sharp eyes will notice I'm not validating the user name and password.
+This isn't yet implemented.
+
+
+    [TestMethod]
+    public void NewPost_InvokesSaveMethod()
+    {
+        MWAPost post = TestHelper.CreateTestMWAPost();
+        Mock<IWeblogRepository> repository = new Mock<IWeblogRepository>();
+        SharpMetaWeblogAPI model = new SharpMetaWeblogAPI(repository.Object);
+        model.NewPost("100", "TestUser", "TestPassword", post, false);
+        repository.Verify(m => m.SavePost(It.Is<PostModel>(p => ComparePosts(p, post))));
+    }
+
+We can also test the return values of the IMetaWeblog methods with a known
+responses from the IWeblogRepository mock.
+
+
+    [TestMethod]
+    public void GetPost_ReturnsRequestedPost()
+    {
+        Guid id = Guid.NewGuid();
+
+        PostModel post = new PostModel()
+        {
+             Title = "Test Title",
+        };
+
+        Mock<IWeblogRepository> repository = new Mock<IWeblogRepository>();
+        repository.Expect<PostModel>(m => m.GetPost(id)).Returns(post);
+        SharpMetaWeblogAPI metaWeblog = new SharpMetaWeblogAPI(repository.Object);
+        MWAPost findPost = metaWeblog.GetPost(id.ToString(), "none", "none");
+
+        Assert.AreEqual(post.Id.ToString(), findPost.postID);
+        Assert.AreEqual(post.Title, findPost.title);
+    }
+
+
+Being able to unit test the MetaWeblogFramework is cool, but I may have taken
+unit testing too far here, but I'll let you decide.
+
+The MetaWeblogFramework had to be implemented against HttpContextBase, with an
+actual context object passed into the ProcessRequest method. An instance of
+IMetaWeblogAPI is injected into the constructor to allow the framework to call
+the interface methods on a real object after processing the request, kind of
+like a call back or an event.
+
+The structure of most of tests I have written so far is to mock a
+HttpContextBase request and send it to a real instance of MetaWeblogFramework
+which has been constructed with a mock IMetaWeblog API.
+
+This way I can verify that with known HTTP requests and payloads the expected
+methods on the IMetaWeblog interface are called. The test below creates an
+XmlRpcRequest object which the HttpContextBase mock will return when the
+MetaWeblogFramework ProcessRequest method requests the
+HttpContext.Request.InputStream. The test expects the
+IMetaWeblogAPI.NewPost(..) method to be called with known parameters.
+
+
+    [TestClass]
+    public class MetaWeblogFrameworkTest
+    {
+        Mock<HttpContextBase> context;
+        Mock<IMetaWeblogAPI> api;
+        Byte[] _output;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            context = new Mock<HttpContextBase>();
+            api = new Mock<IMetaWeblogAPI>();
+            _output = new Byte[1000];
+            context.ExpectGet(m => m.Response.ContentType).Returns("text/xml");
+            context.ExpectGet(m => m.Response.OutputStream).Returns(new MemoryStream(_output));
+        }
+
+        [TestMethod]
+        public void ProcessRequest_MockRequestNewPost_InvokesNewPostMethod()
+        {
+            MWAPost sentPost = TestHelper.CreateTestMWAPost();
+            XmlRpcRequest mockRequest = new XmlRpcRequest()
+            {
+                MethodName = "metaWeblog.newPost",
+                Params = new List<Param>()
+                {
+                    new StringParam("TestBlogId"),
+                    new StringParam("TestUserName"),
+                    new StringParam("TestPassword"),
+                    new PostParam(sentPost),
+                    new StringParam("False"),
+                }
+            };
+
+            context.ExpectGet(m => m.Request.InputStream).Returns(mockRequest.CreateStream());
+            MetaWeblogFramework framework = new MetaWeblogFramework(api.Object);
+            framework.ProcessRequest(context.Object);
+
+            api.Verify(m => m.NewPost("TestBlogId", "TestUserName","TestPassword", It.Is<MWAPost>(a=>sentPost.Match(a)) , true));
+        }
+
+        ..
+    }
+
+
+Testing the MetaWeblogFramework was a little difficult, and I had to create a
+whole range of additional objects and methods to perform the tests. I might
+re-visit the MetaWeblogFramework implementation later in the project and re-
+write it to be more testable.
+
+### Conclusion
+
+Well I managed to test a whole range of components in this ASP.NET MVC
+project, but my overall coverage is still pretty low (32% over the entire
+project). I'll keep you updated with how testing is going though-out the
+project and I'll try to get those coverage stats up by the drop of the first
+iteration this week.
+
+[image][3]
+
+   [1]: http://code.google.com/p/moq/wiki/QuickStart
+   [2]: image_thumb.png
+   [3]: http://blog.sharpthinking.com.au/image.axd?picture=WindowsLiveWriter/SharpWeblogTesting_7E35/image_2.png
+

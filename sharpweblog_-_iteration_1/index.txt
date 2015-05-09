@@ -1,0 +1,144 @@
+I've finished all the [initial requirements][1] so I'll briefly describe how
+its going.
+
+### The Data Layer
+
+The data layer interface has methods to find, create, update and delete
+stateless model objects. The data layer is implemented with Linq to Sql. As
+the interface uses model data objects, the data layer implements the
+repository pattern by mediating these objects with the Linq to Sql classes.
+
+This is nice as it means the rest of the application doesn't have a dependency
+on the data layer implementation. This is good as I don't want to have to deal
+with Linq to Sql classes through-out the entire application. There are tests
+verifying what I would consider a more sane object model is correctly
+implemented by the data layer.
+
+I personally don't think Linq to Sql should be considered as an ORM for most
+web applications; It has no built in way of modeling many to many
+relationships and it's much more difficult to use than most other ORM I've
+worked with. I'm looking forward to trying the new Entities Framework, and
+hope they have finally made a legitimate ORM.
+
+### Routing
+
+I'm a big fan of both being able to write routing logic and routing logic
+tests so easily. I highly recommend writing tests verifying your routes. I
+briefly discussed how this is done in my previous post about [testing this
+project][2]. The requested route is tested against all the routes in sequence
+until a match it found. This means its very easy to add a route that
+inadvertently catches a route that was supposed to be mapped by another route
+further down the sequence.
+
+I think TDD is really important here as the routing can quickly get quite
+complicated. Adding unit tests verifying specified routes are mapped to the
+correct controller and actions will protect your routes. It's also generally a
+quicker development cycle writing some route tests and then writing the route
+logic than writing the route logic and testing it in the browser.
+
+If you insist on testing your routes in the browser or just want to see how
+specific are mapped in action, [Phil Haack][3] has a neat little [route tester
+tool][4] that renders the route test information in the browser for any URL on
+your site you enter.
+
+### Views
+
+So far there has been no work done on the UI and the views are all pretty
+basic. I'm using C# with strongly type ViewPages, but I would like to consider
+using a dynamic language later in the project.
+
+I'm a huge fan of the templated ActionLink helper method, I included the
+ASP.NET MVC Futures assembly without hesitation when I realised it wasn't
+included in the Beta.
+
+
+    <%=Html.ActionLink<HomeController>(m => m.Category(category),category) %>
+
+
+I'm a little more nervously on the fence with regard to the RenderAction
+method which allows you to call an action on the controller from within a view
+to render a control. I can see the why its there; It provides a lot of
+flexibility for making controls that can be responsible for getting there own
+data and can be used by any view. This also means these user control
+controller actions can be tested separately. On the other hand it appears to
+be way to get around the MVC pattern where in many cases the controller itself
+could call off to get the additional information and pass it down to view.
+
+
+    <% Html.RenderAction<HomeController>(m => m.PostDetail(ViewData.Model.SelectedPost)); %>
+
+If I could call a view from within another view and pass it a model from the
+data already in the calling view I would be a lot more comfortable with it
+(You probably can do that, I haven't worked it out yet). That way there would
+be a nice way to call controls with model data without calling methods on the
+controller from the view.
+
+EDIT: As soon as I tabbed to Visual Studio after posting this I noticed the
+login control from the template renders a user control using RenderPartial
+from the view. The user control inherits from ViewUserControl and can be
+templated. An overloaded RenderPartial method allows you to pass model data to
+the view. I've fallen to the lets get on with coding side of the fence.
+
+
+    <% Html.RenderPartial("LoginUserControl"); %>
+
+### Membership and Roles
+
+It wasn't in my initial requirements, but the MVC VS2008 Beta template comes
+with some login in and registration pages using the default SQL Server
+Membership provider. I am looking to leverage all the technologies I can to
+build this site, so I decided I would use the default provider, if I could use
+it and keep the code very testable.
+
+In the default template a database is generated with the membership and roles
+tables and stored procedures used by the default membership provider already
+created. As I already had a database, I used a tool called aspnet_regsql to
+add the tables and procedures to my database. The tool is part of the .NET
+framework and can also be used to generate scripts and works with SQL Server
+Express.
+
+I had mixed emotions when I found this in the controller from the template. I
+liked that they had thought about testing the controller (no tests are
+actually included).
+
+    // This constructor is not used by the MVC framework but is instead provided for ease
+    // of unit testing this type. See the comments at the end of this file for more
+    // information.
+
+    public AccountController(IFormsAuthentication formsAuth, MembershipProvider provider)
+    {
+        FormsAuth = formsAuth ?? new FormsAuthenticationWrapper();
+        Provider = provider ?? Membership.Provider;
+    }
+
+    ..
+
+    // The FormsAuthentication type is sealed and contains static members, so it is difficult to
+    // unit test code that calls its members. The interface and helper class below demonstrate
+    // how to create an abstract wrapper around such a type in order to make the AccountController
+    // code unit testable.
+
+    ..
+
+
+That great! Its a pattern I use in the project to avoid dependencies and
+improve testability, the only problem is I don't think they've gone far
+enough. I'm going to take it further and create a wrapper around Provider so I
+can mock it and not have a dependency on System.Web in my controller unit
+tests.
+
+EDIT: After writing this post I found I could reference System.Web in my tests
+and not have a development web server fire up when the tests run. I was a
+little surprised by this, and now I'm not sure what does fire up the
+development web server. I'll post an update on this when I understand it more
+clearly.
+
+
+   [1]: /journal/sharpweblog-project
+
+   [2]: /journal/sharpweblog-project
+
+   [3]: http://haacked.com/
+
+   [4]: http://haacked.com/archive/2008/03/13/url-routing-debugger.aspx
+

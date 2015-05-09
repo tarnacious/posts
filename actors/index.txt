@@ -1,0 +1,33 @@
+A couple of months back [Andrew Bienert][abienert] organised a [Melbourne Alt.NET meeting on functional programming][altnet].
+
+[Andrew Browne][adbrowne] and myself put our hands up to do mini talks on Scala and Erlang and [Andrew Bienert][abienert] was keen to talk about F#.
+
+A few days before the meeting was [originally scheduled][original] [Andrew Browne][adbrowne] and I caught up on Skype to work out if we could somehow make our talks complimentary,
+either by each talking about different concepts or showing the same concepts in Scala and Erlang.
+We decided it would be best to show the same concepts in both Languages. 
+
+We had previously also talked over beers about the [Actor model][actormodel] in Erlang and Scala and wanted to spend some time on that. I initially wanted to do the exercise proposed by [Joe Armstrong][armstrong] from his book [Programming Erlang][programmingerlang].
+
+> Write a ring benchmark. Create N processes in a ring. Send a message round the ring M times. So that a total of N * M messages get sent. Time how long this takes for different values of N and M.
+
+It is a fantastic exercise but we decided it was overly complex for a short presentation. We decided on a much simpler example with three actors; a Hello actor, a World actor and a Print actor. 
+
+The Hello actor is sent a message and adds "hello" to the message then sends it to the world actor which adds "world" to the message and sends it to the print actor which prints the messages.
+
+[Andrew Browne][adbrowne] [implemented it][scala] in Scala, I [implemented it][erlang] in Erlang and [Andrew Bienert][abienert] joined the party and [implemented a version][fsharp] in F#.
+
+I found the similarities and the differences in the implementations very interesting. The meeting was [eventually held][meeting] and the presentation generated [some interest amongst the attendees][interest], so I thought it would be worthwhile posting about here.
+
+
+[abienert]: http://twitter.com/#!/abienert
+[adbrowne]: http://twitter.com/#!/adbrowne
+[erlang]: https://gist.github.com/936268 
+[scala]: https://gist.github.com/936274 
+[fsharp]: https://gist.github.com/984031
+[altnet]: http://melbourne.ozalt.net/2011/04/april-meeting-functional-programming.html
+[actormodel]: http://en.wikipedia.org/wiki/Actor_model
+[original]: http://melbourne.ozalt.net/2011/04/april-meeting-functional-programming_27.html
+[meeting]: http://melbourne.ozalt.net/2011/05/may-meeting-functional-programming-take.html
+[interest]: http://twitter.com/#!/NickJosevski/status/74687100531904512
+[armstrong]: http://armstrongonsoftware.blogspot.com/
+[programmingerlang]: http://pragprog.com/titles/jaerlang/programming-erlang

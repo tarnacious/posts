@@ -1,0 +1,3 @@
+I used to love 4k demos and I learned to program in Pascal, C and Assembler trying to implement effects like this. Good times.
+
+<canvas id="fire" width="800px" height="384px" style="padding-left:50px">It appears your browser doesn't support canvas. That is quite sad, you should get one that does.</canvas>

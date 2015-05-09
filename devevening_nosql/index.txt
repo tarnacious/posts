@@ -1,0 +1,186 @@
+The slides and demo I'll show in my NoSql presentation for tomorrows
+DevEvenings Melbourne ORM Smackdown. I hope to take the time and write a more
+considered post of my findings and opinions as I've found it very interesting.
+
+Here is a link to [the slides][1].
+
+First I'll use some Python and the PyMongo module to connect to MongoDB, list
+databases, insert documents and get them out again.
+
+    #!/usr/bin/bash
+    Python 2.6.4 (r264:75706, Dec  7 2009, 18:45:15)
+    [GCC 4.4.1] on linux2
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> from pymongo import Connection
+    >>> connection = Connection()
+    >>> connection.database_names()
+    [u'files', u'working', u'demo', u'downloads', u'posts', u'local',u'admin']
+    >>> db = connection.demo
+    >>> import datetime
+    >>> db.messages.insert( { 'author' : 'tarn', 'date': datetime.now(),'message' : 'Hello Mongo' } )
+    ObjectId('4bbc4beec73d721445000003')
+    >>> db.messages.find_one()
+    {u'date': datetime.datetime(2010, 4, 7, 19, 10, 6, 355000), 
+     u'message': u'Hello Mongo', 
+     u'_id': ObjectId('4bbc4beec73d721445000003'), 
+     u'author': u'tarn'}
+
+
+Then have a look at some content I have in the database
+
+    #!/usr/bin/bash
+    >>> db = connection.working
+    >>> db.posts.count()
+    106
+    >>> for post in db.posts.find()[:5]:
+    ...     print post["date"],post["title"],"by",post["author"]
+    ...
+    2010-01-25 18:06:00 Python Silverlight/Moonlight 2 Xapping by tarn
+    2010-03-12 13:53:00 Devevenings Presentation - IOC/Unit Testing/Mocking in ASP.NET MVC by tarn
+    2010-02-17 19:25:00 Revisiting Modal Binding an Interface, now with DictionaryAdapterFactory by tarn
+    2009-12-02 18:35:00 Creating Silverlight apps in the browser by tarn 
+    2009-10-02 23:08:00 #.think.in infoDose #43 (11th September - 22nd September) by brodie
+
+File storage using the GridFS class from the gridfs module. Show some files
+and then write a file out to the file system.
+
+    #!/usr/bin/bash
+    >>> from gridfs import GridFS
+    >>> fs = GridFS(connection.files)
+    >>> len(fs.list())
+    116
+    >>> for file in fs.list()[:5]:
+    ...     print file
+    ...
+    post/debugging-ironpython-with-my-excalibur/image.png
+    post/debugging-ironpython-with-my-excalibur/image_thumb.png
+    post/devevenings-presentation---iocunit-testingmocking-in-asp.net-mvc/20102f32fdevevening_presentation.pptx
+    post/devevenings-presentation---iocunit-testingmocking-in-asp.net-mvc/20102f32fguestbook.zip
+    post/think.in-infodose-40-5th-august---16th-august/image.png
+    >>>
+    >>> with open('image.png','w') as out_file:
+    ...     with fs.open('post/debugging-ironpython-with-my-excalibur/image.png') as in_file:
+    ...             out_file.write(in_file.read())
+    ...
+
+
+Now to some C# (mono) and a controller class for a basic web application to
+view the data. It serves files found in the database, but only sends bach the
+correct MIME type for "image/png". Lazy.
+
+
+    #!/usr/bin/csharp
+    public class HomeController : Controller
+    {
+        BlogRepository _blogRepository;
+
+        public HomeController()
+        {
+            _blogRepository = new BlogRepository();
+        }
+
+        public ActionResult Index ()
+        {
+            ViewData["posts"] = _blogRepository.GetPosts();
+            return View ();
+        }
+
+        public ActionResult Entry(string id)
+        {
+            ViewData["post"] = _blogRepository.GetById(id);
+            return View ();
+        }
+
+        public ActionResult Resource(string slug, string fileName)
+        {
+            return new FileStreamResult(_blogRepository.GetFile( "post/" + slug + "/" + fileName ), "image/png");
+        }
+    }
+
+
+This is a very basic repository that provides the data for the demo
+application. I did only enough with the C# provider to get it working and try
+to disconnect my connections.
+
+
+    #!/usr/bin/csharp
+    public class BlogRepository
+    {
+        Mongo _mongo;
+
+        public BlogRepository()
+        {
+            string connstr = ConfigurationManager.AppSettings["connectionString"];
+            _mongo = new Mongo(connstr);
+        }
+
+        public Stream GetFile(string name)
+        {
+            try
+            {
+                _mongo.Connect();
+                var db = _mongo["files"];
+                var fs = new GridFile(db);
+                Stream data = fs.Open(name, FileMode.Open, FileAccess.Read);
+                Stream output = new MemoryStream();
+                CopyStream(data,output);
+                output.Seek(0,SeekOrigin.Begin);
+                return output;
+            }
+            finally
+            {
+                _mongo.Disconnect();
+            }
+        }
+
+        public List<Document> GetPosts()
+        {
+            try
+            {
+                _mongo.Connect();
+                var db = _mongo["working"];
+                var posts = db["posts"];
+                using(ICursor all = posts.Find(new Document())){
+                    return all.Documents.ToList();
+                }
+            }
+            finally
+            {
+                _mongo.Disconnect();
+            }
+        }
+
+        public Document GetById(string id)
+        {
+            try
+            {
+                _mongo.Connect();
+                var db = _mongo["working"];
+                var posts = db["posts"];
+                Document doc = posts.FindOne( new Document() {{ "_id" , new Oid(id) }} );
+                return doc;
+            }
+            finally
+            {
+                _mongo.Disconnect();
+            }
+        }
+
+        public static void CopyStream(Stream input, Stream output)
+        {
+            byte[] buffer = new byte[32768];
+            while (true)
+            {
+                int read = input.Read (buffer, 0, buffer.Length);
+                if (read <= 0)
+                    return;
+                output.Write (buffer, 0, read);
+            }
+        }
+    }
+
+
+So that's where I got for my demo for the DevEvenings ORM Smackdown. No doubt
+I will continue looking into MongoDB and other object/document databases.
+
+   [1]: https://tarnbarford.net/static/journal/devevening_nosql/2010_4_no_sql.odp

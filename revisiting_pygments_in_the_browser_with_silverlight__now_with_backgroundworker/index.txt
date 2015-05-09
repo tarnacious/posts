@@ -1,0 +1,127 @@
+A couple of week ago I [blogged][1] about using [Pygments][2] to do live
+syntax highlighting in the browser using Silverlight.
+
+A major problem with the sample was that it did the pygmentizing on the UI
+thread which caused most browsers to become unresponsive. Today I wanted to
+fix that by using the [BackgroundWorker][3] to do the pygmentizing in a
+background thread.
+
+Firstly I refactored the pygmentizing into a method that didn't interact with
+the UI.
+
+    #!/usr/bin/python
+    def pygmentize_text(self, text, language):
+
+        # attempt to pygmentize input with current language
+        try:
+
+            from pygments import highlight
+            from pygments.lexers import get_lexer_by_name
+            from pygments.formatters import HtmlFormatter
+
+            lexer = get_lexer_by_name( language, stripall=True)
+            formatter = HtmlFormatter(linenos=False, cssclass="source")
+            markup = highlight(text, lexer, formatter)
+            return markup
+
+        except:
+
+            return "Error Generating Markup"
+
+
+I then added a method that could be passed into a DoWorkEventHandler. It gets
+it arguments as a tuple from the event arguments and then sets the event
+argument result with the marked up HTML. The lack of explicit typing and use
+of tuples is good example of how some python idioms can be used when working
+with the .NET framework.
+
+
+    #!/usr/bin/python
+    def worker(self, sender, e):
+
+        # do work off UI thread.
+        e.Result = self.pygmentize_text(e.Argument[0],e.Argument[1])
+
+
+The required BackgroundWorker and DoWorkEventHandler can be simply imported
+from the System.ComponentModel namespace.
+
+
+    #!/usr/bin/python
+    from System.ComponentModel import BackgroundWorker, DoWorkEventHandler
+
+
+The BackgroundWorker can then be setup and started. Again it's syntactically
+nice how the tuple can be created and passed as a RunWorkerAsync parameter.
+
+
+    #!/usr/bin/python
+    def start_pygmentize(self):
+
+        # update application state
+        self.input_changed = False
+        self.pygmentizing = True
+        self.show_message("pygmentizing..")
+
+        # get paremters
+        input = self.input.GetProperty("value")
+        language = self.language.value
+
+        # setup background worker
+        worker = BackgroundWorker()
+        worker.DoWork += DoWorkEventHandler(self.worker)
+        worker.RunWorkerCompleted += self.complete
+
+        # start the worker
+        worker.RunWorkerAsync( (input,language) )
+
+
+The completed event handler is the responsible for taking the markup generated
+by the BackgroundWorker and updating the DOM. It also fires off another worker
+if the source has changed since the last worker started.
+
+
+    #!/usr/bin/python
+    def complete(self, sender, e):
+
+        if e.Error:
+
+            # handle errors/exceptions in worker
+            self.source.SetProperty("innerHTML",e.Error.Message)
+
+        else:
+
+            # show the result
+            self.source.SetProperty("innerHTML",e.Result)
+
+        if self.input_changed:
+
+            # input has changed, starty pygmentize again
+            self.start_pygmentize()
+
+        else:
+
+            # no work queued
+            self.pygmentizing = False
+            self.hide_message()
+
+
+The update has made the sample much more responsive, however it appears
+downloading the Silverlight application is still causing some browers to
+become a little unresponsive which is annoying. I will be interested to find
+out if this effect can be mitigated.
+
+The actually pygmentizing processing could possibly be made a little faster by
+reusing the BackgroundWorker and only doing the Pygment imports once but the
+responsiveness of the browser has improved the sample enormously.
+
+Check out the updated demo [here][4].
+
+   [1]: http://blog.sharpthinking.com.au/post/2010/01/31/Pygments-in-the-browser-with-Silverlight.aspx
+
+   [2]: http://www.google.com.au/url?sa=t&source=web&ct=res&cd=1&ved=0CAgQFjAA&url=http%3A%2F%2Fpygments.org%2F&ei=8IV_S8e6CIHUsgPtofz1Aw&usg=AFQjCNGVIxeCqQ14mGgLNznFat5nyACb5Q
+
+   [3]: http://msdn.microsoft.com/en-us/library/system.componentmodel.backgroundworker%28VS.95%29.aspx
+
+   [4]: http://markdown-madness.appspot.com/silverlight-pygments
+

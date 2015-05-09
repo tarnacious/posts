@@ -1,0 +1,94 @@
+--- application.js.orig	2014-03-14 12:10:53.575520957 +0100
++++ application.js	2014-09-11 15:11:26.393896754 +0200
+@@ -446,6 +446,77 @@
+   return key;
+ }
+ 
++
++function new_ticket_templates() {
++    
++    var templates = [
++        [ 
++            "h1. Description",
++            "",
++            "* Summary:",
++            "* What happend:",
++            "* Whats the Error:",
++            "* Steps to reproduce:",
++            "* Expected results:",
++            "* Actual results:",
++            "* Supporting Informations:",
++            "",
++            "h1. Additional Information",
++            "",
++            "* Can it be reproduced?: yes/no",
++            "* Tested Platform: ",
++            "* Tested Browser:"
++        ].join("\n"),
++        "",
++        "",
++        "",
++        "",
++        "",
++        [
++            "As a <user type>, I want to <function> so that <benefit>.",
++            "",
++            "h2. Acceptance Criteria",
++            "",
++            "* lorem ipsum",
++            "* ...",
++            "",
++            "h2. Definition of Done",
++            "",
++            "* lorem ipsum",
++            "* ..."
++        ].join("\n")
++    ]; 
++
++    var get_template = function(index) {
++        if (index <= templates.length) {
++            return templates[index];
++        };
++        return "";
++    }
++
++    var is_template = function(s) {
++        for(var i = 0; i < templates.length; i++) {
++            if (s == templates[i]) {
++                return true;
++            }
++        }
++        return false;
++    }
++
++    var description = $("#issue_description").val();
++    var issue_type = parseInt($("#issue_tracker_id").val()) - 1; 
++
++    if (description == "" || is_template(description)) {
++        $("#issue_description").val(get_template(issue_type));
++    }
++};
++
++function initial_new_ticket_templates() {
++    if (window.location.toString().endsWith("issues/new")) {
++        new_ticket_templates();
++    }
++}
++
+ function updateIssueFrom(url) {
+   $('#all_attributes input, #all_attributes textarea, #all_attributes select').each(function(){
+     $(this).data('valuebeforeupdate', $(this).val());
+@@ -455,6 +526,7 @@
+     type: 'post',
+     data: $('#issue-form').serialize()
+   });
++  new_ticket_templates();
+ }
+ 
+ function replaceIssueFormWith(html){
+@@ -611,4 +683,4 @@
+ $(document).ready(hideOnLoad);
+ $(document).ready(addFormObserversForDoubleSubmit);
+ $(document).ready(defaultFocus);
+-
++$(document).ready(initial_new_ticket_templates);

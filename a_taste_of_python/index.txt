@@ -1,0 +1,118 @@
+I'm on a bit of a break and generally enjoying a holiday from programming, but
+I am spending a couple of hours here and there learning some Python. I think
+learning a new programming language is a good way to improve my general
+development skills and knowledge. As I'm just learning and not under pressure
+to actually build something its quite a lot of fun.
+
+I decided to learn either Python or Ruby. I understand both are fairly modern
+high level languages, both are considered fun languages to use by their
+advocates and both been implemented on top of the .NET dynamic runtime.
+
+I would like to try Ruby on Rails but I felt while I was on break from
+programming, learning a new language and a new web framework was a bit much. I
+decided on Python, mostly because I like the name, but also as I understand
+Python has found use in all sorts of environments and for all sorts of
+purposes including scientific computation, robotics, game development, and
+business and web applications.
+
+I found [Dive into Python][3] to be awesome book for Java, C#
+and C++ developers wanting to learn the Python language. And its free online
+for browsing and downloading! I think it is very succinct in only explaining
+what you need to know about the language, which makes it very readable.
+
+I was pretty excited about getting into IronPython after watching these two
+[videos][4] from TechEd 2007 in Orlando. There is lots of interesting
+information about IronPython and the Dynamic Language Runtime but there are
+also some really cool demos.
+
+From the interactive console, Merlin (who apparently lives in all recent
+versions of windows as a COM control) is summoned and instructed to do all
+sorts of stuff, a Windows Form is created and run and then controls and events
+are added while its running! There are also demos of Iron Python with Visual
+Studio, ASP.NET and Silverlight. They kind of sold me on IronPython for now.
+
+[IronPython 2][6] has recently been released on CodePlex and its a pretty
+straight forward download and install. Slightly surprisingly it only contains
+a command line compiler, an interactive console, some libraries and sample
+applications.
+
+There is also a project called [IronPython Studio][7] which is a Visual
+Studios extension to add support for IronPython development and debugging. I'm
+going to start with just the base install and [Notepad 2][8] because I know
+you can do some pretty cool with it and I'd like to see how it all works.
+
+Although IronPython is apparently compliant with the Python language, the
+standard library, which is considered very powerful and extensive, is not
+completely implemented. This basically means most Python code that makes use
+of the standard library won't work in IronPython. Fortunately you can use most
+of the .NET framework from IronPython meaning there is a pretty rich framework
+available.
+
+I hope it is possible to implement the entire standard library on top of the
+.NET framework, this would mean more Python code would work in IronPython and
+IronPython code that didn't directly call into the .NET framework would run on
+other platforms.
+
+As I'm happy to use IronPython and the .NET framework there is a great
+resource called the [IronPython Cookbook][9] which has heaps of examples of
+common programming tasks in IronPython and information about using IronPython
+in different environments from the Microsoft Robotics kit to the XNA
+framework.
+
+I was hoping to write about some examples in this post, but its become much
+longer than I expected and I might wrap it up with some links I have found
+useful or interesting along the way.
+
+[Introducing IronPython][10] - A good article from DevX
+
+[Revolver Systems][11] - An interesting spread sheet / IronPython mash-up.
+
+[IronPython and the Dynamic Language Runtime][12] - An MSDN article by Bill
+Chiles
+
+[IronPython and ASP.Net: Two tastes that taste great together][13] - A brief
+article from ZDNet
+
+[IronPython and WPF ][14]- Just one of many great article from DevHawk which
+I've since added to my RSS feed reader.
+
+[CLR Inside Out - IronPython][15] - Another good MSDN by James Schementi
+
+[The Voidspace IronPython Pages][16] - A collection of IronPython resources
+
+[IronPython in Action][17] - A book I haven't read and probably won't buy, but
+may be of interest to others
+
+Hope you've found this interesting, I'm having a lot of fun and looking
+forward to getting back to hacking some more IronPython.
+
+Please feel free to add a comment or point out any incorrect information.
+
+   [3]: http://diveintopython.org/
+
+   [4]: http://blogs.msdn.com/ironpython/archive/2007/06/18/videos-of-the-talks-demos-from-teched2007-in-orlando.aspx
+
+   [6]: http://www.codeplex.com/IronPython
+
+   [7]: http://www.codeplex.com/IronPythonStudio
+
+   [8]: http://www.flos-freeware.ch/notepad2.html
+
+   [9]: http://www.ironpython.info/index.php/Main_Page
+
+   [10]: http://www.devx.com/codemag/Article/39904
+
+   [11]: http://www.resolversystems.com/ (http://www.resolversystems.com/)
+
+   [12]: http://msdn.microsoft.com/en-us/magazine/cc163344.aspx
+
+   [13]: http://blogs.zdnet.com/microsoft/?p=88
+
+   [14]: http://devhawk.net/2008/11/24/IronPython+And+WPF+Part+5+Interactive+Console.aspx
+
+   [15]: http://msdn.microsoft.com/en-us/magazine/cc300810.aspx
+
+   [16]: http://www.voidspace.org.uk/ironpython/index.shtml
+
+   [17]: http://www.ironpythoninaction.com/
+

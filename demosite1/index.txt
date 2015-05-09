@@ -1,0 +1,6 @@
+Create a very basic flask app, with a sane setup.py.
+
+
+
+
+http://www.plankandwhittle.com/packaging-a-flask-app-in-a-debian-package/

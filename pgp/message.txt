@@ -1,0 +1,6 @@
+I just learnt how to use PGP/GPG to sign messages, encrypt
+message for people and decrypt messages encrypted for me!
+
+If you haven't learnt about PGP yet, maybe you should. It's fun,
+easy and very useful if you want some Pretty Good Privacy.
+

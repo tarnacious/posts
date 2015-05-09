@@ -1,0 +1,52 @@
+This article is part of a series of posts about various aspects of writing web
+controls for ASP.Net using an ad rotator as an example. The [AdRotator
+WebControl Example][1] post has links to related posts and downloads.
+
+The AdRotator has several scripts which it emits in the output. I wanted the
+AdRotator completely encapsulated in a single "dll" file. I choose to embed
+the scripts in the assembly and read them back at run time. I could have
+included the scripts in the code as a string but I feel having escaped script
+declarations in code is more difficult to read and maintain. It also makes it
+difficult for the IDE to provide intellisense.
+
+Its easy to embed a file included in a project into the projects output
+assembly. The setting can be found by selecting properties of the file you
+want embed and selecting "Embedded Resource" as the "Build Action".
+
+[embed_resource_example][1]
+
+The file can be read back as a stream by reflecting the assembly and getting
+the resource by name. Below is an example of reading a resource by name into a
+string.
+
+    private string GetResourceString(string resourceName)
+    {
+        Assembly assembly = GetType().Assembly;
+        string resourceFullName = string.Format("{0}.{1}", assembly.GetName().Name, resourceName);
+        string resourceString;
+
+        using (Stream stream = assembly.GetManifestResourceStream(resourceFullName))
+        {
+            TextReader reader = new StreamReader(stream);
+            resourceString = reader.ReadToEnd();
+            reader.Close();
+        }
+
+        return resourceString;
+    }
+
+
+As far as the code above goes, if it was a more professional application the
+method would be protected by a unit tested wrapper with application specific
+exception handling.
+
+There is a [free tool][4] created by the Sells Brothers you can use to view
+the resources embedded in an assembly that may be useful.
+
+
+   [1]: /journal/adrotator-webcontrol-example
+
+   [3]: /image.axd?picture=WindowsLiveWriter/AdRotatorEmbeddingresourcesintheassembly_E872/embed_resource_example_2.jpg
+
+   [4]: http://www.sellsbrothers.com/tools/#resourceE
+

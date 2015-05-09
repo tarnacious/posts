@@ -1,0 +1,82 @@
+<div class="entry">
+<p>On the topic of setting up tables on Windows Azure <a href="http://blog.smarx.com/">Steve Marx</a> <a href="http://blog.smarx.com/posts/try-to-create-tables-only-once">writes</a></p> <blockquote> <p>Probably the best solution is to have separate initialization code that creates your tables.&nbsp; This is analogous to the pattern of having CREATE TABLE commands scripted in T-SQL which you run once to set up the database.</p></blockquote> <p>In another post <a href="http://blogs.msdn.com/ploeh/default.aspx">Mark Seemann</a> extends on this and demonstrates <a href="http://blogs.msdn.com/ploeh/archive/2008/12/04/creating-azure-tables-from-script.aspx">creating tables with a PowerShell script</a> and writes</p> <blockquote> <p>You could obviously write a little utility that references StorageClient and your custom TableStorageDataServiceContext.  </p><p>Another, in my opinion, better option for such a one-off script is a PowerShell script</p></blockquote> <p>I agree but I think you can actually take this a lot further. In my experience working on enterprise applications it is also common to use one-off SQL scripts to add, update, maintain and manage data. The problem with this is you often have a very good ORM available which has logic to protect the state of the data and the business requirements. I feel that if you can also expose these business objects to a scripting environment, you potentially have a very powerful way of managing your enterprise information. This is probably even more relevant in the cloud data services where there is no equivalent of low level T-SQL you can optimize, you can have full control from scripting environment with the tools and armour of your enterprise objects.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </p> <p>Anyway, enough rambling. In my previous post I demonstrated <a href="http://blog.sharpthinking.com.au/post/2009/02/20/Azure-Table-Storage-in-IronPython.aspx">working with Azure table storage data in IronPython</a>, and briefly glossed over creating the tables. In this post I'm going to walk through dynamically creating table in the cloud with IronPython and what currently needs to be done to get them working on the local development storage server.&nbsp; </p> <p>I'm going to create some of my own customs tables and some tables for the standard providers (Membership, Roles and Session) as I am building a simple MVC application for the cloud. I've got DataModels.dll with my custom models and the AspProviders.dll from the Azure SDK Samples with the standard provider models. All the models extend TableStorageEntity. </p> <p>Both assemblies also extend TableStorageDataServiceContext classes which are similar to the DataContext class in Linq2Sql. They have IQueryable&lt;T&gt; fields templated to model classes, which represent tables. The base class has additional functionality for tracking, adding, deleting and saving model objects. We will be able to create tables by reflecting these TableStorageDataServiceContext classes.</p> <p>&nbsp;</p> <h3>Creating a database the local development storage server</h3> <p>Unfortunately a current restriction of the local development storage server is that you can't dynamically create tables. To create tables on the local development server the DevTableGen.exe tool is used.</p> <div style="border-right: gray 1px solid; padding-right: 4px; border-top: gray 1px solid; padding-left: 4px; font-size: 8pt; padding-bottom: 4px; margin: 20px 0px 10px; overflow: auto; border-left: gray 1px solid; width: 97.5%; cursor: text; max-height: 200px; line-height: 12pt; padding-top: 4px; border-bottom: gray 1px solid; font-family: consolas, 'Courier New', courier, monospace; background-color: #f4f4f4"><pre style="padding-right: 0px; padding-left: 0px; font-size: 8pt; padding-bottom: 0px; margin: 0em; overflow: visible; width: 100%; color: black; border-top-style: none; line-height: 12pt; padding-top: 0px; font-family: consolas, 'Courier New', courier, monospace; border-right-style: none; border-left-style: none; background-color: #f4f4f4; border-bottom-style: none">DevTableGen /database:TarnsDevDB /forceCreate AspProviders.dll;DataModels.dll</pre></div>
+<p>Which should produce an output like below, indicating that the tables had been created. You can see the provider model tables and my custom tables have been created.</p>
+<div style="border-right: gray 1px solid; padding-right: 4px; border-top: gray 1px solid; padding-left: 4px; font-size: 8pt; padding-bottom: 4px; margin: 20px 0px 10px; overflow: auto; border-left: gray 1px solid; width: 97.5%; cursor: text; max-height: 200px; line-height: 12pt; padding-top: 4px; border-bottom: gray 1px solid; font-family: consolas, 'Courier New', courier, monospace; background-color: #f4f4f4"><pre style="padding-right: 0px; padding-left: 0px; font-size: 8pt; padding-bottom: 0px; margin: 0em; overflow: visible; width: 100%; color: black; border-top-style: none; line-height: 12pt; padding-top: 0px; font-family: consolas, 'Courier New', courier, monospace; border-right-style: none; border-left-style: none; background-color: #f4f4f4; border-bottom-style: none">Windows(R) Azure(TM) Development Table database generation tool version 1.0.0.0
+for Microsoft(R) .NET Framework 3.5
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+DevTableGen : Generating database 'TarnsDevDB'
+DevTableGen : Generating table 'Membership' for type 'Microsoft.Samples.ServiceHosting.AspProviders.MembershipRow'
+DevTableGen : Generating table 'Roles' for type 'Microsoft.Samples.ServiceHosting.AspProviders.RoleRow'
+DevTableGen : Generating table 'Sessions' for type 'Microsoft.Samples.ServiceHosting.AspProviders.SessionRow'
+DevTableGen : Generating table 'PostTable' for type 'DataModels.PostDataModel'
+DevTableGen : Generating table 'CommentTable' for type 'DataModels.PostDataModel 
+</pre></div>
+<p>UI for development storage server should be found in the task bar. As it only supports one concurrent database, you may have to select the database just created.</p>
+<p><img style="border-top-width: 0px; border-left-width: 0px; border-bottom-width: 0px; border-right-width: 0px" height="285" alt="image" src="image_3.png" width="478" border="0" /> </p>
+<h3>Dynamically managing a database in the cloud</h3>
+<p>I created a simple IronPython helper module to assist creating and managing the table schema in the cloud. Like in the previous post, it's built on the StorageClient library that ships with the Windows Azure SDK. You'll notice that its expecting the StorageClient assembly to be in one of its script paths. </p>
+<p>There was some frustration writing it; All the TableStorageDataServiceContext classes are internal, this meant I had to write the LoadFromAssembly method and do some reflection to get the types. </p>
+<div style="border-right: gray 1px solid; padding-right: 4px; border-top: gray 1px solid; padding-left: 4px; font-size: 8pt; padding-bottom: 4px; margin: 20px 0px 10px; overflow: auto; border-left: gray 1px solid; width: 97.5%; cursor: text; max-height: 200px; line-height: 12pt; padding-top: 4px; border-bottom: gray 1px solid; font-family: consolas, 'Courier New', courier, monospace; background-color: #f4f4f4"><pre style="padding-right: 0px; padding-left: 0px; font-size: 8pt; padding-bottom: 0px; margin: 0em; overflow: visible; width: 100%; color: black; border-top-style: none; line-height: 12pt; padding-top: 0px; font-family: consolas, 'Courier New', courier, monospace; border-right-style: none; border-left-style: none; background-color: #f4f4f4; border-bottom-style: none">import clr
+clr.AddReference("StorageClient.dll")
+from Microsoft.Samples.ServiceHosting.StorageClient import *
+from System.Reflection import Assembly
+from System import Uri
+
+class Account():
+   def __init__(self):
+      self.endPointUri = Uri("http://127.0.0.1:10002/")
+      self.accountName = 'devstoreaccount1'
+      self.accountSharedKey = 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=='
+
+class TableHelper():
+   def __init__(self, account):
+      self.account = account
+      self.storageInfo = StorageAccountInfo(account.endPointUri, None, account.accountName, account.accountSharedKey)
+      self.tableStorage = TableStorage.Create(self.storageInfo)
+   def AddTables(self, dataServiceContext):
+      TableStorage.CreateTablesFromModel(dataServiceContext, self.storageInfo)
+   def DeleteAllTables(self):
+      for t in self.tableStorage.ListTables():
+         self.tableStorage.DeleteTable(t)
+   def PrintTables(self):
+      for t in self.tableStorage.ListTables():         
+         print t
+   def LoadFromAssembly(self,assemblyName):
+      # A bit of screwing round with reflection, because the types we want are internal
+      assembly = Assembly.LoadFrom(assemblyName)
+      baseType = TableStorageDataServiceContext
+      contexts = filter(lambda t : t.BaseType == baseType, assembly.GetTypes())
+      for context in contexts:
+         print context
+         self.AddTables(context)</pre></div>
+<p>Using this module we can easily create and manage tables from the IronPython interactive console, or with a script. Below is an example (with the credentials removed)</p>
+<div style="border-right: gray 1px solid; padding-right: 4px; border-top: gray 1px solid; padding-left: 4px; font-size: 8pt; padding-bottom: 4px; margin: 20px 0px 10px; overflow: auto; border-left: gray 1px solid; width: 97.5%; cursor: text; max-height: 200px; line-height: 12pt; padding-top: 4px; border-bottom: gray 1px solid; font-family: consolas, 'Courier New', courier, monospace; background-color: #f4f4f4"><pre style="padding-right: 0px; padding-left: 0px; font-size: 8pt; padding-bottom: 0px; margin: 0em; overflow: visible; width: 100%; color: black; border-top-style: none; line-height: 12pt; padding-top: 0px; font-family: consolas, 'Courier New', courier, monospace; border-right-style: none; border-left-style: none; background-color: #f4f4f4; border-bottom-style: none"># load the helper module
+from AzureTableHelper import *
+
+# create an account and set creadentials
+account = Account()
+account.endPointUri = Uri('[Table Storage Url]')
+account.accountSharedKey = '[Shared Key]'
+account.accountName = '[Account Name]'
+
+# create the helper with the account details
+tableHelper = TableHelper(account)
+
+# delete tables
+tableHelper.DeleteAllTables()
+
+# load tables from the AspProviders assembly 
+tableHelper.LoadFromAssembly("AspProviders.dll")
+
+# load tables from the DataModels assembly
+tableHelper.LoadFromAssembly("DataModels.dll")
+
+# print all the tables to the console
+tableHelper.PrintTables()</pre></div>
+<p>There is a limitation of scripting tables this way as <a href="http://blogs.msdn.com/ploeh/default.aspx">Mark Seemann</a>&nbsp;<a href="http://blogs.msdn.com/ploeh/archive/2008/12/04/creating-azure-tables-from-script.aspx">notes</a>, </p>
+<blockquote>
+<p>Currently, the script has one limitation: Deleting a table using the StorageClient API only marks the table for deletion, so the operation returns much to soon. This means that if you are trying to recreate a table by the same name, a conflict will occur, and the table will not be created. You can work around this limitation by waiting a little while and then run the script again.</p></blockquote>
+<p>I think this part of the Azure framework is pretty exciting and I'm looking forward to checking out other parts. </p>
+<br />
+</div>

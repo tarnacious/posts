@@ -1,0 +1,30 @@
+This article is part of a series of posts about various aspects of writing web
+controls for ASP.Net using an ad rotator as an example. The [AdRotator
+WebControl Example][1] post has links to related posts and downloads.
+
+The AdRotator needs to insert a class definition script in the output once,
+even if multiple AdRotator controls are declared on the page. It also needs to
+insert a script that instantiates that class prototype for every AdRotator
+control on the page. Fortunately there are static methods on the
+System.Web.UI.Page object that will do this for us.
+
+    Page.ClientScript.RegisterStartupScript(Type type, string key, string script)
+
+The keys here a crucial, there is only one script rendered for each key. If we
+inject the definition script with a static key it means no matter how many
+instances control try to register it, only one instance of script will be sent
+to the output.
+
+To to insert a unique script for every instance of the AdRotator we need to
+use a unique key. I use the server side controls ClientId property which will
+be difference for every instance of the control on any page. You could also
+use a GUID.
+
+This is clearly the weakest post of all the posts about the AdRotator. I just
+kind of got this working an never really got very inspired to learn anything
+else about it. I posted it anyway as I felt I did need to cover this topic for
+completeness of the series. I'll try to update it soon.
+
+
+   [1]: /journal/adrotator-webcontrol-example
+

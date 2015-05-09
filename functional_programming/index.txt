@@ -1,0 +1,294 @@
+### **The Problem, The Opportunity**
+
+
+Brodie and my initiatives in the area of search have been rewarded by
+management with a two week project to improve search on our sites. In the two
+weeks we also intend to fix one of the darkest corners of the code base, the
+Product/Site publishing logic, which is the main reason the search needs
+revisiting. We couldn't get the two weeks just to improve infrastructure, so
+we promised sub one second search results and better relevance as a carrot.
+
+The web application powers multiple sites (>100) and has lots of products
+(>100,000). There needed to be some way of controlling what products belonged
+to what site. As products can appear on multiple sites and new sites are
+constantly being added, this is not trivial. The solution implemented is a
+site publishing rules system. Products can be **_excluded_** from a site by
+Classification, Product or Brand.
+
+So far the logic is pretty simple, but another type of rule was also added.
+Products, Classifications and Brands can also be made **_specific_** to a site
+(they can actually be made specific to multiple sites). The logic is that a
+Product, Classification or Brand that is specific to a site will appear on
+that site, but not on other sites. In my opinion this is kind of crazy, but
+the thinking is; If you have a very specific product that should only be
+published on one or two sites, its easier to make it specific to those two
+sites rather than excluding it from every other site and new sites. Ok, fair
+enough.
+
+The problem is that this logic is scattered through all our layers down to the
+database. There is duplication of logic over separate layers causing
+maintenance problems and it has been identified as a clear performance bottle-
+neck of any product list retrieval operation.
+
+The scope of this prototype is a quick, robust, maintainable and fully unit
+tested solution that implements the product site publish logic.
+
+### **Database**
+
+
+These rules are held in 6 SQL joining tables, which I think is interesting
+itself. The primary keys are not unique across products, brands and
+classifications meaning to enforce referential integrity and not allow nulls
+you **do** need a few tables. While I think this is a very good argument to
+have primary keys unique across all your database objects, its not always an
+option.
+
+We could also have used 3 tables by combining the excluded and specific tables
+and adding a flag or lookup id. I think less is better, less tables means we
+can be more flexible with how we manipulate the data in code. Even in T-SQL I
+think I'd prefer less tables, less joins and more where statements - de-
+normalized. But that just my opinion in this scenario.
+
+As I move this logic out of the database and into managed code I'll end up
+abstracting the data to one table anyway, for this prototype it doesn't matter
+how the rules are created or persisted.
+
+### **Functional Languages**
+
+
+Now back to the title of this post, I think this problem is really suited to
+functional programming. I've become more interested in functional programming
+after listening to a [Heading Code pod cast with Matt Podwysocki][1]. My
+experience with functional programming is limited and I've never found it very
+exciting. I learnt a bit of Haskel to help a mate with a computer science
+subject he was doing, but I was never really going to get to into it. At that
+time I believed all languages were inferior to C++.
+
+As I've become more involved in software development I think its more
+important to use other languages. There is an inevitability that your language
+of choice will be relegated to legacy tasks as newer languages emerge better
+suited modern computing and user experience. C# code making heavy use of
+generics, extension methods, anonymous delegates and LINQ is just not the same
+language as the C# that rolled out with .Net 1.0. Dynamic and functional
+languages are becoming first class citizens.
+
+I'm not actually going to write this in F# for now, but I think the way I've
+implemented my solution in C# is very functional although I leverage some OO
+concepts I might not be able to use in a strictly functional language.
+
+
+### **Solution Overview**
+
+
+Instead of having all these separate lists of rules I've just created one list
+which can be queried. It makes heavy use of what Rob Conery described as a
+Pipes and Filters pattern in the ASP.NET MVC Storefront series. The pipes and
+filters are implemented as extension methods that add filters and data
+transformations. A collection of these small and easily testable extension
+methods can be used to build very powerful data retrieval and processing
+constructs to clearly describe business logic.
+
+The scope of the prototype is really just a single function that implements
+the site publishing logic described earlier. It takes a Product, Site and List
+of Rules as parameters and returns the publish rule.
+
+As soon as I started thinking about a solution to the problem I knew there was
+one thing I didn't want to do. I could see there was potentially a lot of
+repeated code for calling logic for products, classifications and brands
+individually. There is no need as it is the same logic that needs to be
+applied to each. I wanted to find a more elegant solution. I used an object
+orientated solution; the Rule class itself is abstract and is inherited by
+ProductRule, ClassificationRule and BrandRule.
+
+
+    public abstract class Rule
+    {
+        public int SiteId { get; set; }
+        public RuleType Type { get; set; }
+        public int Value;
+        public abstract bool Compare(Product product);
+    }
+
+The only thing implemented by the specific rule classes is how to bind the
+Value to a property on the Product class.
+
+    public class ClassificationRule : Rule
+    {
+        public override bool Compare(Product product)
+        {
+            return (Value == product.ClassificationId);
+        }
+    }
+
+    public class ProductRule : Rule
+    {
+        public override bool Compare(Product product)
+        {
+            return (Value == product.ProductId);
+        }
+    }
+    ..
+
+
+I could have implemented this in a more functional way, but it does seem like
+a clean solution given I am using C#.
+
+### **Testing the Bits and Pieces **
+
+Testing the extension methods is easy with such simple domain objects. For
+most of the extension methods I only wrote a couple of small tests like this:
+
+
+    [TestMethod]
+    public void FromSite_ReturnsSiteRule()
+    {
+        List<Rule> rules = new List<Rule>() { { new ProductRule() { SiteId = 1} } };
+        Assert.AreEqual(1, rules.FromSite(1).Count());
+    }
+
+    [TestMethod]
+    public void FromSite_FiltersSiteRule()
+    {
+        List<Rule> rules = new List<Rule>() { { new ProductRule() { SiteId = 1} } };
+        Assert.AreEqual(0, rules.FromSite(2).Count());
+    }
+
+I used LINQ constructs rather than the trusty delegates I use everywhere else
+for the extension methods. I like it, its clear and easy to read. And this is
+my point, its changed the language dramatically.
+
+    public static IEnumerable<Rule> FromSite(this IEnumerable<Rule> rules, int SiteId)
+    {
+        return from rule in rules
+               where rule.SiteId == SiteId
+               select rule;
+    }
+
+### **Generic Test Classes**
+
+
+I'm going to start using the the Microsoft Visual Studios Unit Test Framework.
+It means people who don't use the same testing framework flavour don't get
+build errors when they download code download and try to build it. As the
+attributes work with NUnit GUI and TestDriven.NET I'm happy to use it for now.
+I not sure if there is any mock testing support, but it does allow inheriting
+templated test methods.
+
+For the same reason I didn't want to write code that called product rules,
+classification rules and brand rules individually, I don't want to write tests
+for them individually either.
+
+
+    public class GenericSiteRulesTests<T>
+        where T : Rule
+    {
+        [TestMethod]
+        public void ProductWithNoRules_ProductIsReturned()
+        {
+            Assert.IsTrue(RuleLogic.ProcessRules(new Product(), new List<Rule>(), 1));
+        }
+
+        [TestMethod]
+        public void ProductIdCanBeExcluded_ExcludedProductIsNotReturned()
+        {
+            List<Rule> rules = new List<Rule>() {{ CreateRule(1,RuleType.Excluded, 0 )}};
+            Assert.IsFalse(RuleLogic.ProcessRules(new Product(), rules, 1));
+        }
+
+        ..
+
+    }
+
+
+The way this is done I think is pretty cool, I did something similar when I
+was looking at testing Text Search algorithms recently. All the generic rule
+tests are written in a generic test class which must be templated to a type
+the derives from Rule.  The class doesn't have a test class attribute. This is
+because the test classes we want to run are actually classes that inherit from
+the generic test class.
+
+
+    [TestClass]
+    public class ClassificationSiteRulesTests
+        : GenericSiteRulesTests<ClassificationRule>
+    {
+    }
+
+
+    [TestClass]
+    public class ProductSiteRulesTest
+        : GenericSiteRulesTests<ProductRule>
+    {
+    }
+
+
+    [TestClass]
+    public class BrandSiteRulesTest
+        : GenericSiteRulesTests<BrandRule>
+    {
+    }
+
+
+These classes do have the test class attributes. Although they are empty, they
+expose all the templated methods inherited from the generic test class. These
+methods can be executed by a test runner.
+
+
+  ![image][2]
+
+NUnit GUI has running all the tests.
+
+### **The Logic**
+
+
+Ok, so its not really "clear and easy to read", but it is very compact and
+concise.
+
+    public class RuleLogic
+    {
+        public static bool ProcessRules(Product product,  IEnumerable<Rule> rules, int siteId)
+        {
+            // return false if there is any exclusion rule that applies to this product
+
+            if (rules.FromSite(siteId)
+                     .WithType(RuleType.Excluded)
+                     .AppliesTo(product)
+                     .Count() > 0) return false;
+
+            // every rule type (ie ProductRule) that any site has a specific rule relating too
+            foreach (Type type in rules.WithType(RuleType.Specific)
+                                       .AppliesTo(product)
+                                       .RuleTypes())
+            {
+                // this product requires a specific rule of this type
+                if (rules.WithType(RuleType.Specific)
+                         .WithTarget(type)
+                         .FromSite(siteId)
+                         .AppliesTo(product)
+                         .Count() == 0) return false;
+            }
+
+            return true;
+        }
+    }
+
+
+### **Conclusion **
+
+It all seems fine, all the 33 tests are running and passing, coverage is at
+100%.. still I have some strange feeling there is still a critical bug in
+there, somewhere.
+
+![image][4]
+
+We'll wait and see Monday morning if the project will go ahead and this
+prototype can be extended into part of a production quality product publishing
+rules engine. Oh, and the sub 1 second product searching..
+
+
+   [1]: http://herdingcode.com/?p=45
+
+   [2]: https://tarnbarford.net/static/journal/functional_programming/nunit_gui.png
+
+   [4]: https://tarnbarford.net/static/journal/functional_programming/coverage.png
+

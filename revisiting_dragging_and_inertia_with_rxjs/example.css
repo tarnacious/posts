@@ -1,0 +1,19 @@
+.tile 
+{ 
+	height: 100px; 
+	width: 100px; 
+	position: absolute; 
+	background-color: white; 
+	background-image: url(velociraptor.jpg); 
+}
+
+#demo_container 
+{ 
+	height: 500px; 
+	width: 500px; 
+	background-color: grey; 
+	position: relative; 
+	margin-left: auto; 
+	margin-right:auto; 
+}
+

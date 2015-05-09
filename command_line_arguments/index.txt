@@ -1,0 +1,85 @@
+I still write heaps of little console applications to do all sorts of things.
+Most of the console applications I write are tools for tasks like deployment,
+manipulating data and processing images. Usually they are for my own use, if I
+find one really useful I might pass it on to the rest of our development team
+or publish it on this blog.
+
+For these little tools, I prefer using console applications over windows
+application as I feel they are more useful. Even though its easier to use a
+tool that has a little GUI, its not more useful if you ever want to automate
+it.
+
+Ideally I would prefer to write assemblies and use them from Powershell as it
+would provide the greatest usage flexibility. But it also requires competence
+scripting with Powershell. I was very excited about Windows Powershell when it
+was released, but a year on, I still haven't made it the integral part of my
+development toolset I thought it would be. This is an area I want to improve
+on, but this post is about command line arguments.
+
+Generally these little non production, internal applications are quite light
+weight and fit for purpose. I find I often write simple logging and command
+line processing that is also fit for purpose. This is fine, its usually very
+simple, quick to write and works. The problem is that I write this same
+functionality over and over again for each little application.
+
+I was toying with the idea of writing a generic command line parsing class. I
+figured I could use reflection on a settings class decorated with attributes
+describing the specific command line syntax. I figured I could even generate
+the help text using reflection too. While this seemed like a great idea, I am
+aware of time I've previously spent (wasted?) re-writing code where a
+perfectly good open source solution is available.
+
+So I did a search and found a couple of existing command line solutions. Not
+surprisingly, given they were both written in .NET 2.0+, they both used
+reflection and attributes. I ended up using the [Command Line Parser
+Library][1] from CodePlex. I'm not sure if it does everything, but it does
+everything I need for 99% of the console applications I write that require
+command line processing.
+
+Anyway here is all the code from my test application:
+
+
+    public class Options
+    {
+        [Option("r", "run", HelpText = "Run the export", Required = true)]
+        public bool Run;
+
+        [Option("n", "Name", HelpText = "Use a specific name")]
+        public string Name = String.Empty;
+
+        [HelpOption(HelpText = "Dispaly this help screen.")]
+        public string GetUsage()
+        {
+            HelpText help = new HelpText(new HeadingInfo("Hello WorldExample", "1.0.0"));
+            help.Copyright = new CopyrightInfo("sharpthinking", 2008);
+            help.AddPreOptionsLine("Usage: Hello --run");
+            help.AddOptions(this);
+            return help;
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Options options = new Options();
+            if (Parser.ParseArguments(args, options, Console.Error))
+            {
+                string name = string.IsNullOrEmpty(options.Name) ? "World" : options.Name;
+                Console.WriteLine("Hello {0}!", name);
+            }
+        }
+    }
+
+And we get the expected usage from the command line
+
+[image][3]
+
+Now I have to make sure I bundle the console applications with an external
+assembly, but it does make using command line arguments easy.
+
+
+   [1]: http://www.codeplex.com/commandline
+
+   [3]: http://blog.sharpthinking.com.au/image.axd?picture=WindowsLiveWriter/CommandLineArguments_AF9B/image_2.png
+

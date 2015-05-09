@@ -1,0 +1,18 @@
+Just a reminder that the String.Format parameters aren't magic, we can make
+methods with these parameters. Here is an example.
+
+
+    public string StringFormat(string format, params object [] parameters)
+    {
+          return string.Format(format, parameters);
+    }
+
+
+I actually can't think of any great uses for it now, but I do use it to expose
+string.Format style parameters on a LogMessage method in a custom logging
+tool. This makes the code cleaner where I was using string.Format before
+sending it to a LogMessage method as a string.
+
+Next week, Named Parameters! (well probably not, but if I ever use them.. )
+
+

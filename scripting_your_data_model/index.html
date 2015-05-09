@@ -1,0 +1,86 @@
+<div class="entry">
+<p>I really like the way you can script your data model from a python REPL console on the Django and the Google App Engine web frameworks.</p>
+<p>For me it is a hands down <a href="http://twitter.com/tarnacious/status/8841617430">better way</a> of working with data in your domain model than writing SQL.</p>
+<p>I've since wanted to <a href="http://twitter.com/tarnacious/status/8841455390">do it in .NET projects</a> I work on, but it wasn't till I was playing with Castle ActiveRecord yesterday that I decided I'd try it out.</p>
+<p>The <a href="http://martinfowler.com/eaaCatalog/activeRecord.html">ActiveRecord pattern</a> is an intuitive way of programming with data persistence, so it's also nice to script with.</p>
+<p>It turned out to be really easy in the project I was playing with. I didn't need to write a single additional line of C# as I already had the configuration decoupled for integration testing with an in-memory SQLite database.</p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">namespace</span> <span style="color: #0000FF; font-weight: bold">SimpleBlog.Data</span>
+{
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Configuration</span> : IBootstrapperTask
+    {
+        <span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">void</span> <span style="color: #0000FF">Execute</span>()
+        {
+            Configure(GetDefaultSettings());
+        }
+
+        <span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">void</span> <span style="color: #0000FF">Configure</span>(IDictionary&lt;<span style="color: #B00040">string</span>, <span style="color: #B00040">string</span>&gt; properties)
+        {
+            InPlaceConfigurationSource source = <span style="color: #008000; font-weight: bold">new</span> InPlaceConfigurationSource();
+            source.Add(<span style="color: #008000; font-weight: bold">typeof</span>(ActiveRecordBase), properties);
+            ActiveRecordStarter.Initialize(source);
+            ActiveRecordStarter.RegisterAssemblies(Assembly.GetExecutingAssembly());
+        }
+
+        ...
+    }
+}
+</pre></div>
+<p><br />
+I then just wrote this little script to help with the configuration, it uses the static method above and passes in the properties for working with a development database.</p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">clr</span>
+clr<span style="color: #666666">.</span>AddReferenceToFile(<span style="color: #BA2121">&quot;SimpleBlog.Data.dll&quot;</span>)
+
+<span style="color: #008000; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">System.Collections.Generic</span> <span style="color: #008000; font-weight: bold">import</span> Dictionary
+<span style="color: #008000; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">SimpleBlog.Data</span> <span style="color: #008000; font-weight: bold">import</span> Configuration
+
+<span style="color: #408080; font-style: italic"># NHibinate Setting</span>
+
+properties <span style="color: #666666">=</span> Dictionary[<span style="color: #008000">str</span>,<span style="color: #008000">str</span>]()
+
+properties<span style="color: #666666">.</span>Add(<span style="color: #BA2121">&quot;connection.driver_class&quot;</span>,
+               <span style="color: #BA2121">&quot;NHibernate.Driver.SqlClientDriver&quot;</span>);
+
+properties<span style="color: #666666">.</span>Add(<span style="color: #BA2121">&quot;dialect&quot;</span>,
+           <span style="color: #BA2121">&quot;NHibernate.Dialect.MsSql2005Dialect&quot;</span>);
+
+properties<span style="color: #666666">.</span>Add(<span style="color: #BA2121">&quot;connection.provider&quot;</span>,
+           <span style="color: #BA2121">&quot;NHibernate.Connection.DriverConnectionProvider&quot;</span>);
+
+properties<span style="color: #666666">.</span>Add(<span style="color: #BA2121">&quot;connection.connection_string&quot;</span>,
+           <span style="color: #BA2121">&quot;Data Source=[CONNECTION_STRING]&quot;</span>); <span style="color: #408080; font-style: italic"># Add</span>
+
+properties<span style="color: #666666">.</span>Add(<span style="color: #BA2121">&quot;proxyfactory.factory_class&quot;</span>,
+           <span style="color: #BA2121">&quot;NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle&quot;</span>);
+
+Configuration<span style="color: #666666">.</span>Configure(properties)
+</pre></div>
+<p><br />
+Using the helper script it's pretty easy to get in and start working with the data in the data model.  <br />
+</p>
+<div class="codehilite"><pre>IronPython <span style="color: #666666">2.6</span> (<span style="color: #666666">2.6.10920.0</span>) on <span style="color: #666666">.</span>NET <span style="color: #666666">2.0.50727.4927</span>
+Type <span style="color: #BA2121">&quot;help&quot;</span>, <span style="color: #BA2121">&quot;copyright&quot;</span>, <span style="color: #BA2121">&quot;credits&quot;</span> <span style="color: #AA22FF; font-weight: bold">or</span> <span style="color: #BA2121">&quot;license&quot;</span> <span style="color: #008000; font-weight: bold">for</span> more information<span style="color: #666666">.</span>
+<span style="color: #666666">&gt;&gt;&gt;</span> <span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">ActiveRecord</span>
+<span style="color: #666666">&gt;&gt;&gt;</span> <span style="color: #008000; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">SimpleBlog.Data.Models</span> <span style="color: #008000; font-weight: bold">import</span> <span style="color: #666666">*</span>
+<span style="color: #666666">&gt;&gt;&gt;</span>
+<span style="color: #666666">&gt;&gt;&gt;</span> post <span style="color: #666666">=</span> Post()
+<span style="color: #666666">&gt;&gt;&gt;</span> post<span style="color: #666666">.</span>Title <span style="color: #666666">=</span> <span style="color: #BA2121">&quot;Working with SQL sucks!&quot;</span>
+<span style="color: #666666">&gt;&gt;&gt;</span> post<span style="color: #666666">.</span>Content <span style="color: #666666">=</span> <span style="color: #BA2121">&quot;Try using a scripting langauge instead. It rocks!&quot;</span>
+<span style="color: #666666">&gt;&gt;&gt;</span> post<span style="color: #666666">.</span>Author <span style="color: #666666">=</span> <span style="color: #BA2121">&quot;tarn&quot;</span>
+<span style="color: #666666">&gt;&gt;&gt;</span> post<span style="color: #666666">.</span>Save()
+<span style="color: #666666">&gt;&gt;&gt;</span>
+<span style="color: #666666">&gt;&gt;&gt;</span> post<span style="color: #666666">.</span>Id
+<span style="color: #666666">2</span>
+<span style="color: #666666">&gt;&gt;&gt;</span>
+<span style="color: #666666">&gt;&gt;&gt;</span> posts <span style="color: #666666">=</span> Post()<span style="color: #666666">.</span>FindAll()
+<span style="color: #666666">&gt;&gt;&gt;</span>    
+<span style="color: #666666">&gt;&gt;&gt;</span> <span style="color: #008000; font-weight: bold">for</span> p <span style="color: #AA22FF; font-weight: bold">in</span> posts:
+<span style="color: #666666">...</span>     <span style="color: #008000; font-weight: bold">print</span> p<span style="color: #666666">.</span>Title, <span style="color: #BA2121">&quot;by&quot;</span>, p<span style="color: #666666">.</span>Author
+<span style="color: #666666">...</span>
+<span style="color: #BA2121">Hey, It&#39;s alive by tarn</span>
+<span style="color: #BA2121">Working with SQL sucks! by tarn</span>
+<span style="color: #666666">&gt;&gt;&gt;</span>
+</pre></div>
+<p><br />
+This is a simple example of a database agnostic data script using your domain model and a powerful scripting language. I think scripting data models like this could add a lot of value in many .NET development scenarios.</p>
+<br />
+</div>

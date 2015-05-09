@@ -1,0 +1,127 @@
+This article is part of a series of posts about various aspects of writing web
+controls for ASP.Net using an ad rotator as an example. The [AdRotator
+WebControl Example][1] post has links to related posts and downloads.
+
+### The Prototype
+
+I wanted the client side code to be as object orientated as possible.  I
+implemented the behaviour of our AdRotator as  a prototyped Javascript object,
+equivalent to a class definition in other OO languages. This means every
+instance of the AdRotator on a page only needs to be an instance of the ad
+rotator prototype.
+
+I create the anchor and image elements on the fly. I need the client side
+object to know about these elements to change them when the image changes. I
+could have created them in the server-side and passed their ids to find them
+in the DOM, or found them by looking through our containers child controls. In
+the end creating them on client side was just slightly easier.
+
+The images parameter is an array of objects that have ImageUrl, LinkUrl and
+DisplayTime properties. I pass it in as Json (Javascript object notion) that I
+generated on the server using a Json serializer. You'll see the Json later in
+this article, and I've also added an article about generating Json script on
+the server side.
+
+You notice the strange way setTimeout is called in the RotateAd function. It
+is all about Javascript scope and is far to big an issue to go into here. All
+I will say is that if I had used "this" instead on the "thisObject" which is
+set to "this" anyway, it might not point to this instance of this class, it
+might actually point to the document, window or whatever the current "this"
+actually is when the timeout event occurs.
+
+
+    function AdRotator(id, ads, height, width)
+    {
+       this.id = id;
+       this.ads = ads;
+       this.index = 0;
+       this.container = document.getElementById(id);
+       this.anchorElement = document.createElement('a');
+       this.imageElement = document.createElement('img');
+       this.imageElement.setAttribute('height', height);
+       this.imageElement.setAttribute('width', height);
+       this.anchorElement.appendChild(this.imageElement);
+       this.container.appendChild(this.anchorElement);
+       this.RotateAd();
+    }
+
+
+    AdRotator.prototype.RotateAd = function()
+    {
+        var currentAd = this.NextAd();
+        this.imageElement.setAttribute('src', currentAd.ImageUrl);
+        this.anchorElement.setAttribute('href', currentAd.LinkUrl);
+        var thisObject = this;
+        setTimeout(function() { thisObject.RotateAd(); }, currentAd.DisplayTime);
+    }
+
+    AdRotator.prototype.NextAd = function()
+    {
+        var ad = this.ads[this.index];
+        this.index ++;
+        if (this.index == this.ads.length) this.index = 0;
+        return ad;
+    }
+
+
+### The Instance
+
+For each instance of the ad rotator we simply use this script. You'll
+immediately notice that the code is filled with place holders. I replace these
+placed holders on the server-side before I inject it into the output. I'll
+describe these in more detail and finally I'll include the source of a
+rendered page to see this as the browser sees.
+
+You might also notice that we are not actually assigning this object to
+anything. Hopefully because it will always be referenced by a setTimeout event
+it will always stay in scope. If I ever do have any problem with this I could
+easily create and array in the definition and push each instance into the
+array.
+
+
+    (new AdRotator('$ElementId', $Images, $Height, $Width));
+
+
+The $ElementId placeholder is replaced with server control the server controls
+ClientId property. This means we can reference the DOM object (a span element)
+that the server outputs as a container for the control. The ClientId property
+is very importing when creating elements on the server and interacting with
+them on the client side. Often elements are not output with the ID of the
+server control. One of the reasons is that its possible in ASP.Net to have two
+control with the same ID in different placeholders. Or the same ID in a master
+page and in the content page. I won't go into detail about how this naming
+works, but its pretty clear when you view the source of the pages rendered by
+an ASP.Net server. It is a string as it's used by definition to find an
+element with the getElementById function.
+
+The $Images place holder is replaced with Json. Effectively a Javascript
+object describing an object which is a an array of objects containing
+ImageUrl, LinkUrl and DisplayTime properties. I have written an article about
+how this Json is generated on the server side.
+
+The $Height and $Width place holders are replaced by the corresponding values
+on the AdRotator server control.
+
+An example of how this script is actually output by the server should
+hopefully demonstrates how this client side script actually works, and
+hopefully how it works for multiple controls.
+
+
+    <script type="text/javascript">
+    (new AdRotator('ctl00_MainContentPlaceHolder_rotator1', 
+                   [{"ImageUrl":"Images/Winter.jpg",
+                     "LinkUrl":"Winter.aspx",
+                     "DisplayTime":"1000"
+                    },
+                    {"ImageUrl":"Images/Sunset.jpg",
+                     "LinkUrl":"Sunset.aspxd",
+                      "DisplayTime":"4000"}],
+                    200, 200))
+    </script>
+
+This is just one article in a series describing various aspects of writing
+ASP.Net server side controls. You can download the example code or assembly
+and see how it works.
+
+   [1]: /journal/adrotator-webcontrol-example
+

@@ -1,0 +1,35 @@
+*This is the presentation for [Composing Events with RxJS][1] an [Alt.Net Melbourne Lightning Talk][2].*
+
+An observable that yields for every capture click after the start button and
+before the stop button has been clicked.
+
+    #!/usr/bin/javascript
+    // Setup observables
+    var buttonStart = $("#buttonStart").toObservable("click");
+    var buttonCapture = $("#buttonCapture").toObservable("click");
+    var buttonStop = $("#buttonStop").toObservable("click");
+
+    // Compose an event
+    var compose = buttonStart.SelectMany(function () {
+        return buttonCapture.Select(function () {
+            return "Captured Click";
+            }).TakeUntil(buttonStop);
+        });
+
+    // Subscribe to, and handle event
+    compose.Subscribe(function (result) {
+        var val = $("<li/>").html(result);
+        val.appendTo($("#results"));
+    });
+
+<button id="buttonStart">Start</button>
+<button id="buttonCapture">Capture</button>
+<button id="buttonStop">Stop</button>
+<ul id="results"></ul>
+[Back (Zip)][3]
+
+
+  [1]: /journal/composing-events-with-rxjs
+  [2]: http://melbourne.ozalt.net/2010/08/august-meeting-lightning-talks-wrap-up.html
+  [3]: /journal/rxjs-zip
+

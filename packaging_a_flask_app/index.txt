@@ -1,0 +1,230 @@
+Packages are not very exciting but the only sane way to deploy. I've tried to
+`git clone` and `make install` on the servers with [Puppet] [puppet], that was
+silly. It's about time I learnt how to build packages.
+
+I run a few [Flask] [flask] applications (including this site) that I would
+like to package for Debian linux, so packaging a minimal Flask application
+seemed a good place to start.
+
+I created a very simple Flask application called [demosite] [demosite]. The
+basic requirement of the site is that `python setup.py install` works and that
+it provides some mechanism changing the configuration file and logging paths.
+
+The package should install the application, all its dependencies, add the
+configuration files to `/etc/demosite`, set up the logging to log to
+`/var/log/demosite`, create a un-privileged user and install an init script in
+`/etc/init.d/demosite`. 
+
+I found this post: [Packaging a Flask app in a Debian package] [packaging]
+very helpful getting me started.
+
+The package is built and packaged on a Debian machine provisioned by [Vagrant]
+[vagrant] and run in [Virtualbox] [virtualbox]. The application itself is
+installed inside a [virtualenv] [virtualenv] environment which is then packaged
+by [fpm][fpm]. Below are all the steps needed to create a package and install
+it. 
+
+Create a vagrant box and ssh into it:
+
+    #!/usr/bin/bash
+    $ vagrant init chef/debian-7.4
+    $ vagrant up && vagrant ssh
+
+Switch to the root user, update the system and install build dependencies:
+
+    #!/usr/bin/bash
+    vagrant:~$ sudo su
+    vagrant:~$ apt-get update
+    vagrant:~$ apt-get install ruby1.8 rubygems git python-dev python-setuptools python-virtualenv ruby-dev curl
+    vagrant:~$ gem install fpm pleaserun
+
+Installing the application into a `virtualenv` is quite straight forward.
+Download the source, create a `virtualenv` and install the application in it, a
+lot problems with generated paths can be avoided by creating the `virtualenv`
+in the desired install path.
+
+    #!/usr/bin/bash
+    vagrant:~$ git clone https://github.com/tarnacious/demosite.git demosite-src
+    vagrant:~$ virtualenv /usr/share/demosite
+    vagrant:~$ cd /home/vagrant/demosite-src
+    vagrant:~/demosite-src$ /usr/share/demosite/bin/python setup.py install
+
+I used [pleaserun] [pleaserun] to create the init file. The gem requires the
+ruby-dev package to be installed.
+
+    #!/usr/bin/bash
+    vagrant:~$ pleaserun --user demosite --install --name demosite /usr/share/demosite/bin/gunicorn demosite:app
+    No platform selected. Autodetecting... {:platform=>"sysv", :version=>"lsb-3.1", :level=>:warn}
+    Writing file {:destination=>"/etc/init.d/demosite"}
+    Writing file {:destination=>"/etc/default/demosite"}
+
+The file `/etc/default` is sourced using the dot operator in the [init script]
+[dotoperator]. Environment variables can be added here, for the demosite
+application these are the locations of the config file and the logging config
+file.
+
+    #!/usr/bin/bash
+    vagrant:~$ cat > /etc/default/demosite << EOF
+    export DEMOSITE_CONFIG_PATH=/etc/demosite/config.cfg
+    export DEMOSITE_LOGGING_CONFIG_PATH=/etc/demosite/logging.conf
+    EOF
+
+Create the `config.cfg` expected by the application.
+
+    #!/usr/bin/bash
+    vagrant:~$ mkdir /etc/demosite
+    vagrant:~$ cat > /etc/demosite/config.cfg << EOF
+    TAGLINE="this is all so far"
+    EOF
+
+Create the `logging.conf` expected by the application.
+
+    #!/usr/bin/bash
+    vagrant:~$ cat > /etc/demosite/logging.conf << EOF
+    [loggers]
+    keys = root, demosite
+
+    [handlers]
+    keys = root, demosite
+
+    [formatters]
+    keys = default
+
+    [formatter_default]
+    format = [%(asctime)s] - %(name)s - %(levelname)s - %(message)s
+    class = logging.Formatter
+
+    [logger_root]
+    level = DEBUG
+    qualname = root
+    handlers = root
+
+    [handler_root]
+    class = logging.handlers.RotatingFileHandler
+    formatter = default
+    args = ("/var/log/demosite/root.log",)
+
+    [logger_demosite]
+    level = DEBUG
+    qualname = demosite
+    handlers = demosite
+
+    [handler_demosite]
+    class = logging.handlers.RotatingFileHandler
+    formatter = default
+    args = ("/var/log/demosite/demosite.log",)
+    EOF
+
+Debian packages have hooks for a `postinst`, `preinst` and `prerm`. This
+`postinst` script creates a user `demosite`, a directory `/var/log/demosite`
+and changes ownership over to the `demosite` user. 
+ 
+    #!/usr/bin/bash
+    vagrant:~$ cat > postconfig << EOF
+    #!/bin/sh -e
+
+    action="\$1"
+    oldversion="\$2"
+
+    . /usr/share/debconf/confmodule
+    db_version 2.0
+
+    if [ "\$action" != configure ]; then
+        exit 0
+    fi
+
+    if ! getent passwd demosite >/dev/null; then
+        adduser --quiet --system --no-create-home --home /home/vagrant/demosite --shell /usr/sbin/nologin demosite
+    fi
+
+    mkdir -p /var/log/demosite
+    chown demosite /var/log/demosite
+    EOF
+
+In this package the `preinst` and `prerm` hooks are the same for now: stop the
+service if the init script is there.
+
+    #!/usr/bin/bash
+    vagrant:~$ cat >stopservice << EOF
+    #!/bin/sh
+    set -e
+
+    if [ -f /etc/init.d/demosite ]; then
+        /etc/init.d/demosite stop
+    fi
+    EOF
+
+Package the application into a `deb` package with `fpm`. 
+
+    #!/usr/bin/bash
+    vagrant:~$ fpm -s dir \
+        -t deb \
+        -n demosite \
+        -v 0.1 \
+        --deb-init /etc/init.d/demosite \
+        --before-install stopservice \
+        --after-install postconfig \
+        --before-remove stopservice \
+        -d "python" \
+        /etc/demosite/=/etc/demosite \
+        /etc/default/demosite=/etc/default/ \
+        /usr/share/demosite/=/usr/share/demosite
+
+Now copy the package to the host machine, to a `build` directory:
+
+    #!/usr/bin/bash
+    vagrant:~$ mkdir -p /vagrant/build
+    vagrant:~$ cp demosite_0.1_amd64.deb /vagrant/build/
+
+Unless there was any problems with the build we can exit this box and even
+destroy it.
+
+    #!/usr/bin/bash
+    vagrant:~$ exit
+
+Ok, let's try it out in a new vagrant box!
+
+    #!/usr/bin/bash
+    $ cd build
+    $ vagrant init chef/debian-7.4
+    $ vagrant up && vagrant ssh
+    vagrant:~$ sudo dpkg -i /vagrant/demosite_0.1_amd64.deb
+
+Does it work? Let's try start it and find out.
+
+    #!/usr/bin/bash
+    vagrant:~$ sudo /etc/init.d/demosite start
+    demosite started.
+
+Looks good, let's see if it works.
+
+    #!/usr/bin/bash
+    vagrant:~$ curl localhost:8000 
+    ... 
+
+Woohoo!
+
+To automate all this one could use the [Vagrant Shell Provisioner]
+[shellprovisioner] or something like [Fabric] [fabric].
+
+Currently the server is not binding to an external network interface and would
+not be able to bind a privileged port as it is not running as a privileged
+user. This is OK as I intend to proxy it though [nginx] [nginx], this is quite
+simple to configure but it would be nice to manage this configuration via
+[Puppet] [puppet], which I hope to write about in my next post.
+
+[packaging]: http://www.plankandwhittle.com/packaging-a-flask-app-in-a-debian-package/
+[demosite]: https://github.com/tarnacious/demosite
+[flask]: http://flask.pocoo.org/
+[fpm]: https://github.com/jordansissel/fpm
+[supervisord]: http://supervisord.org/
+[pleaserun]: https://github.com/jordansissel/pleaserun
+[puppet]:https://github.com/puppetlabs/puppet
+[nginx]: http://nginx.org/
+[vagrant]: https://www.vagrantup.com/
+[virtualenv]: https://virtualenv.pypa.io/en/latest/
+[virtualbox]: https://www.virtualbox.org/
+[puppet]: http://puppetlabs.com/
+[fabric]: http://www.fabfile.org/
+[dotoperator]: http://ss64.com/bash/source.html
+[shellprovisioner]: https://docs.vagrantup.com/v2/provisioning/shell.html

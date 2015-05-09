@@ -1,0 +1,83 @@
+JavaScript is a slightly flawed language but it's got elegant parts too. All
+languages do to some degree, it's just JavaScript seems to have both in
+extremes. Whatever you think of it, history has made it the language for
+scripting the client-side web. It has become a mainstream language that shows
+no sign of falling off.
+
+The excelent book [JavaScript: The Good Parts][1] by Douglas Crockford,
+working with the jQuery library and learning a little Lisp has lead me to
+really embrace JavaScript.
+
+It's no secret that I like programming with interactive consoles and decided I
+wanted find out if there was an interactive console for JavaScript. A language
+that only lives inside web browser environment didn't seem right to me.
+
+[Rhino][2] is a JavaScript implementation on the JVM. It has a compiler, a
+debugger and interactive console.
+
+To get started you obviously need a version of the JVM. That's not to
+difficult. On Windows I just downloaded a [Sun Java 6 installer][3]. On my
+Ubuntu install I installed openjdk but found Rhino didn't work. So I installed
+sun-java6, which worked.
+
+    sudo apt-get install sun-java6-bin sun-java6-jre sun-java6-jdk
+
+You can find what version you've installed by running
+
+    $ java -version
+    java version "1.6.0_15"
+    Java(TM) SE Runtime Environment (build 1.6.0_15-b03)
+    Java HotSpot(TM) Client VM (build 14.1-b02, mixed mode, sharing)
+
+Excellent. The [Rhino][2] binaries includes js.jar which is needed for the
+console. Now should be able to run the jar
+
+    $ java -jar js.jar
+
+When all goes well this will take you into the Rhino shell
+
+    Rhino 1.7 release 2 2009 03 22
+    js>
+
+We can start playing with the language.
+
+    js> get_counter = function() { var counter = 0; return function() { 
+         print(counter); counter++; } };
+    ..
+    js> counter1 = get_counter();
+    js> counter1();
+    0
+    js> counter1();
+    1
+    js> counter2 = get_counter();
+    js> counter2()
+    0
+    js> counter1()
+    2
+
+Which is cool and there is some of the weirdness
+
+    js> '5' + 3
+    53
+    js> '5' - 2
+    3
+
+And some interesting features
+
+    js> parseInt('06')
+    6
+    js> parseInt('08')
+    NaN
+    js> parseInt('10')
+    10
+    js> parseInt('010')
+    8
+
+I'm looking forward to learning more about writing code in JavaScript.
+
+   [1]: http://oreilly.com/catalog/9780596517748
+
+   [2]: https://developer.mozilla.org/en/Rhino
+
+   [3]: http://java.sun.com/javase/downloads/index.jsp
+

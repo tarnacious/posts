@@ -1,0 +1,103 @@
+### Introduction
+
+As this site is currently hosted on a shared hosting environment with limited
+bandwidth and disk space we decided we would start hosting some content on
+[Amazon S3][1].
+
+I first saw S3 when a guy from Amazon presented it at a VIC.NET user group
+meeting. I thought it sounded pretty cool and signed up for an account as soon
+as I got home. I quickly found a use for S3 in a web application I was
+building at the time. I used S3 for all the files users uploaded to the site.
+I also used it for hosting some web components like static CSS, JavaScript and
+image files.
+
+This works fine when you just want to reference static content on a web page.
+To do this you just need to upload the components to S3, make them public and
+modify the URLs in your HTML output to point to the S3 resource.
+
+I did run into cross-domain browser security restrictions when I tried to host
+the entire site on S3 and use web services to get dynamic content. In this
+case I persisted and got dynamic behavior by [dynamically inserting dynamic
+script elements into the DOM][2].  While Google Maps does this very well to
+dynamically get map tiles, it doesn't work so well for scripts as the browsers
+blocks the page while a script is downloading. I would defiantly be looking at
+the alternatives before doing that again. In this case we just want some of
+the larger downloadable files off the web server and onto S3, which shouldn't
+be a problem.
+
+### Tools
+
+I've always used [S3Fox][3] which is a Firefox plug-in to manage files on S3.
+But when I fired it up this morning it isn't accepting my credentials.
+
+I tried using [S3Drive][4] which is a Windows Desktop application. This
+defiantly wasn't what I wanted. It makes S3 look like a "drive" in Windows
+that has files and directories. This hides the fact the S3 is actually a flat
+file structure. It seems to use a database to manage the virtual file
+structure (like a file allocation table). Anyway this would be really good for
+backing stuff up as you can treat it like a normal drive and drag and drop
+entire folders. Its no good for us as our content needs to be accessed by HTTP
+GET Requests.
+
+I ended up using [s3:///][5] which is an "experimental" Firefox plug-in. It
+works fine but doesn't seem to have the tools to manage the access control
+list (ACL) that S3Fox has. Anyway its enough to create a bucket and upload
+some files (Note: The files were already public and didn't require me allow
+public access. This is fine for me now, but might be a problem if you were
+uploading sensitive information you didn't want to share)
+
+### Virtual Sub Domains with CNAME records
+
+One of the many things I like about S3 is that you can add a CNAME record on
+your domain and point it to an S3 bucket on account at amazon. So while you
+can still download your public content from the amazonaws.com URL:
+
+[http://static.sharpthinking.com.au.s3.amazonaws.com/sharpthinking.jpg][6]
+
+You can also download the same resource from a sub domain of your own URL:
+
+[http://static.sharpthinking.com.au/sharpthinking.jpg][7]
+
+But as you can see with trusty Firebug the image is still hosted from Amazon
+servers
+
+### Reading and Writing to S3 with .NET
+
+I have an S3 project I used previously to read and write files to S3. I wrote
+it ages ago, copying large parts of Amazon examples from memory. Although it
+looks a little shabby, the one and only test still works, so I'm confident its
+still working OK. I'm sure there a better .NET wrappers around these days if
+you did a quick Google search.
+
+Here is the [source code][10]. You'll notice it still has the namespaces from
+the original project, but hopefully my S3 credentials have been removed.
+You'll also need to add a reference to an [NUnit][11] assembly to run the
+test.
+
+### BlogEngine.NET, Live Writer and S3
+
+As we use Live Writer to publish content to this blog, I am going to update
+the BlogEngine.NET Metablog API to upload the media elements to S3 instead of
+the file system. I've looked into it and it should be pretty straight forward.
+I'm pretty sure you can already get WordPress plug-ins that do this. I'll post
+the code when I get it working.
+
+
+   [1]: http://aws.amazon.com/s3
+
+   [2]: /post/2008/06/03/Dynamically-inserting-dynamic-scripts.aspx
+
+   [3]: https://addons.mozilla.org/en-US/firefox/addon/3247
+
+   [4]: http://www.s3drive.net/
+
+   [5]: https://addons.mozilla.org/en-US/firefox/addon/6955
+
+   [6]: http://static.sharpthinking.com.au.s3.amazonaws.com/sharpthinking.jpg
+
+   [7]: http://static.sharpthinking.com.au/sharpthinking.jpg
+
+   [10]: http://static.sharpthinking.com.au/MenuMan.Storage.2008.09.09.zip
+
+   [11]: http://www.nunit.org
+

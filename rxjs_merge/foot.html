@@ -1,0 +1,27 @@
+<script src="https://tarnbarford.net/static/journal/rxjs_merge/jquery-1.10.2.min.js" type="text/javascript"></script>
+<script src="https://tarnbarford.net/static/journal/rxjs_merge/rx.js" type="text/javascript"></script>
+<script src="https://tarnbarford.net/static/journal/rxjs_merge/rx.aggregates.js" type="text/javascript"></script>
+<script src="https://tarnbarford.net/static/journal/rxjs_merge/rx.jQuery.js" type="text/javascript"></script>
+<script src="https://tarnbarford.net/static/journal/rxjs_merge/rx.joins.js" type="text/javascript"></script>
+
+<script>
+    $(function () {
+
+        // Setup observables 
+        var button1 = $("#button1").toObservable("click").Select(function() {
+            return "Button 1" });
+
+        var button2 = $("#button2").toObservable("click").Select(function() {
+            return "Button 2"; });
+
+        // Compose an event
+        var compose = button1.Merge(button2)
+
+        // Subscribe to, and handle event
+        compose.Subscribe(function (result) {
+            var val = $("<li/>").html(result);
+            val.appendTo($("#results"));
+        });
+
+    });
+</script>

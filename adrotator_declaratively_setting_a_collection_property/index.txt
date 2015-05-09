@@ -1,0 +1,121 @@
+
+This article is part of a series of posts about various aspects of writing web
+controls for ASP.Net using an ad rotator as an example. The [AdRotator
+WebControl Example][1] post has links to related posts and downloads.
+
+I really wanted to make it possible for the control to be added completely
+declaratively. Much the same way as you can create a list box with list items
+declaratively.
+
+
+    <asp:ListBox ID="2" runat="server">
+        <asp:ListItem>Option1</asp:ListItem>
+        <asp:ListItem>Option1</asp:ListItem>
+    </asp:ListBox>
+
+
+This actually turned out to be really easy after I found a great example from
+Microsoft, [Web Control Collection Property Example][2]. I'd advise getting
+straight into that if you are implementing this and need more detail. I will
+just briefly describe what I had to implement for the AdRotator Control.
+
+### Attributes
+
+I regularly set public properties on a web control with the appropriate type
+converters declaratively. For example where the public properties Height and
+Width declared as below.
+
+
+    public class AdRotator : WebControl
+    {
+        public new string Width { get; set; }
+        public new string Height { get; set; }
+        ...
+    }
+
+
+They can be set declaratively in ASP.Net web files
+
+
+    <x:AdRotator ID="AdRotator1" runat="server" Height="100" Width="100" />
+
+
+### Children
+
+When it came to adding the child data, I had already implemented a strongly
+typed public data source property on the AdRotator control, so all I really
+needed to do to get it working was add attribute meta data to some classes and
+properties.
+
+On the actual control I had to add meta data about the type of child elements
+we the control will support.
+
+
+    [DefaultProperty("Images")]
+    [ParseChildren(true, "Images")]
+    ...
+    public class AdRotator : WebControl
+
+
+On the property "Images" I added the following metadata. I didn't need it all,
+the "Category" for example is used when the object is displayed in a property
+list control. The attribute classes and CollectionEditor are all in the
+System.ComponentModel.Design namespace and the UITypeEditor is in
+System.Drawing.Design namespace. As the collection we are exposing is strongly
+typed we don't need to extend the CollectionEditor class.
+
+
+    [Category("Behavior")]
+    [Description("Image URL collection")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+    [Editor(typeof(CollectionEditor), typeof(UITypeEditor))]
+    [PersistenceMode(PersistenceMode.InnerDefaultProperty)]
+    public List<ImageItem> Images
+
+
+The ImageItem class also need some additional meta data.
+
+
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public ImageItem() : this(string.Empty, string.Empty, string.Empty)
+    {
+
+        public ImageItem(string linkUrl, string imageUrl, string displayTime)
+        {
+            LinkUrl = linkUrl;
+            ImageUrl = imageUrl;
+            DisplayTime = displayTime;
+        }
+
+        [Category("Behavior")]
+        [DefaultValue("")]
+        [Description("Anchor Href Url")]
+        [NotifyParentProperty(true)]
+        public string LinkUrl { get; set; }
+
+        ...
+
+    }
+
+
+### Finally
+
+By the time the RenderContents method is fired, the Images property is fully
+populated with all the items we declaratively added. When we are declaring the
+image items we are getting nice intellisense. That's everything we set out to
+do.
+
+[ad_rotator_intellisense_example1][4]
+
+Although I didn't go into much detail here we did get everything I wanted in
+the AdRotator example. I find this quite interesting as the concept of XML
+based object declarations was build into the XAML SilverLight and WPF
+technologies.
+
+
+   [1]: /journal/adrotator-webcontrol-example
+
+   [2]: http://msdn.microsoft.com/en-us/library/9txe1d4x.aspx
+
+   [4]: /image.axd?picture=WindowsLiveWriter/AdRotatorParsingpropertiesdeclaratively_E679/ad_rotator_intellisense_example1_2.jpg
+

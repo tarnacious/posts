@@ -1,0 +1,225 @@
+I decided to have a look at creating Silverlight applications with IronPython,
+this led me to the [Silverlight Dynamic Languages SDK][1]. The main piece of
+the SDK is [Chiron][2] which is a development utility for creating Silverlight
+application packages (XAPs) from dynamic languages.
+
+Chiron can be used to:
+
+  * Create dynamic language Silverlight projects
+  * Start a local web server which dynamically generates XAPs from the project files
+  * Write generated XAPs to disk.
+
+I needed something to build on Silverlight with IronPython, so I decided to
+write a small part of the UI for an RSS Feed Visualizer I've been wanting to
+write. Its only really a demo, the UI could use some more work and I've just
+used some sample names as data. I hope to build on this example in the future,
+but I'll need to do some refactoring, the code is pretty scrappy as I wrote
+most of it after I lost a house poker game. Apparently a stronger
+understanding of [counter intuitive probability problems][3] hasn't helped my
+game and I don't write my best code after an afternoon of drinking.
+
+(If there is problems viewing the demo on this page, it can also be viewed
+[here][4])
+
+Here is the IronPython code that drives the demo, I've also uploaded the
+[entire project][5]. I used examples of dragging and inertia from the
+excellent [Project "Rosetta Stone" Tutorials][6].
+
+    #!/usr/bin/python
+    from System.Windows import Application
+    from System.Windows.Controls import UserControl
+    from System.Windows.Controls import TextBlock
+    from System.Windows.Controls import Canvas
+    from System.Windows.Media import Colors
+    from System.Windows.Media import SolidColorBrush
+    from System.Windows import Visibility
+    from System.Windows import FontWeights
+    from System.Windows import HorizontalAlignment
+    from System.Windows.Media.Animation import Storyboard
+    from System import Random;
+    import math
+
+    class App:
+
+      def __init__(self):
+        self.root = Application.Current.LoadRootVisual(UserControl(),"app.xaml");
+        spinner = Spinner(self.root,['Tarn','Leah','Alex','Mick','John','Rex','Jack','Jill','Elle']);
+
+
+    class Spinner():
+
+      def __init__(self, root, names):
+        self.root = root;
+        self.names = names
+        self.radius = 0;
+        self.textBlocks = [];
+        self.mainText = Block(self.root.layout_root,self.centreClick);
+        self.mainText.SetPosition(100.0,100.0);
+        self.mainText.HorizontalAlignment = HorizontalAlignment.Center;
+        self.selectedItem = None;
+        self.angle = 0;
+        self.diff = 0;
+        self.target = 0;
+        self.drag = False;
+        self.createTextBlocks(self.names[0], self.names);
+        self.root.MouseLeftButtonDown += self.leftButtonDown;
+        self.root.MouseLeftButtonUp += self.leftButtonUp;
+        self.root.MouseMove += self.mouseMove;
+        self.sb = Storyboard();
+        self.root.Resources.Add("sb",self.sb);
+        self.sb.Completed += self.enterFrame;
+        self.sb.Begin();
+
+      def centreClick(self,item):
+        self.selectedItem = item;
+        self.state = "Selected";
+        pass;
+
+      def createTextBlocks(self, item, list):
+        self.state = "Expanding";
+        self.mainText.text.Opacity = 1;
+        self.mainText.text.Text = item;
+        self.velocity = 0.01;
+
+        for textBlock in self.textBlocks:
+          textBlock.dispose();
+
+        textBlocks = [];
+        i = 0;
+        list = filter(lambda m: (m != item), list)
+
+        for title in list:
+          textBox = Block(self.root.layout_root,self.centreClick);
+          textBox.text.Text = title;
+          textBox.angle = i * 2 * math.pi / list.__len__();
+          textBox.HorizontalAlignment = HorizontalAlignment.Center;
+          textBox.radius = -(100/list.__len__()) * i;
+          textBox.SetPosition2(0);
+          self.textBlocks.append(textBox);
+          i += 1;
+
+      def enterFrame(self, object, e):
+        diff = ((self.target - self.diff)-self.angle) ;
+        if (self.drag == True):
+          oldAngle = self.angle;
+          if (diff > math.pi): diff = diff - math.pi * 2;
+          if (diff <= -math.pi): diff = diff + math.pi * 2;
+          self.angle  = self.angle + ((diff) * 0.2);
+          self.velocity = self.angle - oldAngle;
+        else:
+          self.angle = self.angle + self.velocity;
+          if (math.fabs(self.velocity) > 0.01):
+            self.velocity = self.velocity * 0.90;
+ 
+       self.angle = self.angle % (2 * math.pi);
+
+        if (self.state == "Expanding"):
+          expandComplete = True;
+          for textBlock in self.textBlocks:
+            if (textBlock.Expand(100) == False): expandComplete = False;
+
+        if (self.state == "Selected"):
+          expandComplete = True;
+          if (self.selectedItem != self.mainText):
+            self.mainText.text.Opacity -= 0.10;
+            self.selectedItem.moveTo(100,100);
+          for textBlock in self.textBlocks:
+            if (self.selectedItem != textBlock):
+              textBlock.text.Opacity -= 0.010;
+              if (textBlock.Expand(200) == False): expandComplete = False;
+          if (expandComplete == True):
+            self.createTextBlocks(self.selectedItem.text.Text, self.names);
+        for textBlock in self.textBlocks:
+          if (self.selectedItem != textBlock): textBlock.SetPosition2(self.angle);
+        self.sb.Begin();
+
+      def leftButtonUp(self,object,e):
+        self.root.ReleaseMouseCapture();
+        self.drag = False;
+
+      def mouseMove(self, object, e):
+        if (self.drag == True):
+            self.target = self.getAngle(e);
+
+      def leftButtonDown(self, object, e):
+          self.root.CaptureMouse();
+          angle = self.getAngle(e);
+          self.diff = angle - self.angle;
+          self.target = self.getAngle(e);
+          self.drag = True;
+
+      def getAngle(self, e):
+        x = e.GetPosition(self.root).X-100;
+        y = e.GetPosition(self.root).Y-100;
+        angle = (math.atan2(x,y));
+        if (angle < 0): angle = angle + (math.pi*2);
+        return angle;
+
+    class Block():
+      def __init__(self, canvas, clicked):
+        self.clicked = clicked;
+        self.canvas = canvas;
+        self.text = TextBlock();
+        self.text.Foreground = SolidColorBrush(Colors.White);
+        self.offset = 100;
+        self.radius = 10;
+        self.angle = 0;
+        canvas.Children.Add(self.text);
+        self.text.MouseEnter += self.mouseOver;
+        self.text.MouseLeave += self.mouseOut;
+        self.text.MouseLeftButtonDown += self.mouseClick;
+
+      def dispose(self):
+        self.canvas.Children.Remove(self.text);
+
+      def moveTo(self, x, y):
+        self.text.FontWeight = FontWeights.Normal;
+        currentX = self.text.GetValue(Canvas.LeftProperty);
+        currentY = self.text.GetValue(Canvas.TopProperty);
+        newX = currentX + ( (x - currentX) * 0.1);
+        newY = currentY + ( (y - currentY) * 0.1);
+        self.SetPosition(newX,newY);
+
+      def Expand(self, max):
+        if (self.radius < max):
+          self.radius += 1;
+          return False;
+
+      def mouseClick(self,sender,e):
+        self.clicked(self);
+
+      def mouseOver(self,sender,e):
+        self.text.FontWeight = FontWeights.Bold;
+
+      def mouseOut(self,sender,e):
+        self.text.FontWeight = FontWeights.Normal;
+
+      def SetPosition(self, x, y):
+        self.text.SetValue(Canvas.LeftProperty, x);
+        self.text.SetValue(Canvas.TopProperty, y);
+
+      def SetPosition2(self, angle):
+        if (self.radius < 20):self.text.Visibility = Visibility.Collapsed;
+        else:self.text.Visibility=Visibility.Visible;
+        self.SetPosition( (math.sin(self.angle + angle) * self.radius) + self.offset, (math.cos(self.angle + angle) * self.radius) + self.offset);
+
+    App()
+
+I noticed when I uploaded the XAP that it was quite large (> 1Mb) for a very
+small demo. I think this is because additional assemblies for dynamic
+languages and IronPython are not included in the client Silverlight plug-in
+and have to be included in the XAP.
+
+
+   [1]: http://www.codeplex.com/sdlsdk
+
+   [2]: http://www.codeplex.com/sdlsdk/Wiki/View.aspx?title=Chiron
+
+   [3]: http://blog.sharpthinking.com.au/post/2009/01/18/Goats-Cars-and-Babies.aspx
+
+   [4]: http://static.sharpthinking.com.au/DataVisualizers/DataVisualizer1.htm
+
+   [5]: http://static.sharpthinking.com.au/DataVisualizers/DataVisualizer1.zip
+
+   [6]: http://channel9.msdn.com/continuum/tutorials/
+

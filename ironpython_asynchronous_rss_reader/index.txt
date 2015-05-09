@@ -1,0 +1,132 @@
+Reading RSS is a common and simple task in Python using the standard library,
+unfortunately it uses parts of the standard library that are not implemented
+in IronPython. Luckily it isn't very difficult using the .NET framework
+either. There is an example [Parsing RSS][1] on the [IronPython Cookbook][2]
+site that demonstrates it.
+
+While this example was useful, I wanted to make the web request asynchronously
+so I could use it in a WPF application without blocking the UI. I was happy to
+find implementing it was quite familiar and easy, I've used the WebClient
+object asynchronously many times in C# and I've passed event handlers as
+parameters in Javascript, both of which are supported by IronPython and are
+used in this module.
+
+In the implementation below I've used all XML processing code from the
+[Parsing RSS][1] example. I removed the class RSSFeedSubscriptions as I didn't
+need the functionality and I felt it made the sample more clear. I split the
+RSSFeedFetcher into an RSSFeed class for the feed data and an RSSFeedReader
+class for handling the downloading and XML processing. I think it is much a
+better separation of functionality.
+
+I found the the exception handling code in the original sample that outputs an
+exception message was itself throwing an exception, so I removed it. I don't
+think its ideal effectively suppressing exceptions and printing a message but
+its good enough for what I'm using it for. If anyone has a suggestion or I
+improve the module myself, I'll update this post.
+
+The example usage is shown in the Main section. I used an AutoResetEvent in
+the test to keep the tread alive until the asynchronous event is fired and the
+results are output.
+
+    #!/usr/bin/python
+    import clr
+    clr.AddReference('System.Xml')
+
+    from System.Net import WebClient
+    from System.Xml import XmlDocument, XmlTextReader
+    from System.IO import StreamReader, MemoryStream
+    import System
+
+    class RSSFeedItem(object):
+
+        def __init__(self):
+            self.Title = ""
+            self.Description = ""
+            self.Link = ""
+            self.GUID = ""
+
+
+    class RSSFeed():
+
+        def __init__(self, URL):
+            self.FeedURL = URL
+            self.ChannelName = ""
+            self.Items = []
+            self.BadCount = 0
+
+
+    class RSSFeedReader(object):
+
+        def __init__(self,URL, onComplete):
+            self.onComplete = onComplete
+            self.feed = RSSFeed(URL)
+
+        def Parse(self, sender, args):
+            rssBytes = args.Result
+            try:
+                xmlDoc = XmlDocument()
+                stream = MemoryStream(rssBytes)
+                xmlDoc.Load(stream)
+                rssNode = xmlDoc.SelectSingleNode("rss")
+                channelNodes = rssNode.ChildNodes
+
+                for channelNode in channelNodes:
+                    itemNodes = channelNode.SelectNodes("item")
+                    self.feed.ChannelName = channelNode.SelectSingleNode("title").InnerText
+
+                    for itemNode in itemNodes:
+                        try:
+                            newitem = RSSFeedItem()
+                            newitem.Title = str(itemNode.SelectSingleNode("title").InnerText)
+                            newitem.Description = str(itemNode.SelectSingleNode("description").InnerText)
+                            newitem.Link = str(itemNode.SelectSingleNode("link").InnerText)
+
+                            if itemNode.SelectSingleNode("guid"):
+                                newitem.GUID = str(itemNode.SelectSingleNode("guid").InnerText)
+
+                            self.feed.Items.append(newitem)
+
+                        except:
+                            self.feed.BadCount = self.feed.BadCount + 1
+
+            except:
+                print "Error Parsing Results"
+
+            self.onComplete(self.feed)
+
+        def ReadAsync(self):
+            try:
+                webClient = WebClient()
+                webClient.DownloadDataCompleted += self.Parse
+                uri = System.Uri(self.feed.FeedURL)
+                webClient.DownloadDataAsync(uri)
+            except:
+                print "Error Starting Read"
+
+    if __name__ == "__main__":
+        from System.Threading import *
+        are = AutoResetEvent(False)
+
+        def callback(feed):
+            print "Results!"
+            for item in feed.Items:
+                print item.Title
+                print item.Description
+                print item.Link
+
+            are.Set()
+
+        feedReader = RSSFeedReader("http://feeds.feedburner.com/sharpthinking", callback)
+        feedReader.ReadAsync()
+        are.WaitOne()
+
+One of the things I like about IronPython 2 is that this code alone can be run
+from the command line. Simply saving this code as rssreader.py and running it
+from the command line with ipy rssreader.py will run the test code at the
+bottom which will output recent posts from this weblog.
+
+
+   [1]: http://www.ironpython.info/index.php?title=Parsing_RSS&oldid=896
+
+   [2]: http://www.ironpython.info/index.php/Contents
+

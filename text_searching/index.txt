@@ -1,0 +1,290 @@
+### Introduction
+
+Brodie and I recently started presenting code, prototypes and ideas to the
+other Devs we work with. This post came about after Brodie presented a search
+engine prototype. He was interested to find if we could load about 100,000
+pages of text to in-memory collections for fast searching. The prototype used
+WCF and LINQ to create a RESTful server that binds to a HTTP endpoint. I
+thought it was a really cool prototype, it used less memory than I expected
+and was many orders a magnitude faster than the incumbent full-text indexed
+SQL query.
+
+We were discussing how we could make non-cached searches faster and agreed the
+String.IndexOf() and String.Contains() methods inside the filtering and
+relevance Linq queries would be the best place to start. I probably wouldn't
+have done anything more with it but I couldn't stop thinking about how
+different indexing full-text methods we discussed might perform, particularly
+a tree base algorithm.
+
+The following week I presented a text search engine interface, some
+implementation prototypes, a testing framework prototype and the use of the
+[StructureMap][1] to inject concrete implementations of a text search engine
+interface into Brodies prototype. I'd already taken this way further than I
+ever intended, but I decided that since I had gone this far I might as well
+wrap it up in a blog post too.
+
+I started off by creating a search engine interface. I used an interface from
+the start as I wanted to try mock testing and dependency injection.
+
+
+    public interface ITextSearchEngine
+    {
+        object Setup(string searchText);
+        bool Contains(string query);
+        int Find(string query);
+        List<int> FindAll();
+    }
+
+The most simple search engine is just using a string and the methods on
+System.String. It shows how easy it is to implement the ITextSearchEngine
+interface:
+
+    public class SimpleTextSearch : ITextSearchEngine
+    {
+        private string _contents;
+
+        #region ITextSeach Members
+
+        public object Setup(string searchText)
+        {
+            _contents = searchText;
+            return _contents;
+        }
+
+        public bool Contains(string searchText)
+        {
+            return _contents.Contains(searchText);
+        }
+
+        public int Find(string query)
+        {
+            return _contents.IndexOf(query);
+        }
+
+        public List<int> FindAll()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+    }
+
+
+### Search Engine Test Framework
+
+The test framework is a custom framework that can load types that implement
+ITextSearchEngine, ITestHarness and ITextDataStore from external assemblies at
+runtime. ITestHarness instances are created and passed new instances of
+ITextSearchEngine and ITextDataStore. The test methods in the test harness are
+executed and the results a saved as XML and also transformed to HTML.
+
+The ITextDataStore was added to make it possible to write tests that are
+independent of actual data. This is for performance tests where the data will
+effect the results. I intend to verify this by running a tests against
+different data.
+
+    public interface ITextDataStore
+    {
+        string SearchText();
+    }
+
+The ITestHarness interface must be implemented by test classes. The Create(..)
+method allows the test framework to inject ITextSearchEngine and
+ITextDataStore implementations into the test class.
+
+    public interface ITestHarness
+    {
+        void Create(ITextSearchEngine engine, ITextDataStore datastore);
+        void Setup();
+    }
+
+Now we can start implementing some tests before we've even implemented a
+search engine. To do this we start by creating a base test class:
+
+    public class TestHarnessBase : ITestHarness
+    {
+        #region Data Members
+        protected ITextSearchEngine _searchEngine;
+        protected ITextDataStoreTest _dataStore;
+        #endregion
+
+        #region ITestHarness Members
+        public void Create(ITextSearchEngine engine, ITextDataStoreTestdatastore)
+        {
+            _searchEngine = engine;
+            _dataStore = datastore;
+        }
+
+        public virtual void Setup()
+        {
+        }
+
+        #endregion
+    }
+
+
+
+The test framework will consider public methods with a known return type and
+no parameters as test methods.
+
+    public class SearchEngineSearchTests : TestHarnessBase
+    {
+        #region Test Methods
+        public bool Contains_FindExistingWord()
+        {
+            _searchEngine.Setup("The quick brown fox jumps over the lazydog");
+            return _searchEngine.Contains("fox");
+        }
+
+        public bool Contains_NotFindNonExistingWord()
+        {
+            _searchEngine.Setup("The quick brown fox jumps over the lazydog");
+            return !_searchEngine.Contains("cat");
+        }
+
+        #endregion
+    }
+
+
+### Text Searching Algorithms and Indexing
+
+There is lots of documentation on the [Boyer-Moore algorithm][2], I didn't
+look into it too deeply as its already been implemented in .NET, but also as
+it is designed to work when is only possible to enumerate through the
+searchable text. As we have our searchable text in-memory we could leverage
+random access to the data.  [Aho-Corasick][3] is the same, but it uses a cool
+tree to search for multiple words at the same time. It was that tree and later
+some influence from the [Suffix Tree][4] that led me to think I could store
+the entire searchable text in a tree.
+
+### A Text Tree
+
+Consider the string "big bad barry" represented as a tree as below.
+
+![image_thumb1][6]
+
+This tree is great for exact match string searching; Start with the root node
+and the first character of the search string. Check if the current node has a
+child matching the current character. If it does, move to the node and the
+next character and repeat the process. If it doesn't then the word doesn't
+exist in the searchable text. If we find a match for every letter, the word
+exists in the searchable text.
+
+
+### A Text Tree With Indexes
+
+The previous tree is only good for the Contains() method as the tree has no
+information about where the matches are found or how many times they occur. To
+add this information to the tree we could add a new node at the end of every
+word with its index in the original text
+
+![image_thumb2][8]
+
+We follow the same procedure as before to find words, only this time we know
+if we have found a complete word (if there is one or more index nodes on the
+last node we check). We can also find all instances of the word by traversing
+the rest of the tree and returning all the index nodes found. For example we
+can see that "ba" is in the string twice by finding all the index nodes after
+the 'a' node; In this case at characters 4 and 8.
+
+From this tree we can also find entire sentences if our search algorithm is
+good enough. Basically it just needs to find the words in the sentence
+individually and then using the indexes and the word lengths work out which
+words combinations were next to each other in the original text.
+
+The reason this is all possible is the tree has enough information to re-build
+the original string.
+
+### A Text Tree With Indexes and Suffixes
+
+In the previous trees we can only search efficiently for words and prefixes.
+What if we want to be able to search for substrings? We can do this by also
+adding all the suffixes of each word to the tree.
+
+![image_thumb3][9]
+
+Now we can search for words, substrings and sentences and get all the
+occurrences. That's pretty cool, but this tree is getting pretty massive
+compared to the original string.
+
+### Tree Implementation
+
+I'm not actually going to describe how to implement this tree, its easier just
+to check the code and step through it if you have too.
+
+The search engines I have implemented are
+
+**SimpleTextSearch** Using IndexOf() and Contains() methods on System.String
+
+**RegexTextSearch** Quick and dirty Regex implementation
+
+**SimpleTreeTextSearch** The basic tree with no index information. Only implements the Contains() method
+
+**IndexTreeTextSearch** The basic tree with index information. Search algorithm only looks for a single word
+
+**ExtendedIndexTextTreeSearch** Extends the IndexedTreeTextSearch search algorithm to support multiple word search phrases
+
+**SuffixIndexTreeTextSearch** Extends the IndexedTreeTextSearch to include suffixes in the tree.
+
+**ExtendedSuffixIndexTreeTextSearch** Includes suffixes and the search algorithm from above that supports multiple word search phrases.
+
+
+Some things I didn't do but would look into if I was actually going to use
+this anywhere:
+
+  * Hash tables for each nodes children (currently using List<>)
+
+  * Split text into words more effectively and maybe remove stop words ([How to Split a Text into Words][11] might be worth reading)
+
+  * Case insensitive search algorithm (with case information still in the tree)
+
+  * Removing casing from searchable text
+
+
+### To be continued...
+
+To be honest, I got distracted away from this by getting into the new
+Silverlight 2 SDK for my DevSta entry, [Desktop Racer][12]. DevStar is an
+Australian Microsoft Visual Studios development competition and I figured
+Silverlight 2 is a little more exciting than a text searching algorithm by
+someone with little to no background text search theory. Never-the-less I've
+got the ExtendedSuffixIndexTreeTextSearch passing all the functional search
+test I've written. I've uploaded a copy of the results and the project in its
+current state.
+
+[HTML Functional Test Results][13]
+
+[TextSearch VS2008 Project][14]
+
+I haven't yet written any performance tests to establish each engines setup
+speed, search speed, CPU usage and memory usage. I think this will be very
+interesting, while I'm pretty confident the tree search methods will be quick,
+I suspect they will require significantly more memory than storing plain text.
+I would not be surprised to find that the memory usage and setup times for my
+implementations of tree searches make them impractical to use for most real
+world search problems. Regardless, it has been lots of fun just getting the
+tree search functional but I'd be surprised if I've added any value to one of
+the most researched topics in computer science.
+
+   [1]: http://structuremap.sourceforge.net/Default.htm
+
+   [2]: http://en.wikipedia.org/wiki/Boyer_%E2%80%93_Moore_string_search_algorithm
+
+   [3]: http://en.wikipedia.org/wiki/Aho-Corasick_algorithm
+
+   [4]: http://en.wikipedia.org/wiki/Suffix_tree
+
+   [6]: https://tarnbarford.net/static/journal/text_searching/image1.png
+ 
+   [8]: https://tarnbarford.net/static/journal/text_searching/image2.png
+
+   [9]: https://tarnbarford.net/static/journal/text_searching/image3.png
+
+   [11]: http://nayyeri.net/blog/how-to-split-a-text-into-words/
+
+   [12]: http://blog.sharpthinking.com.au/post/2008/10/07/DevSta-7bChallenge-20087d.aspx
+
+   [13]: http://static.sharpthinking.com.au/TextSearchPost1/Results/results.html
+
+   [14]: http://static.sharpthinking.com.au/TextSearchPost1/TextSearchProject.zip
+

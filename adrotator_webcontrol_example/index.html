@@ -1,0 +1,41 @@
+<div class="entry">
+<p>
+I didn&#39;t really actually want to write another ad rotator, but I did think it would be a good example control to implement. It has the scope to cover some aspects of writing web controls I wanted to learn more about and discuss. I decided to build an ASP.Net web control that cycles through a list of images on the client side. There are a few areas I want to discuss. 
+</p>
+<p>
+I wanted the control completely encapsulated within an assembly. So all you&#39;d need to use the control would be a copy of the assembly. To do this I embedded some resources in the assembly and read them out at runtime. I discuss this in the article. 
+</p>
+<ul>
+<li><a href="/post/2008/06/AdRotator-Embedding-resources-in-an-assembly.aspx">AdRotator: Embedding resources in an assembly</a></li>
+</ul>
+<p>
+I wanted the control to be able to be created completely declaratively, and I thought providing the sort of intellisense you get when using standard ASP.Net controls would be nice. 
+</p>
+<ul>
+<li><a href="/post/2008/06/AdRotator-Declaratively-setting-a-collection-property.aspx">AdRotator: Declaratively setting a collection property</a></li>
+</ul>
+<p>
+I wanted the server-side control to inject Javascript into the output. I wanted the control to be smart enough to only output the Javascript prototype, or class definition once, even if there were multiple controls on the page. I wanted the client side code to be as object orientated as possible.&nbsp; 
+</p>
+<ul>
+<li><a href="/post/2008/06/AdRotator-Injecting-scripts.aspx">AdRotator: Injecting client scripts</a> </li>
+<li><a href="/post/2008/06/AdRotator-Client-side-code.aspx">AdRotator: Client-side code</a> </li>
+<li><a href="/post/2008/06/AdRotator-Json-serialization.aspx">AdRotator: Json serialization</a> </li>
+</ul>
+<p>
+You can download the source code which includes an example website in the solution.
+</p>
+<ul>
+<li><a href="/downloads/AdRotatorExample.zip">Source Download</a> </li>
+</ul>
+<p>
+I would like to add a post about supporting difference storage mechanisms and using the control, but I have other projects demanding my attention. Hopefully I&#39;ll get back to it sometime. 
+</p>
+<p>
+I Hope you&#39;ve found some of these articles useful or interesting. I&#39;ll keep and eye on the comments, contribute to further discussion, and update the posts where errors or omissions are noted.
+</p>
+<p>
+Cheers
+</p>
+<br />
+</div>

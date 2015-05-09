@@ -1,0 +1,31 @@
+Here are the slides and the mysterious code that was never shown from my
+[DevEvening][1] presentation.
+
+Appologies it's taken a while to get them up, I was hoping to write a bit of a
+post about what I covered and some of the discussion that came up. That never
+happened.
+
+[Devevening_Presentation.pptx (565.68 kb)][2]
+
+[Guestbook.zip (3.42 mb)][3]
+
+I think the presentation went well, the group was really good and we got some
+good discussions happening before being interrupted by delicious paramas of
+the world.
+
+I'm looking forward to the next meeting, except it appears I've signed up to
+represent NoSql (of which I currently know very little about) in an ORM
+smackdown.
+
+That's what happens when you have meetings at a pub. Anyway it should fun and
+I'm looking forward to learning enough about NoSql to adequatly represent it
+in the smackdown.
+
+See ya there.
+
+
+   [1]: http://www.deveve.net/
+
+   [2]: https://tarnbarford.net/static/journal/devevenings_presentation_-_ioc/2010_3_Devevenings_Presentation.pptx   
+
+   [3]: https://tarnbarford.net/static/journal/devevenings_presentation_-_ioc/2010_3_Guestbook.zip   

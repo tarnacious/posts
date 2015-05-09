@@ -1,0 +1,39 @@
+WebGL has recently seen extra attention caused by banter between the major browser players, which seems to becoming pretty common.
+
+Microsoft called it [harmful][harmful], a developer from Mozilla raised [an issue on Microsoft's connect showing the same risk in Silverlight 5][connect] and Opera and Google bloggers [weighed][opera] [in][google].
+
+This week it seems to be more about [enterprise][enterprise]. 
+
+I think WebGL is [awesome][awesome] and I am glad people are [pushing the boundaries][chrome] and although I'm not really into computer gaming, I would like see the graphic technology as part of the web medium.
+
+To get a taste I just wanted to try doing something simple like a rotating cube. 
+Spoiled as we are there is a [MDN Getting Started with WebGL][gettingstarted] guide that walks through doing just that.
+
+<div id="canvas-container">
+<canvas id="canvas" width="640" height="480"></canvas>	
+</div>
+<p id="notsupported" style="display:none">It appears your browser doesn't support WebGL.</p>
+
+I roughly followed along writing in CoffeeScript and found a lot about what happens when you don't get it right.
+There is quite a lot you need to do, correctly, just to draw a shape on screen programming directly against the API.
+
+After some playing I had the cube you should see above, if the browser supports WebGl anyway.  
+Someone has written [IEWebGL plugin][iewebgl], but I haven't tried it. I posted the [source][source] here.
+
+<script src="https://tarnbarford.net/static/journal/cube/sylvester.js" type="text/javascript"></script> 
+<script src="https://tarnbarford.net/static/journal/cube/glUtils.js" type="text/javascript"></script> 
+<script src="https://tarnbarford.net/static/journal/cube/cube.js" type="text/javascript"></script>
+
+[source]: https://gist.github.com/1053750
+[gettingstarted]: https://developer.mozilla.org/en/WebGL/Getting_started_with_WebGL
+[coffeescript]: http://jashkenas.github.com/coffee-script/
+[awesome]: http://www.netmagazine.com/features/20-webgl-sites-will-blow-your-mind
+[harmful]: http://blogs.technet.com/b/srd/archive/2011/06/16/webgl-considered-harmful.aspx
+[connect]: http://connect.microsoft.com/VisualStudio/feedback/details/676134/dos-vulnerability-in-silverlight-5s-3d-similar-to-webgl-dos-vulnerability
+[chrome]: http://www.chromeexperiments.com/
+[enterprise]: http://bixhorn.com/?p=153
+[opera]: http://my.opera.com/haavard/blog/2011/06/22/microsoft
+[google]: http://games.greggman.com/game/webgl-security-and-microsoft-bullshit/
+[iewebgl]: http://iewebgl.com/index.html
+[shiv]: http://paulirish.com/2011/the-history-of-the-html5-shiv/
+

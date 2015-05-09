@@ -1,0 +1,72 @@
+If all goes well some JavaScript included on this page should have generated a list of all the primes numbers between 1 and 100 and printed them below.
+
+<script type="text/javascript" src="https://tarnbarford.net/static/journal/uhc_haskell_to_javascript/Main.js"></script>
+
+To generate these primes I wrote simple Primes module.
+
+    #!/usr/bin/haskell
+    module Primes where
+
+    factors :: Int -> [Int]
+    factors n = [x | x <- [1..n], n `mod` x == 0]
+
+    prime :: Int -> Bool
+    prime n = factors n == [1,n]
+
+    primes :: Int -> [Int]
+    primes n = [x | x <- [2..n], prime x]
+
+And a Main module to generate some primes and print them.
+
+    #!/usr/bin/haskell
+    module Main where
+    import Primes
+
+    main = print $ primes 100
+
+This is basic Haskell which can be compiled by [GHC][1].
+
+    #!/usr/bin/bash
+    $ ghc Main.hs
+    [1 of 2] Compiling Primes           ( Primes.hs, Primes.o )
+    [2 of 2] Compiling Main             ( Main.hs, Main.o )
+    Linking Main ...
+    $ ./Main
+    [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97]
+
+It can also be compiled by [UHC][2] which I found interesting because [UHC can compile to a JavaScript backend][6].
+
+    #!/usr/bin/bash
+    $ ls
+    Main.hs  Primes.hs
+    $ uhc -tjs Main.hs
+    [1/2] Compiling Haskell      Primes      (Primes.hs)
+    [2/2] Compiling Haskell      Main        (Main.hs)
+    $ ls
+    Main.core  Main.hi  Main.hs  Main.html  Main.js  
+    Main.mjs  Primes.core  Primes.hi  Primes.hs  Primes.mjs
+
+The -tjs sets the target to JavaScript and uhc then generates JavaScript files, some intermediate files and a html page. UHC must be configured then built with the --enable-js flag for the JavaScript backend to work.
+
+The html page references the two generated JavaScript files and quite a few framework/runtime/library JavaScript files. These are all in the source of this page.
+
+The Primes program doesn't interact with the DOM at all, it just dumps a list out where it was called. This makes everything a lot simpler, but is not very useful. 
+The [uhc-javascript project][3] implements typed [Foreign function interfaces][4] for browser JavaScript functions, the DOM and also some JavaScript libraries like jQuery and Backbone.
+This makes it possible to write an entire client side application in Haskell, although I'm not sure if it's a good idea.
+
+I also don't know how complete or good UHC is as Haskell compiler. 
+I checked it could compile a simple [Chess][5] program which I have been playing with thought it might be fun to try and get running in the browser for a post. 
+Turns out I'm going to have to level up my Haskell a fair bit to get the UI stuff working.
+
+
+   [1]: http://www.haskell.org/ghc/
+
+   [2]: http://www.cs.uu.nl/wiki/UHC
+
+   [3]: https://github.com/norm2782/uhc-jscript
+
+   [4]: http://www.cs.uu.nl/wiki/bin/view/Ehc/UhcUserDocumentation#5_1_Foreign_function_interface_F
+
+   [5]: http://www.haskell.org/haskellwiki/Learning_Haskell_with_Chess
+
+   [6]: http://www.cs.uu.nl/wiki/bin/view/Ehc/UhcUserDocumentation#5_7_3_jscript_Core_based_JavaScr

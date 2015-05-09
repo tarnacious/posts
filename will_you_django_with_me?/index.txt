@@ -1,0 +1,345 @@
+I decided I'd have a look at [Django][1] to get a feel for a different web
+framework and to learn more about Python itself. Its no secret that I've been
+really interested in IronPython recently and I'm excited to give Python a go
+without the backing of the .NET framework (but with a complete standard
+library implementation, unlike IronPython).
+
+For this post I basically just followed the installation guide and the first 4
+tutorials in the excellent [Django Documentation][2]. Its not my intention to
+reproduce the tutorials in this post, I really just want to discuss things I
+found interesting while learning the framework.
+
+### Installing
+
+After some fooling around I found the following versions of Python, Django and
+MySql were the easiest way to get started using Django on my Vista box. All of
+the versions below have windows installers so its pretty straight forward.
+
+[Python 2.5.4][3] (MySQL Python didn't have an installer for 2.6)
+
+[Django 1.0.2][4]
+
+[MySql 5.0][5] (I had problems installing 5.1 on my Vista Box, so I reverted
+to 5.0 which just worked)
+
+[MySql Python Module][6]
+
+I deliberately didn't install the [GUI tools for MySql][7] as I wanted to get
+hardcore from the console. Djangos ORM can be used directly from the Python
+console and MySql has a complete command line interface.
+
+### Getting Started
+
+Django comes with a helper script to assist setting up and managing a site. To
+do things like create a new web project all you need to do is run following
+command:
+
+    #!/use/bin/bash
+    python django-admin.py startproject [sitename]
+
+This creates the skeleton project structure and files.
+
+    #!/use/bin/bash
+    .
+    ..
+    manage.py
+    settings.py
+    urls.py
+    __init__.py
+
+You can immediately validate everything is on the right track by running the
+development server.
+
+    #!/use/bin/bash
+    python manage.py runserver
+
+I was pretty excited I could just create a new database from the same console
+window
+    
+    #!/use/bin/bash
+    c:\Working>mysql -u root -p
+    Enter password: *******
+    Welcome to the MySQL monitor.  Commands end with ; or \g.
+    Your MySQL connection id is 2
+    Server version: 5.0.77-community-nt MySQL Community Edition (GPL)
+    Type 'help;' or '\h' for help. Type '\c' to clear the buffer.
+
+    mysql> CREATE DATABASE demodb;
+    Query OK, 1 row affected (0.03 sec)
+
+All I then needed to do was add my database credentials to the settings.py.
+Once this was setup I could use the syncdb command to build all the tables
+required by the framework (which includes an authorization module).
+    
+    #!/use/bin/bash
+    python manage.py syncdb
+
+Which, without me doing anything else, creates the tables.
+
+    #!/use/bin/bash
+    Creating table auth_permission
+    Creating table auth_group
+    Creating table auth_user
+    Creating table auth_message
+    Creating table django_content_type
+    Creating table django_session
+    Creating table django_site
+
+
+### Models
+
+As with most MVC web application frameworks, there is a standard project
+structure convention. Django offers another command to quickly create an app,
+which is basically a small web application.
+
+
+    #!/use/bin/bash
+    python manage.py startapp weblog
+
+
+This creates a sub folder with the following files empty files
+
+
+    #!/use/bin/bash
+    __init__.py
+    models.py
+    views.py
+
+
+Then custom models can be added to the models python file. (Yes, I see that we
+probably would want more characters for a post, but I just want to get
+something going for now)
+
+
+    #!/use/bin/python
+    class Post(models.Model):
+        content = models.CharField(max_length=200)
+        pub_date = models.DateTimeField('date published')
+        class Comment(models.Model):
+        post = models.ForeignKey(Post)
+        comment = models.CharField(max_length=200)
+
+
+To make the next bit of magic happen, we have to register this class in the
+main settings python file of this project.
+
+
+    #!/use/bin/python
+    INSTALLED_APPS = (
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.sites',
+        'DjangoSite.weblog',
+    )
+
+
+Now the syncdb command can be used again to create the new tables for our
+model.
+
+
+    #!/use/bin/bash
+    c:\Working\DjangoSite\DjangoSite>python manage.py syncdb
+    Creating table weblog_post
+    Creating table weblog_comment
+    Installing index for weblog.Comment model
+
+We can now start checking out the ORM provided by Django in the interactive
+Python console.
+
+    #!/use/bin/bash
+    >>> from DjangoSite.weblog.models import *
+    >>> import datetime
+    >>>
+    >>> post = Post(content = "Django Rocks!", pub_date=datetime.datetime.now())
+    >>> post.save()
+    >>>
+    >>> comment = Comment(post = post, comment="+1")
+    >>> comment.save()
+    >>>
+    >>> findPost = Post.objects.get(id=post.id)
+    >>> findPost.content
+    u'Django Rocks!'
+    >>>
+    >>> comments = findPost.comment_set.all()
+    >>> for c in comments:
+    ...     print c.comment
+    ...
+    >>> findPost.delete()
+
+
+That's pretty cool, and just 6 lines of code to create the models!
+
+### Administration
+
+A few lines need to be uncommented in the urls python file, another line added
+to the installed apps list and the new table needs to added to the database to
+enable the default administration features. For the mean time this will serve
+pages to manage user accounts, later we'll be able to use the administration
+features to create and a web administration interface for any of our models.
+
+The urlpatterns object is pretty cool. Its basically the URL routing and it
+uses regular expressions to map requests to handler scripts. More on this
+before this post is finished.
+
+
+    #!/use/bin/python
+    from django.conf.urls.defaults import *
+    
+    # Uncomment the next two lines to enable the admin:
+    from django.contrib import admin
+
+    admin.autodiscover()
+
+    urlpatterns = patterns('',
+        (r'^admin/(.*)', admin.site.root) ,
+    )
+
+
+
+Now if we run the server admin pages can be found from /admin directory of the
+site.
+
+I won't go into to much detail about how its done but by simply registering a
+model, web pages are provided to manage that model (finding, adding, deleting
+and updating). Its all very clever, the framework does lots of introspection
+to display the correct html controls for each field type.
+
+To separate the UI from the model, a class can be created which is used to
+guide how the admin framework renders the pages for the model, it is then used
+to map fields to properties on the model object.
+
+### Views
+
+Getting some weblog pages setup is amazingly straight forward. Its just a
+matter of adding a regular expression into the urlpatterns that matches the
+type of URL you want to handle and a function to handle it. The most basic
+handler method is what you'd expect, it takes a http request and returns a
+http response.
+
+    #!/use/bin/python
+    from django.http import HttpResponse
+    
+    def index(request):
+        return HttpResponse("This is the posts page!")
+
+
+This can be expanded to actually use the weblog models. The code below gets
+the 5 most recent posts and creates a string with each post content separated
+with a <br /> tag.
+
+
+    #!/use/bin/python
+    from DjangoSite.weblog.models import Post, Comment
+    from django.http import HttpResponse
+
+    def index(request):
+        lastestPosts = Post.objects.all().order_by('-pub_date')[:5]
+        output = '<br />'.join([p.content for p in lastestPosts])
+        return HttpResponse(output)
+
+
+Well that's pretty cool, but I don't think we'll be writing entire pages using
+standard Python. Besides, these look more like controllers than views, there
+must be more to it.
+
+### Templates
+
+With templates, we can throw objects at a template to be rendered. The index
+method can now be separated from the rendering of HTML
+
+    #!/use/bin/python
+    from django.shortcuts import render_to_response
+    from DjangoSite.weblog.models import Post, Comment
+    from django.http import HttpResponse
+
+    def index(request):
+        latestPosts = Post.objects.all().order_by('-pub_date')[:5]
+        return render_to_response('weblog/index.html', {'posts': latestPosts})
+
+
+And the template (weblog/index.html) looks something like this
+
+    #!/use/bin/html
+    {% if posts %}
+    <ul>
+    {% for post in posts %}
+    <li>{{ post.content }}</li>
+    {% endfor %}
+    </ul>
+    {% else %}
+    <p>There are no posts</p>
+    {% endif %}
+
+
+It worth noting this isn't just Python embedded in HTML. I think this text
+from the Django documentation describes this design decision:
+
+> ..you'll want to bear in mind that the Django template system is not simply
+Python embedded into HTML. This is by design: the template system is meant to
+express presentation, not program logic
+
+It makes sense to me.
+
+### Forms
+
+A forms post data can be retrieved from a dictionary on the request object.
+
+    #!/use/bin/python
+    def index(request):
+        postTitle = resquest.POST["postTitle"]
+        ...
+
+
+I'm sure Django has support for mapping posts to model objects, but I haven't
+seen it yet.
+
+### Some more magic
+
+It turns out there is heaps more support in Django for handling generic web
+problems. For example creating list and details pages is so common that Django
+has some generic functionality to help. You just need to provide a model and
+write some templates to describe how to render the models.
+
+It appears there is heaps more of the magic throughout the framework some
+things I haven't yet looked into are:
+
+* Advanced form processing
+* Using the RSS framework
+* Using the cache framework
+* Using the comments framework
+
+### Summary
+
+I've just stepped through all the basic steps to building a functional
+database driven web application. Overall I'm pretty impressed; it didn't take
+much time, code or leaps in faith to get it going. It appears to do generic
+things, like what I was doing, is even easier as the framework has generic
+support for it.
+
+I am glad I got into it from the ground up, I think I would have been a lot
+more skeptical had I written a simple weblog without writing a line of Python.
+I've come to learn that its not about the 90% things that are easy to do in a
+web application framework, its about the 10% of things you want to do but
+don't work out of the box. Of course I haven't had enough exposure with Django
+to say how deep the application framework actually goes. I personally feel
+that Django and Python are a fantastic language and framework to deal with the
+10% of requirements that don't come out of the box.
+
+On anther note, I personally love coding from the console rather than an IDE,
+even with limited exposure I was getting pretty quick navigating my project,
+running the Django web development helpers and managing MySql. I personally
+think it's faster developing from a console with all your tools accessible
+without taking your hands of the keyboard.
+
+Its been lots of fun playing with the framework. I'd definitely like to build
+a site in Django some time, but I'm not sure when I'll find the time.
+
+   [1]: http://www.djangoproject.com/
+   [2]: http://docs.djangoproject.com/en/dev/
+   [3]: http://www.python.org/download/releases/2.5.4/
+   [4]: http://www.djangoproject.com/download/
+   [5]: http://dev.mysql.com/downloads/mysql/5.0.html
+   [6]: http://sourceforge.net/projects/mysql-python
+   [7]: http://dev.mysql.com/downloads/gui-tools/5.0.html
+

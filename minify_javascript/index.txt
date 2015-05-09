@@ -1,0 +1,141 @@
+One of my favourite books on web development is [High Performance Web Sites:
+Essential Knowledge for Front-End Engineers][1] by [Steve Souders][2]. From
+the authors role as Chief Performance Yahoo! he describes 14 surprisingly
+simple rules for improving front end performance of web sites. Most
+professional web developers should know most of the best practices, but might
+also pick up a tip or two. The rules are justified with quantifiable test
+results, which is great when you're trying to convince a manager its worth
+while implementing front end improvements.
+
+There also is 34 categorized [rules][3] for best practice on the Yahoo! web
+site. Yahoo! provides [YSlow][4] a plug-in for Firefox which analyses pages
+and explains rules that would improve front end performance.
+
+This post is about implementing rule 10, Minify JavaScript. I have known about
+minifying Javascript for a long time but had never implemented it, today I
+decided to give it a go on a site I run. I had a look at a few minifying
+tools:
+
+[JSMin][5] - Created by Douglas Crockford, JSMin is the most basic of the
+minifying tools I've seen out there. It has been ported to .Net, but its not
+really a very sophisticated tool. It removes line breaks, white space and
+doesn't do any variable renaming. There is a [site][6] that you can paste some
+JavaScript in a compress it with JSMin or Packer to have a look at the output.
+
+[Packer][7] - Created by Dean Edwards, Packer uses a different approach to
+minifying JavaScript. Packer compresses the code into an expression that can
+be evaluated to its original form by the [Javascript eval][8] function. I
+think this is cool and I'm not influenced by people out there saying you
+should never use the eval function. Packer is used and the eval function has
+been around since Javascript 1.0, it will be supported by modern browsers I'm
+supporting. The two main criticisms of Packer I am a little concerned about
+are;  There is a delay after the script is received by the browser before it
+evaluates to your actual Javascript code. With that in mind, unless you design
+the page well, you may intermittently cause Javascript errors by referencing
+code that doesn't yet exist. The second criticism that while packers
+compression is very good, it doesn't compress much more when gziped before
+being sent to the browser. Packer has been ported to .Net, Perl and PHP.
+
+[YUI Compressor][9] - Created by Yahoo!, this is what I wanted in a minifying
+tool. It removes all unnecessary characters and does variable renaming. The
+YUI Compressor is implemented in Java, there is an [open source project][10]
+on [CodePlex][11] to port it to .Net but at the time or writing this, it has
+only ported the CSS compression algorithm. [Julien Lecomte][12] an architect
+at Yahoo talks about the YUI Compressors performance in his [blog][13].
+
+[Dojo ShrinkSafe][14] - Create by the Dojo people, it seems to be doing the
+same thing as the YUI Compressor. I didn't look very hard, but I didn't find a
+.Net port for this one either.
+
+There is also [Minify][15] a PHP library on [Google Code][16] for creating
+servers that can combine and minify script files on the fly before they are
+sent to the browser. The project I'm working on is hosted by IIS and S3 so I
+didn't look into this any further.
+
+I decided to try the Yahoo YUI Compressor and Dojo ShrinkSafe even though
+there was no .Net port for either. JSMin didn't provide the compression I
+wanted to make it worth while. I outlined some of my concerns about Packer,
+and I decided I would just prefer plain compacted Javascript.
+
+Then the was the question of whether its ok to use a Java application in my
+.Net build process? Java is a free and widely used platform, and in this case
+the best tools for are built on it. I have the JRE on all the computers I use
+anyway, so for me its no problem. If you need to compress scripts at runtime
+in .Net it may be worth looking a bit further into other .Net solutions and
+ports.
+
+Both the Yahoo! and Dojo compressors were easy to use from the command line:
+
+
+
+    java -jar yuicompressor-2.3.5.jar scripts\combined.js -o scripts\yui_compressed.js
+
+    java -jar custom_rhino.jar -c scripts\combined.js > scripts\dojo_compress.js 2>&1
+
+
+The only thing I had to do to get them working was change the UFT-8 encoding
+of some of my script files to ANSI. After that everything on my site worked as
+is should with both libraries. If I had any problems I was going to give [JS
+Lint][17] a try. It is recommended to use JS Lint to verify your Javascript
+before compressing it.
+
+After using a tool to combine my uncompressed script files, the final script
+was 16,042 bytes. Below are the result of using ShrinkSafe and YUI Compressor
+on that code:
+
+
+    Dojo ShrinkSafe, 11,543 bytes, 71%
+
+    YUI Compressor, 10,448 bytes, 65%
+
+
+So what did I discover? I was really happy with both tools, they both
+compressed and didn't break my code. Because both can be run from the command
+line they should be easy to integrate into my build process, provided my build
+and development machines have Java installed.
+
+At this stage I'm not gziping my scripts, but that has more to do with my
+applications architecture, the scripts are being served by a storage in the
+cloud solution. I may look into providing the correct meta data to statically
+host gziped scripts, but that will be the topic for another post.
+
+As for getting it into my build process I just used the post build tasks hook
+in Visual Studios. It could just as easily be part of your NAnt script.
+
+I hope this helps the front end performance of your web pages too.
+
+
+   [1]: http://oreilly.com/catalog/9780596529307/
+
+   [2]: http://www.oreillynet.com/pub/au/2951
+
+   [3]: http://developer.yahoo.com/performance/rules.html
+
+   [4]: http://developer.yahoo.com/yslow/
+
+   [5]: http://www.crockford.com/javascript/jsmin.html
+
+   [6]: http://www.jscompress.com/
+
+   [7]: http://dean.edwards.name/packer/
+
+   [8]: http://www.w3schools.com/jsref/jsref_eval.asp
+
+   [9]: http://developer.yahoo.com/yui/compressor/
+
+   [10]: http://www.codeplex.com/YUICompressor
+
+   [11]: http://www.codeplex.com
+
+   [12]: http://www.julienlecomte.net/blog/author/admin/
+
+   [13]: http://www.julienlecomte.net/blog/2007/08/13/
+
+   [14]: http://dojotoolkit.org/docs/shrinksafe
+
+   [15]: http://code.google.com/p/minify/
+
+   [16]: http://code.google.com/
+
+   [17]: http://www.jslint.com/lint.html
+

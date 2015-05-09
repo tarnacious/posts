@@ -1,0 +1,32 @@
+HacMan is a game Brodie and I wrote to have a bit of fun trying out WPF. The
+game is in classic PacMan style, but our colleague S Haxby is the HacMan. His
+task is to fix bugs and avoid being eaten by the managers. Its far from
+polished code, or a complete game but I thought I'd post it anyway as its a
+pretty cool WPF demo.
+
+We tried to write the game engine decoupled from the presentation so we could
+also implement the presentation in DirectX or Silverlight if we wanted.
+
+There is probably a reference to an NUnit assembly which I haven't included in
+project. You may need to download the latest NUnit assemblies and update the
+reference. Other than that its a fairly standard VS2008 project.
+
+[image][2]
+
+[image][4]
+
+[Source Code][5]
+
+[Executable][6]
+
+Hac on..
+
+
+   [2]: /image.axd?picture=WindowsLiveWriter/HacManWPFDemoApplication_B002/image_4.png
+
+   [4]: /image.axd?picture=WindowsLiveWriter/HacManWPFDemoApplication_B002/image_6.png
+
+   [5]: /downloads/hacmancode.zip
+
+   [6]: /downloads/hacmanexecutable.zip
+

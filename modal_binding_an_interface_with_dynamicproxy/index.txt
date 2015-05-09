@@ -1,0 +1,225 @@
+
+**Update: I posted an [update to this post][1] which uses the Castle
+DictionaryAdapterFactory after getting some feedback from this post.**
+
+This started while I was playing with some ASP.NET MVC architectural ideas in
+simple application.
+
+I wanted to less code than other projects I'd worked on but still have it
+decoupled and testable.
+
+At some point I started ranting on twitter ([1][2], [2][3], [3][4]) about
+wanting a Model Binder that could bind to an interface without needing a
+concrete type.
+
+It was quickly [pointed out][5] that what I _probably_ wanted was a Model
+Binder that resolves an implementation at runtime with IOC.
+
+While this was _probably_ true as I was using already using StuctureMap and it
+did seemed like a much better idea I still some [my reservations][6]. But
+mainly [I wanted to try][7] using the [Castle DynamicProxy][8] in an
+application.
+
+Clearly the reason the default model binder can't bind to an interface is
+because it can't create an instance of it. Thanks to some nice extensibility
+hooks in the default model binder, all I had to do was override the
+CreateModel method and return my DynamicProxy instance. The default model
+binder then could do the rest of binding work as normal.
+
+    #!/usr/bin/csharp
+    public class FakeInterfaceModelBinder : DefaultModelBinder
+    {
+        protected override object CreateModel(ControllerContext controllerContext, ModelBindingContext bindingContext, Type modelType)
+        {
+            var generator = new ProxyGenerator();
+            return generator.CreateInterfaceProxyWithoutTarget(modelType, new FakePropertiesInterceptor());
+        }
+    }
+
+
+What I needed then was a DynamicProxy object that had properties the behaved
+like you'd _expect_ properties to on a normal class. I came up with some test
+scenarios I'd expect the proxy to pass using a test interface.
+
+
+    #!/usr/bin/csharp
+    public interface IDynamicProxyTest
+    {
+        int Integer { get; set; }
+        string String { get; set; }
+        DateTime Date { get; set; }
+    }
+
+I figured the Model Binder would set values on the Dynamic Proxy object and
+the controller would get the properties back to validate and pass them to the
+data layer or something like that. I came up with these tests.
+
+    #!/usr/bin/csharp
+    [Test]
+    public void If_date_has_been_set_then_return_it()
+    {
+        var date = DateTime.Now;
+        var proxy = CreateProxy();
+        proxy.Date = date;
+        Assert.AreEqual(date, proxy.Date);
+    }
+
+    [Test]
+    public void If_string_has_been_set_then_return_it()
+    {
+        var proxy = CreateProxy();
+        proxy.String = "Hello Proxy";
+        Assert.AreEqual("Hello Proxy", proxy.String);
+    }
+
+    [Test]
+    public void If_int_has_been_set_then_return_it()
+    {
+        var proxy = CreateProxy();
+        proxy.Integer = 42;
+        Assert.AreEqual(42, proxy.Integer);
+    }
+
+
+After implementing these I was [surprised][9] to find the default model binder
+did some gets on the properties before sets. So I added some more tests.
+
+    #!/usr/bin/csharp
+    [Test]
+    public void For_date_instance_if_value_not_set()
+    {
+        var proxy = CreateProxy();
+        var b = proxy.Date;
+    }
+
+    [Test]
+    public void For_int_instance_if_value_not_set()
+    {
+        var post = CreateProxy();
+        var b = post.Integer;
+    }
+
+    [Test]
+    public void For_string_instance_if_value_not_set()
+    {
+        var post = CreateProxy();
+        var b = post.String;
+    }
+
+
+My property interceptor isn't as clean as I'd like it but did the job passing
+tests.
+
+    #!/usr/bin/csharp
+    public class ProperyInterceptor : IInterceptor
+    {
+        Type _type;
+        Dictionary<string, object> properties;
+
+        public ProperyInterceptor(Type type)
+        {
+            properties = new Dictionary<string, object>();
+            _type = type;
+            var fields = _type.GetProperties();
+        }
+
+        public void Intercept(IInvocation invocation)
+        {
+            if (IsSetter(invocation))
+            {
+                properties[Name(invocation)] = invocation.Arguments[0];
+            }
+
+            if (IsGetter(invocation))
+            {
+                if (properties.ContainsKey(Name(invocation)))
+                {
+                    invocation.ReturnValue = properties[Name(invocation)];
+                }
+                else
+                {
+                    GetDefaultValue(invocation);
+                }
+            }
+        }
+
+        private static void GetDefaultValue(IInvocation invocation)
+        {
+            if (invocation.Method.ReturnType == typeof(string))
+            {
+                invocation.ReturnValue = "";
+            }
+            else
+            {
+                invocation.ReturnValue = Activator.CreateInstance(invocation.Method.ReturnType);
+            }
+        }
+
+        private string Name(IInvocation method)
+        {
+            return method.Method.Name.Substring(4);
+        }
+
+        private bool IsSetter(IInvocation method)
+        {
+            return method.Method.IsSpecialName && 
+                   method.Method.Name.StartsWith("set_", StringComparison.Ordinal);
+        }
+
+        private bool IsGetter(IInvocation method)
+        {
+            return method.Method.IsSpecialName &&
+                   method.Method.Name.StartsWith("get_",StringComparison.Ordinal);
+        }
+    }
+
+
+I used the [better model binder][10] Jimmy Bogard discusses as it makes
+writing binders for derived types and specific "types of type" more straight
+forward.
+
+
+    #!/usr/bin/csharp
+    public class InterfaceBinder : FakeInterfaceModelBinder, IFilteredModelBinder
+    {
+        public bool IsMatch(Type modelType)
+        {
+            return modelType.IsInterface;
+        }
+    }
+
+
+I did try writing a test which ran my model binder, but found it too much
+trouble. When I tried it out in a sample web project it worked exactly as I
+expected.
+
+While this was fun I don't actually think it's a very good idea. I was
+thinking about the interface as DTO's and it breaks down if you want any
+additional methods on the interface, as they just won't work. Anyway it's been
+fun as always and maybe I'll find a good place to use these dynamic proxies in
+the future.
+
+Source code with the sample website is all [here][11].
+
+   [1]: http://www.sharpthinking.com.au/post/2010/02/17/Revisting-Modal-Binding-an-Interface-now-with-DictionaryAdapterFactorye2808f.aspx
+
+   [2]: http://twitter.com/tarnacious/status/9090317966
+
+   [3]: http://twitter.com/tarnacious/status/9090453396
+
+   [4]: http://twitter.com/tarnacious/status/9090509896
+
+   [5]: http://twitter.com/craigtech/statuses/9091802953
+
+   [6]: http://twitter.com/tarnacious/status/9092355362
+
+   [7]: http://twitter.com/tarnacious/status/9133991635
+
+   [8]: http://www.castleproject.org/dynamicproxy/index.html
+
+   [9]: http://twitter.com/tarnacious/status/9133692420
+
+   [10]: http://mokhan.lostechies.com/blogs/jimmy_bogard/archive/2009/03/17/a-better-model-binder.aspx
+
+   [11]: http://static.sharpthinking.com.au/2010/DynamicProxyModelBinder.zip
+

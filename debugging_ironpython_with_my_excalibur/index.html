@@ -1,0 +1,121 @@
+<div class="entry">
+<p>
+My interest in a light-weight command-line debugger developed a while back after I watched one used in a Ruby on Rails video. I suspect there are many .Net developers with more experience than me who have used command line debuggers and never want to go back. The more <em>I</em> code, the more I long to leave my mouse behind and communicate with my development tools using only my keyboard, <a href="http://en.wikipedia.org/wiki/Excalibur">Excalibur</a>.
+</p>
+<p>
+I have been following a series of blogs by the awesome <a href="http://cid-0d9bc809858885a4.profile.live.com/?sa=794422412">Harry Pierson</a> (aka <a href="http://devhawk.net">DevHawk</a>) on writing an <a href="http://github.com/devhawk/ipydbg/tree/master">IronPython debugger</a>. When I decided I actually wanted to play with the debugger, I found myself going back over these blogs taking notes as I went. This post is an attempt to summarize all this information and provide the links for going deeper, for myself if no one else.
+</p>
+<h4><a href="http://devhawk.net/2009/02/27/Writing+An+IronPython+Debugger+Introduction.aspx">Writing an IronPython Debugger: Introduction</a>&nbsp; </h4>
+<p>
+Explains why he built a debugger when there are other alternatives. The Visual Studios debugging was required to much mouse clicking, although he has posted about doing that too in <a href="http://devhawk.net/2008/05/08/Debugging+IronPython+Code+In+Visual+Studio.aspx">Debugging IronPython Code in Visual Studio</a>. <a href="http://msdn.microsoft.com/en-us/library/ms229861.aspx">MDbg</a> which is a .Net Command Line Debugger doesn&rsquo;t support <a href="http://blogs.msdn.com/jmstall/archive/2004/12/31/344832.aspx">Just My Code</a> debugging. He also notes the reason for not using/porting <a href="http://docs.python.org/library/pdb.html">pdb (The Python Debugger)</a> is due to IronPython not yet implementing <a href="http://docs.python.org/library/sys.html#sys.settrace">settrace</a>.
+</p>
+<h4><a href="http://devhawk.net/2009/02/27/Writing+An+IronPython+Debugger+MDbg+101.aspx">Writing an IronPython Debugger: MDbg 101</a>&nbsp;</h4>
+<p>
+Describes the basics of <a href="http://msdn.microsoft.com/en-us/library/ms229861.aspx">MDbg</a>. I found it interesting there is also an <a href="http://blogs.msdn.com/jmstall/archive/2005/08/31/Mdbg_Python_ext.aspx">IronPython extension for MDbg</a> which isn&rsquo;t for debugging IronPython code, but to interact with MDbg using IronPython. Sounds cool, I&rsquo;ll have check it out some time.
+</p>
+<h4><a href="http://devhawk.net/2009/02/28/Writing+An+IronPython+Debugger+Hello+Debugger.aspx">Writing an IronPython Debugger: Hello, Debugger!</a>&nbsp;</h4>
+<p>
+Goes over the worlds simplest debugger, and it really is pretty straight forward. It just passes the path of ipy.exe and the python code to debug as a parameter into CorDebug (provided by MDbg). CorDebug starts the process (it can be used to debug any .Net process) and provides some events to hook into; OnCreateAppDomain and OnProcessExit. The world simplest debugger basically just prints some text when the AppDonain is starts and stops.
+</p>
+<h4><a href="http://devhawk.net/2009/03/02/Writing+An+IronPython+Debugger+Setting+A+Breakpoint.aspx">Writing an IronPython Debugger: Setting a Breakpoint</a></h4>
+<p>
+Provides some background information:
+</p>
+<ul>
+<li>ipy.exe produces debug information when the &ndash;D parameter is used. </li>
+<li>IL generation is dynamic and in memory so the debugger API provides the Symbols (equivalent to <a href="http://msdn.microsoft.com/en-us/library/ms241903.aspx">.pdb files</a>) as a Stream and has <a href="http://msdn.microsoft.com/en-us/library/ms230148.aspx">a callback when the Symbols change</a>. </li>
+<li>The .Net framework has <a href="http://msdn.microsoft.com/en-us/library/system.diagnostics.symbolstore.aspx">an API to read and write these symbols</a> a files and MDbg provides a <a href="http://github.com/devhawk/ipydbg/blob/5858695ff85ed4740ad06466d4f54394e7f00f9b/CorDebug/CorSymbolStore/symbinder.cs">wrapper</a> to read them from a Stream. </li>
+</ul>
+<p>
+Then covers the python code to load the symbols, translate document/line into a function/offset, set a breakpoint. Does not implement user defined breakpoints in the post.&nbsp; 
+</p>
+<h4><a href="http://devhawk.net/2009/03/04/Writing+And+IronPython+Debugger+Adding+Interactivity.aspx">Writing and IronPython Debugger: Adding Interactivity</a></h4>
+<p>
+Covers the basics of how the interactivity will happen, which I&rsquo;ve just realized isn&rsquo;t that complicated. The process being debugged just runs until a breakpoint event occurs (or the symbols change or the process completes). Once the process has stopped the the breakpoint the interactivity can occur. It would be nice to be able to set breakpoints while the process is running, but it does keep it more simple for now.
+</p>
+<h4><a href="http://devhawk.net/2009/03/09/Writing+An+IronPython+Debugger+Dynamic+Stack+Trace.aspx">Writing an IronPython Debugger: Dynamic Stack Trace</a></h4>
+<p>
+Background info on MDbg:
+</p>
+<ul>
+<li>Two <a href="http://msdn.microsoft.com/en-us/library/ms233401.aspx">stack chains</a> in a typical managed app; unmanaged and managed. The debugger for managed code so only the managed chain used </li>
+<li>Each contains a collection of <a href="http://msdn.microsoft.com/en-us/library/ms230151.aspx">stack frames</a> which is the familiar call stack. There are three types of stack frame; IL, native and internal. </li>
+<li>Explains <a href="http://msdn.microsoft.com/en-us/library/system.reflection.emit.dynamicmethod.aspx">Dynamic Methods</a> are usually used created by IronPython but can&rsquo;t be debugged and are implemented as non-dynamic methods when the &ndash;D option is set on ipy.exe.&nbsp; </li>
+</ul>
+<p>
+MDbg has a wrapper around the <a href="http://devhawk.net/ct.ashx?id=48c4a70d-e243-43e5-9709-85d2119c592b&amp;url=http%3a%2f%2fmsdn.microsoft.com%2fen-us%2flibrary%2fms404384.aspx">unmanaged metadata API</a> to get method information for displaying the call stack. 
+</p>
+<p>
+The command in ipydbg is used to view the trace from the interactive console is &ldquo;T&rdquo;. 
+</p>
+<h4><a href="http://devhawk.net/2009/03/12/Writing+An+IronPython+Debugger+Refactoring.aspx">Writing an IronPython Debugger: Refactoring</a></h4>
+<p>
+Mostly discussion about code changes and refactoring. Add code to automatically generate the MTA apartment state if the &ndash;X:MTA argument is not used. Explains the effect of this on the debugger design.
+</p>
+<h4><a href="http://devhawk.net/2009/03/13/Writing+An+IronPython+Debugger+Stepping+Thru+Code.aspx">Writing an IronPython Debugger: Stepping Thru Code</a></h4>
+<p>
+Introduces console commands for step (S), step in (I), step out (O)
+</p>
+<h4><a href="http://devhawk.net/2009/03/13/Writing+An+IronPython+Debugger+Debugging+Just+My+Code.aspx">Writing an IronPython Debugger: Debugging Just My Code</a></h4>
+<p>
+Skipped over this one, and feel I may start skipping over a few where I&rsquo;m not specially interested in the implementation. I can always refer back to them later if I really need to understand something.
+</p>
+<h4><a href="http://devhawk.net/2009/03/19/Writing+An+IronPython+Debugger+Showing+Source+Code.aspx">Writing an IronPython Debugger: Showing Source Code</a></h4>
+<p>
+Describes an issue when stepping into a Python function the CLR breaks at some infrastructure code, presumably there to manage Pythons decorators and such. Hence there is no line of user code to display. To resolve this an additional automatic step is added when stepping into a function so it can be mapped to a line of user code. 
+</p>
+<p>
+To avoid multiple hits to the file system source files used to retrieve user code are cached.
+</p>
+<h4><a href="http://devhawk.net/2009/03/19/Writing+An+IronPython+Debugger+Colorful+Console.aspx">Writing an IronPython Debugger: Colorful Console</a></h4>
+<p>
+Describes how he choose to implement colors in the console, while bemoaning the stateful nature of the <a href="http://msdn.microsoft.com/en-us/library/system.console.foregroundcolor.aspx">console foreground colours</a> (ie when you change the foreground colour it will stay that way until you change it back). I&rsquo;m sure I&rsquo;ll come back to this post when I want to add colours to the console but for now I skipped through it, it doesn&rsquo;t have much to do with writing or using an IronPython debugger. I guess that&rsquo;s why he discusses moving it out of the ipydbg and into its <a href="http://devhawk.net/2009/03/19/IronPython+ConsoleColorMgr.aspx">own module</a> in his next post.
+</p>
+<h4><a href="http://devhawk.net/2009/03/21/Writing+An+IronPython+Debugger+A+Little+HackhelliperrhellipCleanup.aspx">Writing an IronPython Debugger: A Little Hack&hellip;err&hellip;Cleanup</a></h4>
+<p>
+Discusses some issues regarding mapping to the debugger COM object instance. This didn&rsquo;t sound like a whole log of fun and I hope I don&rsquo;t have to come back and fully understand this one.
+</p>
+<h4><a href="http://devhawk.net/2009/03/25/Writing+An+IronPython+Debugger+Getting+Local+Variables.aspx">Writing an IronPython Debugger: Getting Local Variables</a></h4>
+<p>
+Uses the <a href="http://devhawk.net/ct.ashx?id=c693512a-3698-478f-a95e-20d1be919b67&amp;url=http%3a%2f%2fgithub.com%2fdevhawk%2fipydbg%2fblob%2f442527b0aed3ac2f7ecf6ab8f5f7e93ad03090f2%2fCorDebug%2fCorDebug%2fThread.cs%23L448">GetLocalVariable(int index)</a> and <a href="http://devhawk.net/ct.ashx?id=c693512a-3698-478f-a95e-20d1be919b67&amp;url=http%3a%2f%2fgithub.com%2fdevhawk%2fipydbg%2fblob%2f442527b0aed3ac2f7ecf6ab8f5f7e93ad03090f2%2fCorDebug%2fCorDebug%2fThread.cs%23L475">GetLocalVariablesCount()</a> methods from the MDbg CorFame class. This post finally made me look up what lexical scoping meant, its a term I&rsquo;ve heard heaps usually in discussions about compilers that I never really understood. Its fair to say that I still not confident in my understanding of it.
+</p>
+<p>
+Discusses matching up debug symbols with variable names from the user code. Doesn&rsquo;t actually evaluate the variable in this post. Notes get_locals from the IronPython process emits some locals used internally, these are prefixed with a dollar sign. 
+</p>
+<h4><a href="http://devhawk.net/2009/03/31/Writing+An+IronPython+Debugger+Displaying+Values.aspx">Writing an IronPython Debugger: Displaying Values</a></h4>
+<p>
+This post covers some pretty tricky interfaces for dealing with all the different types, which requires a pretty good understand of how the CLR handles variables under the cover. I didn&rsquo;t read into to much detail but will consider revisiting it later as the content is quite interesting and it&rsquo;s good to understand core CLR stuff.
+</p>
+<h4><a href="http://devhawk.net/2009/04/01/Writing+An+IronPython+Debugger+Command+Routing.aspx">Writing an IronPython Debugger: Command Routing</a></h4>
+<p>
+Discusses how console commands are routed to functions. This really has nothing to do with debugging IronPython but it&rsquo;s interesting the way it&rsquo;s implemented. He starts by implementing a switch using a dictionary of input commands and functions (Python has no C# switch keyword equivalent). He then takes it further by making use of Python <a href="http://www.python.org/dev/peps/pep-0318/">decorators</a> to bind commands to functions.
+</p>
+<h4><a href="http://devhawk.net/2009/04/06/Writing+An+IronPython+Debugger+Getting+Arguments.aspx">Writing an IronPython Debugger: Getting Arguments</a></h4>
+<p>
+Discusses getting function arguments as locals.
+</p>
+<h4><a href="http://devhawk.net/2009/04/06/Writing+An+IronPython+Debugger+REPL+Console.aspx">Writing an IronPython Debugger: REPL Console</a></h4>
+<p>
+Discusses implementing a <a href="http://en.wikipedia.org/wiki/REPL">REPL</a> console in the debugger with the IPyDebugProcess object available in the console scope. This is awesome for exploring the API using python, just by reflecting the methods of the process object I realised it would be trivial to add a command to list the source files currently being debugged as it&rsquo;s just a property on the object. Explorative coding using reflection is a really powerful concept in Python.&nbsp;&nbsp;&nbsp; 
+</p>
+<p>
+In the current implementation is a new local scope is created and used by the by the REPL console, it does not yet support executing code in the process being debugged. 
+</p>
+<h4><a href="http://devhawk.net/2009/04/08/Writing+An+IronPython+Debugger+Breakpoint+Management.aspx">Writing an IronPython Debugger: Breakpoint Management</a></h4>
+<p>
+Implements console commands for setting Breakpoints, as the original post was about how it worked and only implemented breaking on the first line of the user code. Introduces multi-key commands for breakpoints. Adds a breakpoint function (B) with sub functions add (A), list (L), enable (E), disable (D).
+</p>
+<p>
+Here&rsquo;s a screenshot of me debugging a really simple app which might help explain what I&rsquo;ve been talking about for this whole post.
+</p>
+<p>
+<a href="/image.axd?picture=WindowsLiveWriter/23d5b9f8300a/4706A6C0/image.png"><img style="border-width: 0px; display: inline" src="image_thumb.png" border="0" alt="image" title="image" width="536" height="581" /></a>
+</p>
+<p>
+I&rsquo;m pretty amazed by the productivity and brilliance of Harry Pierson, I&rsquo;ve learned heaps reading <a href="http://devhawk.net/">his blogs</a> and I&rsquo;m really impressed by the progress he&rsquo;s making with IpyDbg. The debugger still has a long way to being a really useful tool, but its coming along very quickly. I think I will have to try using MDbg with the Python extensions, but I really hope to make some use of ipydbg and maybe even find something I can contribute to it. 
+</p>
+<p>
+If your interested in trying out the debugger I recommend checking <a href="http://devhawk.net/">his blog</a> and the <a href="http://github.com/devhawk/ipydbg/tree/master">latest version</a> of the project on GitHub.&nbsp;&nbsp; 
+</p>
+<br />
+</div>

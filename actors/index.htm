@@ -1,0 +1,20 @@
+<p>A couple of months back <a href="http://twitter.com/#!/abienert">Andrew Bienert</a> organised a <a href="http://melbourne.ozalt.net/2011/04/april-meeting-functional-programming.html">Melbourne Alt.NET meeting on functional programming</a>.</p>
+
+<p><a href="http://twitter.com/#!/adbrowne">Andrew Browne</a> and myself put our hands up to do mini talks on Scala and Erlang and <a href="http://twitter.com/#!/abienert">Andrew Bienert</a> was keen to talk about F#.</p>
+
+<p>A few days before the meeting was <a href="http://melbourne.ozalt.net/2011/04/april-meeting-functional-programming_27.html">originally scheduled</a> Andrew Browne and I caught up on Skype to work out if we could somehow make our talks complimentary,
+either by each talking about different concepts or showing the same concepts in Scala and Erlang.
+We decided it would be best to show the same concepts in both Languages. </p>
+
+<p>We had previously also talked over beers about the <a href="http://en.wikipedia.org/wiki/Actor_model">Actor model</a> in Erlang and Scala and wanted to spend some time on that. I initially wanted to do the exercise proposed by <a href="http://armstrongonsoftware.blogspot.com/">Joe Armstrong</a> from his book <a href="http://pragprog.com/titles/jaerlang/programming-erlang">Programming Erlang</a>.</p>
+
+<blockquote>
+  <p>Write a ring benchmark. Create N processes in a ring. Send a message round the ring M times. So that a total of N * M messages get sent. Time how long this takes for different values of N and M.</p>
+</blockquote>
+
+<p>It is a fantastic exercise but we decided it was overly complex for a short presentation. We decided on a much simpler example with three actors; a Hello actor, a World actor and a Print actor. 
+The Hello actor is send a message and adds "hello" to the message then sends it to the world actor which adds "world" to the message and sends it to the print actor which prints the messages.</p>
+
+<p><a href="http://twitter.com/#!/adbrowne">Andrew Browne</a> <a href="https://gist.github.com/936274">implemented it</a> in Scala, I <a href="https://gist.github.com/936268">implemented it</a> in Erlang and <a href="http://twitter.com/#!/abienert">Andrew Bienert</a> joined the party and <a href="https://gist.github.com/984031">implemented a version</a> in F#.</p>
+
+<p>I found the similarities and the differences in the implementations very interesting. The meeting was <a href="http://melbourne.ozalt.net/2011/05/may-meeting-functional-programming-take.html">eventually held</a> and the presentation generated <a href="http://twitter.com/#!/NickJosevski/status/74687100531904512">some interest amongst the attendees</a>, so I thought it would be worthwhile posting about here.</p>

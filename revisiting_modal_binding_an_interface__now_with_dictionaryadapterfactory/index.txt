@@ -1,0 +1,50 @@
+After [my post][1] yesterday [Krzysztof Kozmic][2] ([@kkozmic][3]) [messaged
+me][4] saying I should use the [Castle DictionaryAdapterFactory][5] instead.
+
+For the record Krzysztof has a [great series of posts on DynamicProxy][6] and
+was also very helpful [answering][7] a specific [question of mine][8]
+yesterday.
+
+Anyway this is great news! I can do the same thing only referencing [one
+assembly][9]. The DictionaryAdapterFactory returns an object that passes all
+my tests from yesterday and slides staight into the model binder.
+
+
+    #!/usr/bin/python
+    public class FakeInterfaceModelBinder : DefaultModelBinder
+    {
+        protected override object CreateModel(ControllerContext controllerContext, ModelBindingContext bindingContext, Type modelType)
+        {
+            Dictionary<string, object> dictionary = new Dictionary<string,object>();
+            return new DictionaryAdapterFactory().GetAdapter(modelType,dictionary);
+        }
+    }
+
+
+It was fun playing with DynamicProxy yesterday, but I did [think][10] it might
+not have been a good idea for a model binder. I'm glad I was pointed in the
+right direction.
+
+Cheers Krzysztof!
+
+
+   [1]: http://www.sharpthinking.com.au/post/2010/02/16/ModalBinding-an-Interface-with-DynamicProxy.aspx
+
+   [2]: http://kozmic.pl/
+
+   [3]: http://twitter.com/kkozmic
+
+   [4]: http://twitter.com/kkozmic/statuses/9191658727
+
+   [5]: http://www.castleproject.org/components/dictionaryadapter/basics.html
+
+   [6]: http://kozmic.pl/archive/2008/12/16/castle-dynamicproxy-tutorial-part-i-introduction.aspx
+
+   [7]: http://twitter.com/kkozmic/statuses/9134188880
+
+   [8]: http://twitter.com/tarnacious/status/9134151576
+
+   [9]: https://sourceforge.net/projects/castleproject/files/DictionaryAdapter%20Component/1.1/CastleDictionaryAdapter-1.1.0.zip/download
+
+   [10]: http://twitter.com/tarnacious/status/9180071375
+

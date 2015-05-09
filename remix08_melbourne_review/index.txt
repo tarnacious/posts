@@ -1,0 +1,43 @@
+Although this years Melbourne [REMIX][1] at the Town Hall was not the same
+2-day extravaganza held at Crown Casino last year, it was still a very well
+organised day with great content showcasing some of Australia's talent.
+
+I've been getting into [Silverlight][2] a bit more since the beta 1 release
+and like most other .NET developers have been pretty excited about the future
+possibilities.  I had already consumed a lot of content from the [LasVegas
+MIX][3] so wasn't really expecting too much other than to pick up some tips
+&tricks and check out some cool demos, which there were plenty of.
+
+The highlights for me ...
+
+  * Keynote presentation in particular [Mark Pesce's presentation][4] on the
+power of communication and how it is evolving through technology, and the
+glimpse at ABC's silverlight based video content website.
+
+  * [Jose Fajardo's][5] mini presentation on possibilities with Deep Zoom -
+very inspiring.
+
+  * all the single slide Deep Zoom presentations - in particular the ABC/Hydro
+presentation - a much more interesting way to do a presentation rather than to
+flick through some slides ... I'm expecting this to become much more common in
+the future
+
+  * learning about the new features provided in IIS7
+
+  * getting a full copy of Expression Studio 2 :-)
+
+  * and course, the networking drinks at the Longroom Bar.
+
+Looking forward to next year already.
+
+
+   [1]: http://www.microsoft.com/australia/remix08/index.aspx
+
+   [2]: http://silverlight.net/
+
+   [3]: http://sessions.visitmix.com/
+
+   [4]: http://blog.futurestreetconsulting.com/?p=55
+
+   [5]: http://www.cynergysystems.com/blogs/page/josefajardo
+

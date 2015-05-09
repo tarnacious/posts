@@ -1,0 +1,77 @@
+<div class="entry">
+<p>
+I work with an IT manager who is very into knowing about how all the servers on the network are performing, and rightfully so. But the process isn&#39;t great; he gets an IT person to remote into all the servers daily and manually record information in a spreadsheet. These include things like disk usage, logs, log sizes, databases, web servers, processes, memory and CPU usage.&nbsp; 
+</p>
+<p>
+A while back I wrote a Powershell Script that recorded heaps of the results for him. Unfortunately it didn&#39;t take many server changes before the script had more errors than results, I guess he could do stuff with all that extra time. I would fix stuff from time to time, but more often than not I was too busy with things I had to do or things I wanted to do. 
+</p>
+<p>
+The other day I decided it would be cool if I could write all the checks as NUnit tests. That way he could just run NUnit, point it towards the assembly and get cool Red/Green light testing of the network status. I could write test like:
+</p>
+<pre class="csharpcode">
+[Test]
+<span class="kwrd">public</span> <span class="kwrd">void</span> Server1_DiskUsage_CDrive_LessThan80Percent(). 
+</pre>
+&nbsp;
+<p>
+I also found this article: <a href="http://www.codeproject.com/KB/dotnet/cruisecontrol_continuous.aspx">Setting up CruiseControl.NET to be a Continuous Monitoring Server</a>. I haven&#39;t read it in detail, but I think its a pretty cool idea. 
+</p>
+<p>
+I don&#39;t have time to implement this yet, but I have started writing some of the tests from the Powershell script in C#. I started some code to get the memory usage from a server and I was immediately reminded how annoying it was trying to work out how values in WMI related to the items on the Performance tab in task manager. So marked up an image of the task manager window with the corresponding properties of the WMI. 
+</p>
+<p>
+&nbsp;
+</p>
+<a href="/image.axd?picture=WindowsLiveWriter/NetworkChecksOperatingSystemPerformance_10294/Performance_2.jpg"><img style="border-width: 0px" src="Performance_thumb.jpg" border="0" alt="Performance" width="514" height="479" /></a><br />
+<p>
+&nbsp;
+</p>
+<pre class="csharpcode">
+&nbsp;
+</pre>
+<p>
+See <a href="http://msdn.microsoft.com/en-us/library/aa394239(VS.85).aspx">Win32_OperatingSystem_Class</a> on MSDN for all the properties and descriptions
+</p>
+<p>
+Anyway you might now be asking to see the C# code, well here it is. There is no exception handling as I was running it as an NUnit test which handled them for me. 
+</p>
+<pre class="csharpcode">
+<span class="kwrd">private</span> OperatingSystemInfo GetOperatingSystemInfo(<span class="kwrd">string</span> serverName)
+{
+<span class="kwrd">string</span> wmiObjectName = <span class="str">&quot;Win32_OperatingSystem&quot;</span>;
+<span class="kwrd">string</span> connectionString = <span class="kwrd">string</span>.Format(<span class="str">&quot;\\\\{0}\\root\\cimv2:{1}&quot;</span>, serverName, wmiObjectName);
+ManagementClass os = <span class="kwrd">new</span> ManagementClass(connectionString);
+<span class="kwrd">foreach</span> (ManagementObject obj <span class="kwrd">in</span> os.GetInstances())
+{
+OperatingSystemInfo osInfo = <span class="kwrd">new</span> OperatingSystemInfo();
+osInfo.NumberOfProcesses = (<span class="kwrd">uint</span>)obj.GetPropertyValue(<span class="str">&quot;NumberOfProcesses&quot;</span>);
+osInfo.TotalVisibleMemorySize = (<span class="kwrd">ulong</span>)obj.GetPropertyValue(<span class="str">&quot;TotalVisibleMemorySize&quot;</span>);
+osInfo.TotalVirtualMemorySize = (<span class="kwrd">ulong</span>)obj.GetPropertyValue(<span class="str">&quot;TotalVirtualMemorySize&quot;</span>);
+osInfo.FreeVirtualMemory = (<span class="kwrd">ulong</span>)obj.GetPropertyValue(<span class="str">&quot;FreeVirtualMemory&quot;</span>);
+osInfo.FreeSpaceInPagingFiles = (<span class="kwrd">ulong</span>)obj.GetPropertyValue(<span class="str">&quot;FreeSpaceInPagingFiles&quot;</span>);
+osInfo.FreePhysicalMemory = (<span class="kwrd">ulong</span>)obj.GetPropertyValue(<span class="str">&quot;FreePhysicalMemory&quot;</span>);
+<span class="kwrd">return</span> osInfo; 
+}
+<span class="kwrd">return</span> <span class="kwrd">null</span>;
+}
+<span class="kwrd">public</span> <span class="kwrd">class</span> OperatingSystemInfo
+{
+<span class="kwrd">public</span> <span class="kwrd">uint</span> NumberOfProcesses { get; set; }
+<span class="kwrd">public</span> <span class="kwrd">ulong</span> TotalVisibleMemorySize { get; set; }
+<span class="kwrd">public</span> <span class="kwrd">ulong</span> TotalVirtualMemorySize { get; set; }
+<span class="kwrd">public</span> <span class="kwrd">ulong</span> FreeVirtualMemory { get; set; }
+<span class="kwrd">public</span> <span class="kwrd">ulong</span> FreeSpaceInPagingFiles { get; set; }
+<span class="kwrd">public</span> <span class="kwrd">ulong</span> FreePhysicalMemory { get; set; }
+}
+</pre>
+<pre class="csharpcode">
+&nbsp;
+</pre>
+<p>
+I hope it helps. I&#39;m getting back to playing with the Microsoft MVC Preview 3 which is really cool and lots of fun. I hope to get a post out about what I like and don&#39;t like about it soon.&nbsp; 
+</p>
+<pre class="csharpcode">
+&nbsp;
+</pre>
+<br />
+</div>

@@ -1,0 +1,161 @@
+For me it's been another busy fun-filled intense year with the usual ups and
+downs.  I've been amazed and fascinated this year with the amount of "new
+stuff" coming out from all directions, which has seen me cast my information
+gathering net deep into the web.  The result being that I've developed a good
+case of information addiction, which I will have to tame in order to get
+anything done ;-)
+
+In particular from Microsoft I've learnt a fair bit this year about
+Silverlight, WCF, AJAX, MVC but still have a very long todo list ... including
+Azure, Mesh, Entity Framework, MEF, Surface, Workflow ... and more. I feel
+that it is a great time to be a software developer with so much to play with
+and the future looking so promising.
+
+Also this year I stepped up my reading about the "Singularity" which has kept
+me very entertained - so much so that it's been a while since I've read a
+scifi novel (except for Ian Bank's - Matter, which was awesome) since reading
+about what is going on out there is kind of mind blowing. To hear Intel's CTO
+Justin Rattner say that the singularity will be achieved by 2049 is
+extraordinary.  Most conversations I've had with people about the singularity
+have been met with confused looks - almost "are you out of your mind" type
+looks - which made me realize that most people aren't really thinking much
+about the future, or not the distant future 10+ years - maybe people are just
+struggling to keep up with progress?
+
+I think that next year that the idea of the singularity will gather a bit more
+momentum and perhaps get into the mainstream - although that may not be such a
+good thing ;-)
+
+
+Anyways here are some of my favorites for the year...
+
+
+### Videos that blew my mind in 2008 (still!)
+
+  * [Building Gods][1]
+  * [Human 2.0][2]
+  * [Accelerating change][3]
+  * [Next 5000 days of the web][4]
+  * [Flow][5]
+  * [Paintball auto targeting][6]
+  * [Darpa dog][7]
+  * [Darpa Exoskeleton][8]
+  * [PDC 2008 videos][9]
+  * most stuff from the [human network][10]
+
+### Technology/ideas that blew my mind (at the time anyways)
+
+  * [photosynth][11]
+  * [google maps streetview][12]
+  * [twitter][13]
+  * cloud services - [mesh][14]  , windows azure, [amazon][15]
+  * [stackoverflow][16]
+
+### Favorite twitter peps
+
+  * [@rands][17]
+  * [@timoreilly][18]
+  * [@elijahmanor][19]
+  * [@SilverlightNews][20]
+  * [@darthvader][21]
+
+### Favorite bloggers
+
+  * [Coding Horror][22]
+  * [Rands in Response][23]
+  * [Scott Hanselman's ComputerZen.com][24]
+  * [ScotGu's Blog][25]
+  * [Rob Conery][26]
+  * [Jonas Follesoe][27]
+  * [Reflective Perspective][28]
+  * [Arjan`s World][29]
+  * [xkcd][30]
+  * [BrainStuff][31]
+
+### Favorite podcasts
+
+  * [stackoverflow][32]
+  * [hanselminutes][33]
+  * [Herding Code][34]
+  * [Alt.NET][35]
+  * [Channel9 MSDN][36]
+  * [Dimecasts][37]
+
+
+Have a happy new year in 2009!
+
+
+   [1]: http://video.google.com/videoplay?docid=1079797626827646234&q=building+gods
+
+   [2]: http://femagazine.net/node/155
+
+   [3]: http://singularityhub.com/2008/11/28/did-you-know-30-accelerating-change-video-released/
+
+   [4]: http://singularityhub.com/2008/12/27/kevin-kelly-predicting-the-next-5000-days-of-the-web/
+
+   [5]: http://www.ted.com/index.php/talks/mihaly_csikszentmihalyi_on_flow.html
+
+   [6]: http://www.youtube.com/watch?v=RxBa5bQfTGc
+
+   [7]: http://www.youtube.com/watch?v=4oMTKuzc__M
+
+   [8]: http://www.youtube.com/watch?v=SFXEFPco8l8
+
+   [9]: https://sessions.microsoftpdc.com/
+
+   [10]: http://blog.futurestreetconsulting.com/
+
+   [11]: http://livelabs.com/photosynth/
+
+   [12]: http://maps.google.com/
+
+   [13]: http://twitter.com/
+
+   [14]: https://www.mesh.com/
+
+   [15]: http://aws.amazon.com/
+
+   [16]: http://stackoverflow.com
+
+   [17]: http://twitter.com/rands
+
+   [18]: http://twitter.com/timoreilly
+
+   [19]: http://twitter.com/elijahmanor
+
+   [20]: http://twitter.com/SilverlightNews
+
+   [21]: http://twitter.com/darthvader
+
+   [22]: http://www.codinghorror.com/
+
+   [23]: http://www.randsinrepose.com/
+
+   [24]: http://www.hanselman.com/
+
+   [25]: http://weblogs.asp.net/scottgu/
+
+   [26]: http://blog.wekeroad.com/blog/
+
+   [27]: http://jonas.follesoe.no/
+
+   [28]: http://blog.cwa.me.uk/
+
+   [29]: http://www.arjansworld.com
+
+   [30]: http://xkcd.com/
+
+   [31]: http://brainstuff.howstuffworks.com/
+
+   [32]: http://blog.stackoverflow.com/
+
+   [33]: http://www.hanselminutes.com/
+
+   [34]: http://herdingcode.com/
+
+   [35]: http://altnetpodcast.com/
+
+   [36]: http://channel9.msdn.com/
+
+   [37]: http://www.dimecasts.net/
+

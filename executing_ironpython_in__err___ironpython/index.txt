@@ -1,0 +1,93 @@
+I just read the latest post from [secretGeek][1], a brilliantly funny blog
+which often makes my day with posts like [IT Industry Revolutionised By Labour
+Saving Device][2] and [Defensive Programming][3].
+
+The latest post, [A 3 minute guide to embedding IronPython in a C#
+application][4], is a demo of a Windows application that can execute an
+IronPython script from a TextBox at runtime. Another TextBox control on the
+form is added to the IronPython script scope so the script can interact with
+it. This is both cool and powerful, the concept has been used in an
+[IronPython powered spreadsheet from Revolver Systems][5].
+
+I thought it would be kind of fun to create an IronPython script that created
+a Windows Form which could execute a script. This means I could run the script
+and get window which I could then use to run the script again and get anther
+window, then..
+
+I posted the script in the comments and then decided it was pretty fun and it
+would be worth writing a post about myself. Below is the Form class script:
+
+
+    #!/usr/bin/python
+    import clr
+    clr.AddReferenceByPartialName("System.Windows.Forms")
+    clr.AddReference('IronPython')
+    clr.AddReference('Microsoft.Scripting')
+
+    from System.Windows.Forms import *
+    from IronPython.Hosting import Python
+    from Microsoft.Scripting import SourceCodeKind
+
+    class MetaNote(Form):
+    
+        def __init__(self):
+        self.button = Button()
+        self.code = TextBox()
+        self.text = TextBox()
+        self.Width = 420
+        self.Height = 400
+        self.code.Multiline = True
+        self.code.Height = 300
+        self.code.Width = 300;
+        self.button.Left = 310
+        self.button.Text = "Execute"
+
+        self.Controls.Add(self.button)
+        self.Controls.Add(self.code)
+        self.button.Click += self.run
+
+    def run(self,sender,e):
+    
+        engine = Python.CreateEngine()
+        source = engine.CreateScriptSourceFromString(self.code.Text,SourceCodeKind.Statements)
+        scope = engine.CreateScope()
+        scope.SetVariable("txt", self.text);
+        source.Execute(scope)
+
+
+The only trick is, to start the application from the IronPython console
+(ipy.exe) you need to include this line at the end which creates the class and
+creates a standard application message loop.
+
+
+    #!/usr/bin/csharp
+    Application.Run(MetaNote())
+
+
+When the script is executed from within the application itself, you only need
+to create in instance of the class and call its Show method.
+
+
+    #!/usr/bin/csharp
+    MetaNote().Show()
+
+
+Then the fun..
+
+
+![image][6]
+
+
+
+   [1]: http://www.secretgeek.net/
+
+   [2]: http://www.secretgeek.net/self_click_next.asp
+
+   [3]: http://www.secretgeek.net/Defensive.asp
+
+   [4]: http://www.secretgeek.net/host_ironpython.asp
+
+   [5]: http://www.resolversystems.com/
+  
+   [6]: https://tarnbarford.net/static/journal/executing_ironpython_in__err___ironpython/image.png
+

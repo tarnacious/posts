@@ -1,0 +1,20 @@
+<div class="entry">
+        
+        
+        Far to often I&#39;ve had multi-project solutions in Visual Studio not build because of post build copy tasks. Far too often I&#39;ve seen references to the parent directory of a project to get files. No doubt both these things have a time and place; you might have a Javascript minify task in your post build or be writing an application that needs to access data or configuration from a parent directory. <br />
+<br />
+Most of the time this is not the case and I often see people overlooking the &quot;copy to output directory&quot; property on items in the solution explorer. This property is really useful to solve the common problem of needing resources from your project in the output, and it works in multi-project solutions! <br />
+<br />
+An example scenario would be if you had a solution with an application project, and assembly project and a test assembly project. In this scenario the assembly project has an XSL transform file, it makes sense to have this file with the code in the project. Both the test project and the application project will need to know about this file. <br />
+<br />
+I&#39;ve actually seen code that references the file in project location, using lots of &quot;..&quot; and &quot;\&quot; in the path to reference the source file. This will cause problems if your application actually modifies the source code. It will cause problems if you restructure your solution. And if you use absolute paths it will prevent the solution from building unless its in a specific location.&nbsp; <br />
+<br />
+I&#39;ve also seen extensive post build tasks that copy the required files to all the places that might need them. This is means that every new project the references the assembly will needed to be added in the post-build copy steps. <br />
+<br />
+Both these solutions have maintenance problems and are excessively difficult to implement. The best solution here is to use the &quot;copy to output directory&quot; property on the XSL file in the solution explorer. This will mean that when you build your solution it will be copied to the output of all projects in the solution that reference the project.&nbsp; <br />
+<br />
+There is a &quot;copy always&quot; and a &quot;copy if newer&quot; option. As I said earlier there is a time and place for the other methods so its best to think through what makes sense for your solution.
+
+    
+        <br />
+</div>

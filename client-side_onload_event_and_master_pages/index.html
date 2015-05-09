@@ -1,0 +1,58 @@
+<div class="entry">
+<p>
+First blog ever for me, YAY!&nbsp; I&#39;ll add to it regularly (yeah right).&nbsp; 
+</p>
+<p>
+Anyways, you&rsquo;ve just added some cool JavaScript to your page and you want to call it when your page loads. Usually you&#39;d just add an attribute to your body tag, something like: 
+</p>
+<p>
+&lt;body onload=&quot;MyLoadFunction()&quot;&gt; 
+</p>
+<p>
+But you find that your body element is defined in your Master page and you can&#39;t just add it to the Master as not all the pages that use the master will implement MyLoadFunction(). There are heaps of ways of getting round this problem, but I&#39;ve found the following solution to be quite elegant. 
+</p>
+<p>
+The solution basically involves creating a method on your Master page to add an onload attribute to the body tag. So in the content page you want to add an onload method you would call something like 
+</p>
+<p>
+Master.SetBodyOnloadAttribute(&quot;MyLoadFunction&quot;) 
+</p>
+<p>
+To implement this method we need to be able to find the body tag and add the attribute. We can find the body tag if we put id and runat=&quot;server&quot; attributes it when we define it: 
+</p>
+<p>
+&lt;body id=&quot;masterBody&quot; runat=&quot;server&quot;&gt; 
+</p>
+<p>
+Then we can implement our SetBodyOnloadAttribute method: 
+</p>
+<p>
+public void SetBodyOnloadAttribute(string value) <br />
+{ <br />
+&nbsp;&nbsp;&nbsp; HtmlGenericControl bodyControl = FindControl(&quot;masterBody&quot;) as HtmlGenericControl; <br />
+&nbsp;&nbsp;&nbsp; if (bodyControl != null) <br />
+&nbsp;&nbsp;&nbsp; { <br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bodyControl.Attributes.Add(&quot;onload&quot;, value); 
+</p>
+<p>
+&nbsp;&nbsp;&nbsp; } <br />
+} 
+</p>
+<p>
+So now all you need to do is call the method on the master from your content page and make sure the content page has the JavaScript function to handle the event. Thats it. 
+</p>
+<p>
+Note: 
+</p>
+<p>
+To use specialized methods on Master, you will have to add a Master Type directive in the content aspx page, this will inform Visual Studios to use your implementation of MasterPage. This is added after the Page directive.&nbsp; 
+</p>
+<p>
+&lt;%@ MasterType VirtualPath=&quot;~/MyMaster.Master&quot; %&gt;&nbsp;&nbsp; 
+</p>
+<p>
+&nbsp; <br />
+Hope this helps 
+</p>
+<br />
+</div>

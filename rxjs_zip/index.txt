@@ -1,0 +1,37 @@
+*This is the presentation for [Composing Events with RxJS][1] an [Alt.Net Melbourne Lightning Talk][2].*
+
+An observable that yields and event for consecutive clicks. This can be useful
+when the change since last event is required.
+
+    #!/usr/bin/javascript
+    // Setup observables
+    var button1 = $("#button1").toObservable("click").Select(function() {
+        return "Button 1" });
+
+    var button2 = $("#button2").toObservable("click").Select(function() {
+        return "Button 2"; });
+
+    // Compose an event
+    var compose = button1.Merge(button2)
+
+    // Zip pairs of events
+    var compose = compose.Skip(1).Zip(compose, function (result1, result2) {
+        return result1 + " previously " + result2; });
+
+    // Subscribe to, and handle event
+    compose.Subscribe(function (result) {
+        var val = $("<li/>").html(result);
+        val.appendTo($("#results"));
+    });
+
+<button id="button1">Button 1</button>
+<button id="button2">Button 2</button>
+<ul id="results">
+</ul>
+[Previous (Merge)][3]
+[Next (Capture)][4]
+
+  [1]: /journal/composing-events-with-rxjs
+  [2]: http://melbourne.ozalt.net/2010/08/august-meeting-lightning-talks-wrap-up.html
+  [3]: /journal/rxjs-merge
+  [4]: /journal/rxjs-capture

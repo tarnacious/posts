@@ -1,0 +1,121 @@
+<div class="entry">
+<blockquote></blockquote> <p>This article is part of a series of posts about various aspects of writing web controls for ASP.Net using an ad rotator as an example. The <a href="http://blog.sharpthinking.com.au/post/2008/06/AdRotator-WebControl-Example.aspx">AdRotator WebControl Example</a> post has links to related posts and downloads.</p> <p>The AdRotator needs to pass some data to the client side code so I use a Json serializer. I use the same class we use on the server side. The Json serializer converts an instance of it, or in our case a templated list of it, to a sting on JSON we can emit in the output. Json is JavaScript Object Notation and literally describes an object in Javascript that we can use in our client side Javascript code. </p> <p>The object is very simple and only contains three strings and constructors. I have removed some of the attributes described in other articles as they are not relevant in this context.</p><pre class="csharpcode"><span class="kwrd">public</span> <span class="kwrd">class</span> ImageItem
+{
+    <span class="kwrd">public</span> ImageItem()
+        : <span class="kwrd">this</span>(<span class="kwrd">string</span>.Empty, <span class="kwrd">string</span>.Empty, <span class="kwrd">string</span>.Empty)
+    {
+    }
+
+    <span class="kwrd">public</span> ImageItem(<span class="kwrd">string</span> linkUrl, <span class="kwrd">string</span> imageUrl, <span class="kwrd">string</span> displayTime)
+    {
+        LinkUrl = linkUrl;
+        ImageUrl = imageUrl;
+        DisplayTime = displayTime;
+    }
+
+    <span class="kwrd">public</span> <span class="kwrd">string</span> LinkUrl { get; set; }
+    <span class="kwrd">public</span> <span class="kwrd">string</span> ImageUrl { get; set; }
+    <span class="kwrd">public</span> <span class="kwrd">string</span> DisplayTime { get; set; }
+}</pre>
+<p>&nbsp;</p>
+<p>The AdRotator has a public property Images that is List of the ImageItem type above. </p><pre class="csharpcode"><span class="kwrd">public</span> List&lt;ImageItem&gt; Images;</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>&nbsp;</p>
+<p>During the RenderContents event of the AdRotator we can serialize this list into a string of Json.</p><pre class="csharpcode">JavaScriptSerializer serializer = <span class="kwrd">new</span> JavaScriptSerializer(); 
+<span class="kwrd">string</span> json = serializer.Serialize(Images); </pre><pre class="csharpcode">&nbsp;</pre>
+<p>The Json will look something like this.</p><pre class="csharpcode">[{<span class="str">"ImageUrl"</span>:<span class="str">"Images/Winter.jpg"</span>,<span class="str">"LinkUrl"</span>:<span class="str">"#"</span>,<span class="str">"DisplayTime"</span>:<span class="str">"1000"</span>},
+{<span class="str">"ImageUrl"</span>:<span class="str">"Images/Sunset.jpg"</span>,<span class="str">"LinkUrl"</span>:<span class="str">"#"</span>,<span class="str">"DisplayTime"</span>:<span class="str">"4000"</span>}]
+
+</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>The following script and corresponding output will hopefully demonstrate how we can use the Json on the client side as data.</p><pre class="csharpcode"><span class="kwrd">var</span> imageList = [{<span class="str">"ImageUrl"</span>:<span class="str">"Images/Winter.jpg"</span>,<span class="str">"LinkUrl"</span>:<span class="str">"#"</span>,<span class="str">"DisplayTime"</span>:<span class="str">"1000"</span>},
+                 {<span class="str">"ImageUrl"</span>:<span class="str">"Images/Sunset.jpg"</span>,<span class="str">"LinkUrl"</span>:<span class="str">"#"</span>,<span class="str">"DisplayTime"</span>:<span class="str">"4000"</span>}];
+
+<span class="kwrd">for</span>(<span class="kwrd">var</span> i=0; i&lt;imageList.length; i++)
+{
+    document.writeln(imageList[0].ImageUrl);
+}</pre>
+<p>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+</p>
+<p>Output:</p><pre class="csharpcode">Images/Winter.jpg 
+Images/Winter.jpg
+</pre>
+<p>&nbsp;</p>
+<p>Well that's all the information I'm going to include in this article. I'd like to go further into how the Json is used in the AdRotator but I've rambled on long enough. I think there is enough here to see that Json is a pretty cool language for communicating data between the server and client side Javascript. </p>
+<p>I should also note that the JavaScriptSerializer is marked as depreciated and points towards the DataContractJsonSerializer. I briefly tried to get this working, but I couldn't seem to find the object in my system assemblies. To read more about that, check out <a title="http://www.west-wind.com/WebLog/posts/218001.aspx" href="http://www.west-wind.com/WebLog/posts/218001.aspx">DataContractJsonSerializer in .NET 3.5</a> that discusses using the DataContractJsonSerializer. </p>
+<p>I hope you've found the article interesting, if you have you might be interested in reading more article about the AdRotator example or you might want to download and checkout the example project. </p>
+<br />
+</div>

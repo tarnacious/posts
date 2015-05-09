@@ -1,0 +1,447 @@
+<div class="entry">
+<p>I'm right into the coding for this project at the moment, but the iteration one requirements are all complete so its probably a good time to write some posts and reflect on what has been implemented so far. </p> <p>As specified this project is use TDD for development. There has been a lot of work put into ASP.NET MVC to make it a most testable framework. I would like to discuss how various parts of this project have been tested. </p> <p>I am using Microsoft Unit Test Framework and <a href="http://code.google.com/p/moq/wiki/QuickStart">MOQ</a> for testing this project. I had never used MOQ before, but I love it. For those that don't know about MOQ its another mock testing framework, the thing I love about it is it uses C# 3.5 so you can do a lot with lambda expressions.</p> <h3>Controllers</h3> <p>In the controller tests a real controller is created with a mocked IWeblogRepository interface. This means the controller can be tested independent of an IWeblogRepository implementation.&nbsp; </p><pre class="csharpcode">[TestInitialize]
+<span class="kwrd">public</span> <span class="kwrd">void</span> Setup()
+{
+    _mockRepository = <span class="kwrd">new</span> Mock&lt;IWeblogRepository&gt;();
+    _controller = <span class="kwrd">new</span> HomeController(_mockRepository.Object);
+}</pre>
+<p></p>
+<p>Testing controllers is really testing two things, firstly that the controller renders the correct view and secondly it sends the right data to that view. The tests shown here validate the "Post" action on the HomeController. </p>
+<p>In this test the mock repository is setup to return a post when GetPost(<span class="str">"Test-Post-1"</span>) is called on it. When we call the controller with these parameters we expect it to make the specified request to the mock repository. This test ensure that when a post is found that "Post" view is rendered.&nbsp;&nbsp; </p>
+<p>The sharp eyes will notice that I'm not using the date parameters to find the post from the repository. That functionality has not been implemented in this iteration. </p><pre class="csharpcode">[TestMethod]
+<span class="kwrd">public</span> <span class="kwrd">void</span> Post_FindsPost_RendersPostView()
+{
+    _mockRepository.Expect(m =&gt; m.GetPost(It.Is&lt;<span class="kwrd">string</span>&gt;(i =&gt; i == <span class="str">"Test-Post-1"</span>)))
+                   .Returns(<span class="kwrd">new</span> PostModel());        
+    ViewResult result = _controller.Post(8,8,8,<span class="str">"Test-Post-1"</span>) <span class="kwrd">as</span> ViewResult;
+    Assert.AreEqual(<span class="str">"Post"</span>, result.ViewName);
+}</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>&nbsp;</p>
+<p>We can also test the correct data is being sent to the view. I personally like to separate these two tests, this may not be a universal opinion, but I think its best to keep unit tests short and I think these tests are clearly testing different expectations.</p><pre class="csharpcode">[TestMethod]
+<span class="kwrd">public</span> <span class="kwrd">void</span> Post_FindsPost_ReturnPostViewData()
+{
+    _mockRepository.Expect(m =&gt; m.GetPost(It.Is&lt;<span class="kwrd">string</span>&gt;(i =&gt; i == <span class="str">"Test-Post-1"</span>)))
+                   .Returns(<span class="kwrd">new</span> PostModel() {
+                                                Title = <span class="str">"Test Post 1"</span>,
+                                                Content = <span class="str">"Test Post Content 1"</span>
+                                            });        
+
+    ViewResult result = _controller.Post(8, 8, 8, <span class="str">"Test-Post-1"</span>) <span class="kwrd">as</span> ViewResult;
+    PostViewData data = result.ViewData.Model <span class="kwrd">as</span> PostViewData;
+    Assert.IsNotNull(data);
+    Assert.AreEqual(<span class="str">"Test Post 1"</span>, data.SelectedPost.Title);
+    Assert.AreEqual(<span class="str">"Test Post Content 1"</span>, data.SelectedPost.Content);
+}
+</pre>
+<p>&nbsp;</p>
+<p>Two additional test were added to test other expectation of the "Post" controller action. These test that the "Index" view is rendered when the action is called with invalid parameters or can't find the post. This functionality may change to display an error message or alternate posts when the request is invalid in later iterations. </p><pre class="csharpcode">[TestMethod]
+<span class="kwrd">public</span> <span class="kwrd">void</span> Post_PostNotFound_RendersIndexView()
+{
+    _mockRepository.Expect(m =&gt; m.GetPost(It.Is&lt;<span class="kwrd">string</span>&gt;(i =&gt; i == <span class="str">"Test-Post-1"</span>)))
+                   .Returns&lt;PostModel&gt;(<span class="kwrd">null</span>);
+    ViewResult result = _controller.Post(8, 8, 8, <span class="str">"Non-Existing-Post"</span>) <span class="kwrd">as</span> ViewResult;
+    Assert.AreEqual(<span class="str">"Index"</span>, result.ViewName);
+}
+
+[TestMethod]
+<span class="kwrd">public</span> <span class="kwrd">void</span> Post_InvalidRequest_RendersIndexView()
+{
+    ViewResult result = _controller.Post(<span class="kwrd">null</span>,<span class="kwrd">null</span>,<span class="kwrd">null</span>,<span class="kwrd">null</span>) <span class="kwrd">as</span> ViewResult;
+    Assert.AreEqual(<span class="str">"Index"</span>, result.ViewName);
+}</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>&nbsp;</p>
+<h3>Routes</h3>
+<p>Testing routes is testing Http Requests are correctly mapped to the appropriate controller actions with the appropriate parameters. The below is testing "<span class="str">~/Post/2008/10/20/Test-Post" request will call the HomeController with the Post action and will also correctly populate the parameters.</span></p><pre class="csharpcode">[TestMethod]
+<span class="kwrd">public</span> <span class="kwrd">void</span> PostRoute_TestSuccessfullRoute()
+{
+    var routes = <span class="kwrd">new</span> RouteCollection();
+    var context = <span class="kwrd">new</span> Mock&lt;HttpContextBase&gt;();
+
+    context.ExpectGet(m =&gt; m.Request.AppRelativeCurrentExecutionFilePath)
+           .Returns(<span class="str">"~/Post/2008/10/20/Test-Post"</span>);
+
+    SharpWeblogRouting.RegisterRoutes(routes);
+    var routeData = routes.GetRouteData(context.Object);
+
+    Assert.AreEqual(<span class="str">"Home"</span>, routeData.Values[<span class="str">"controller"</span>]);
+    Assert.AreEqual(<span class="str">"Post"</span>, routeData.Values[<span class="str">"action"</span>]);
+    Assert.AreEqual(<span class="str">"20"</span>, routeData.Values[<span class="str">"day"</span>]);
+    Assert.AreEqual(<span class="str">"10"</span>, routeData.Values[<span class="str">"month"</span>]);
+    Assert.AreEqual(<span class="str">"2008"</span>, routeData.Values[<span class="str">"year"</span>]);
+    Assert.AreEqual(<span class="str">"Test-Post"</span>, routeData.Values[<span class="str">"name"</span>]);
+}
+</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>&nbsp;</p>
+<p>I can write a more route tests to test other requests when I have features saying what should happen.</p>
+<h3>Data Layer</h3>
+<p>While I think its great we can "fake out" the IWeblogRepository to avoid using an actual implementation while testing other areas of the system, I strongly believe implementations of the IWeblogRepository should also be tested, separately.</p>
+<p>The IWeblogRepository interface basically has methods to save, load, update and delete model objects in a data storage. In this case it is storing the data in a SQL Express 2005 database using LINQ to SQL. </p>
+<p>NOTE: The model classes are just data objects that have no information about the data context or data state. This does result in some inefficiencies updating the database, but the design was chosen as it clearly separates the implementation of the data layer from the rest of the system.</p>
+<p>Anyway here are some typical tests, no mocking required here. </p>
+<p>NOTE: I think these tests should be written against an interface with our implementation injected in. This would mean the same tests could be applied to other IWeblogRepository implementations.</p><pre class="csharpcode">[TestMethod]
+<span class="kwrd">public</span> <span class="kwrd">void</span> PostCRUD()
+{
+    <span class="rem">// Create</span>
+    PostModel post = CreateTestPost();
+    _repository.SavePost(post);
+    
+    <span class="rem">// Read</span>
+    PostModel findPost = _repository.GetPost(post.Id);
+    Assert.IsNotNull(findPost);
+    ValidatePosts(post, findPost);
+
+    <span class="rem">// Update</span>
+    findPost.Content = <span class="str">"Updated Content"</span>;
+    findPost.Title = <span class="str">"Update Content"</span>;
+    _repository.SavePost(findPost);
+
+    <span class="rem">// Read Update</span>
+    PostModel findUpdatedPost = _repository.GetPost(post.Id);
+    Assert.IsNotNull(findUpdatedPost);
+
+    <span class="rem">// Delete</span>
+    _repository.DeletePost(findUpdatedPost);
+    PostModel findDeletedPost = _repository.GetPost(post.Id);
+    Assert.IsNull(findDeletedPost);
+}</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>&nbsp;</p>
+<p>While I generally like small tests, I think an objects CRUD tests are best tied up in one test because otherwise you end up testing "create" four times to setup for each of the other tests. I would also generally implement the entire CRUD of an object even if it wasn't all required just so as CRUD tests can be performed and each operation can be tested. </p>
+<p>I have many more tests for the data layer but they are all pretty standard, so no point discussing them further here.</p>
+<h3>MetaWeblog</h3>
+<p>The MetaWeblog API has also been (partly, so far) implemented for this project. I will discuss the implementation further in another post but for now we'll talk about testing it. </p>
+<p>The MetaWeblog is implemented in two clearly separate components. One part processes the XML-RPC request and invokes methods on a IMetaWeblog interface and returns XML-RPC responses to Http Response. The other is an implementation of the IMetaWeblog, both can be tested separately.</p>
+<p>Testing the IMetaWeblog implementation is pretty straight forward. As the IMetaWeblog implementation uses the repository through the IWeblogRepository interface we can mock the repository and test the expected calls are made against the interface. </p>
+<p>NOTE: Sharp eyes will notice I'm not validating the user name and password. This isn't yet implemented.</p><pre class="csharpcode">[TestMethod]
+<span class="kwrd">public</span> <span class="kwrd">void</span> NewPost_InvokesSaveMethod()
+{
+    MWAPost post = TestHelper.CreateTestMWAPost();
+    Mock&lt;IWeblogRepository&gt; repository = <span class="kwrd">new</span> Mock&lt;IWeblogRepository&gt;();
+    SharpMetaWeblogAPI model = <span class="kwrd">new</span> SharpMetaWeblogAPI(repository.Object);
+    model.NewPost(<span class="str">"100"</span>, <span class="str">"TestUser"</span>, <span class="str">"TestPassword"</span>, post, <span class="kwrd">false</span>);
+    repository.Verify(m =&gt; m.SavePost(It.Is&lt;PostModel&gt;(p =&gt; ComparePosts(p, post))));
+}</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>We can also test the return values of the IMetaWeblog methods with a known responses from the IWeblogRepository mock. </p><pre class="csharpcode">[TestMethod]
+<span class="kwrd">public</span> <span class="kwrd">void</span> GetPost_ReturnsRequestedPost()
+{
+    Guid id = Guid.NewGuid();
+
+    PostModel post = <span class="kwrd">new</span> PostModel()
+    {
+         Title = <span class="str">"Test Title"</span>,
+    };
+    Mock&lt;IWeblogRepository&gt; repository = <span class="kwrd">new</span> Mock&lt;IWeblogRepository&gt;();
+    repository.Expect&lt;PostModel&gt;(m =&gt; m.GetPost(id)).Returns(post);
+    SharpMetaWeblogAPI metaWeblog = <span class="kwrd">new</span> SharpMetaWeblogAPI(repository.Object);
+    MWAPost findPost = metaWeblog.GetPost(id.ToString(), <span class="str">"none"</span>, <span class="str">"none"</span>);
+
+    Assert.AreEqual(post.Id.ToString(), findPost.postID);
+    Assert.AreEqual(post.Title, findPost.title);
+}</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>&nbsp;</p>
+<p>Being able to unit test the MetaWeblogFramework is cool, but I may have taken unit testing too far here, but I'll let you decide.</p>
+<p>The MetaWeblogFramework had to be implemented against HttpContextBase, with an actual context object passed into the ProcessRequest method. An instance of IMetaWeblogAPI is injected into the constructor to allow the framework to call the interface methods on a real object after processing the request, kind of like a call back or an event.&nbsp; </p>
+<p>The structure of most of tests I have written so far is to mock a HttpContextBase request and send it to a real instance of MetaWeblogFramework which has been constructed with a mock IMetaWeblog API.</p>
+<p>This way I can verify that with known HTTP requests and payloads the expected methods on the IMetaWeblog interface are called. The test below creates an XmlRpcRequest object which the HttpContextBase mock will return when the MetaWeblogFramework ProcessRequest method requests the HttpContext.Request.InputStream. The test expects the IMetaWeblogAPI.NewPost(..) method to be called with known parameters.</p>
+<p>&nbsp;</p><pre class="csharpcode">[TestClass]
+<span class="kwrd">public</span> <span class="kwrd">class</span> MetaWeblogFrameworkTest
+{
+    Mock&lt;HttpContextBase&gt; context;
+    Mock&lt;IMetaWeblogAPI&gt; api;
+    Byte[] _output;
+
+    [TestInitialize]
+    <span class="kwrd">public</span> <span class="kwrd">void</span> Setup()
+    {
+        context = <span class="kwrd">new</span> Mock&lt;HttpContextBase&gt;();
+        api = <span class="kwrd">new</span> Mock&lt;IMetaWeblogAPI&gt;();
+
+        _output = <span class="kwrd">new</span> Byte[1000];
+        context.ExpectGet(m =&gt; m.Response.ContentType).Returns(<span class="str">"text/xml"</span>);
+        context.ExpectGet(m =&gt; m.Response.OutputStream).Returns(<span class="kwrd">new</span> MemoryStream(_output));
+    }
+
+    [TestMethod]
+    <span class="kwrd">public</span> <span class="kwrd">void</span> ProcessRequest_MockRequestNewPost_InvokesNewPostMethod()
+    {
+        MWAPost sentPost = TestHelper.CreateTestMWAPost();
+        XmlRpcRequest mockRequest = <span class="kwrd">new</span> XmlRpcRequest()
+        {
+            MethodName = <span class="str">"metaWeblog.newPost"</span>,
+            Params = <span class="kwrd">new</span> List&lt;Param&gt;()
+            {
+                <span class="kwrd">new</span> StringParam(<span class="str">"TestBlogId"</span>),
+                <span class="kwrd">new</span> StringParam(<span class="str">"TestUserName"</span>),
+                <span class="kwrd">new</span> StringParam(<span class="str">"TestPassword"</span>),
+                <span class="kwrd">new</span> PostParam(sentPost),
+                <span class="kwrd">new</span> StringParam(<span class="str">"False"</span>),
+            }
+        };
+        context.ExpectGet(m =&gt; m.Request.InputStream).Returns(mockRequest.CreateStream());
+        MetaWeblogFramework framework = <span class="kwrd">new</span> MetaWeblogFramework(api.Object);
+
+        framework.ProcessRequest(context.Object);
+        
+        api.Verify(m =&gt; m.NewPost(<span class="str">"TestBlogId"</span>, <span class="str">"TestUserName"</span>, <span class="str">"TestPassword"</span>, It.Is&lt;MWAPost&gt;(a=&gt;sentPost.Match(a)) , <span class="kwrd">true</span>));
+    }
+ 
+    ..
+
+}</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>&nbsp;</p>
+<p>Testing the MetaWeblogFramework was a little difficult, and I had to create a whole range of additional objects and methods to perform the tests. I might re-visit the MetaWeblogFramework implementation later in the project and re-write it to be more testable. </p>
+<h3>Conclusion</h3>
+<p>Well I managed to test a whole range of components in this ASP.NET MVC project, but my overall coverage is still pretty low (32% over the entire project). I'll keep you updated with how testing is going though-out the project and I'll try to get those coverage stats up by the drop of the first iteration this week.</p>
+<p>&nbsp;</p>
+<p><a href="http://blog.sharpthinking.com.au/image.axd?picture=WindowsLiveWriter/SharpWeblogTesting_7E35/image_2.png"><img style="border-top-width: 0px; border-left-width: 0px; border-bottom-width: 0px; border-right-width: 0px" height="251" alt="image" src="image_thumb.png" width="534" border="0" /></a></p>
+<br />
+</div>

@@ -1,0 +1,31 @@
+*This is the presentation for [Composing Events with RxJS][1] an [Alt.Net Melbourne Lightning Talk][2].*
+
+*** Reactive Extensions ***
+
+* Reactive Extensions for JavaScript.
+* There is also Reactive Extensions for C#.
+* Reactive Extensions come from Microsoft Labs.
+
+*** What is IEnumerable? ***
+
+* Provides Enumerator, allows lazy evaluation
+* You can implement an IEnumerable with yield and yield break.
+
+*** What is Observable? ***
+
+* When you foreach(..) through IEnumerable you are waiting OnNext.
+* With Observable you are notified OnNext.
+
+*** What is Rx ***
+
+* Like Linq adds a generic common API to query, Rx attempts to add a common API to compose generic events.
+* There are Select, Where, Join, Zip, Merge and many other constructs.
+* Basically keeps track of events and callbacks.
+* RxJs provides integration with several frameworks.
+* Also provides common error handling, which I won't show.
+
+<a class="next" href="/journal/rxjs-merge">Next (lets see some code!)</a>
+
+  [1]: /journal/composing-events-with-rxjs
+  [2]: http://melbourne.ozalt.net/2010/08/august-meeting-lightning-talks-wrap-up.html
+

@@ -1,0 +1,328 @@
+I checked out [NGourd][1], a project to build a [BDD][2] tool based on
+[Cucumber][3] which [Michael Minutillo][4] has started. Id never previously
+used or even heard of Cucumber, but as I read on I liked a lot about it. Its
+an agile development tool and it has a colourful console!
+
+The concept is illustrated beautifully at [http://cukes.info/][5], but here is
+my take anyway. Behavior is described in the form of a series of plain text
+steps. The steps are then implemented as parameterized test methods. Using
+some reflection and regular expressions the plain text steps are mapped to
+corresponding implementations and run as red/green light tests.
+
+I started wondering if WPF applications could be tested with NGourd. Theres a
+great IronPython sample in which a WPF application is started in a new thread
+and built dynamically from the IronPython interactive console.
+
+Could something like this could be done in NGourd steps?
+
+    Scenario: Can Perform basic arithmetic
+
+    Given I start the application
+    When I enter 2 + 2
+    And I click GO
+    Then I should see 4
+
+
+
+By using a thread to run the application and a dispatcher to invoke methods on
+it I had a crude framework to write the steps to make a
+System.Windows.Application dance. The steps class library has references to
+the application (to run and test it) and to the NGourd.Core (which has the
+Attributes I need to decorate the step classes and methods). Ive exposed the
+controls of application publically to make the test easier to write.
+
+    #!/usr/bin/csharp
+    [Steps]
+    public class Behaviour
+    {
+        public Thread _thread;
+        public Dispatcher _dispatcher;
+        public App _app;
+
+
+        [Step("start the application")]
+        public void StartApplication()
+        {
+            AutoResetEvent are = new AutoResetEvent(false);
+            _thread = new Thread(() =>
+            {
+                _app = new App();
+                _app.Startup += (sender, eventArgs) =>
+                        {
+                            _dispatcher =
+                                Dispatcher.FromThread(_thread);
+                            are.Set();
+                        };
+                _app.Run();
+            });
+
+            _thread.SetApartmentState(ApartmentState.STA);
+            _thread.Start();
+            are.WaitOne();
+        }
+
+
+        [Step(@"enter (.*)")]
+        public void EnterScript(string script)
+        {
+            _dispatcher.Invoke(
+                new Action(() =>
+                {
+                    _app.MainWindow.UserScript.Text = script;
+
+                }));
+        }
+
+
+        ...
+
+
+        public void After()
+        {
+            _dispatcher.Invoke(
+                new Action(() =>
+                {
+                    _app.MainWindow.Close();
+                }
+                ));
+
+            _thread.Join();
+        }
+    }
+
+
+### Writing the application
+
+The demo application is a trivial calculator that executes Python statements.
+
+![image][6]
+
+The method below _is_ the model for this application. Its worth mentioning its
+very easy to include C# objects to the scope of the ScriptSource, but only for
+this post, Ive restrained myself to the more simple behavior I specified
+earlier (but I did add it to the demo which can be downloaded [here][8])
+
+
+    #!/usr/bin/csharp
+    public string EvaluateExpression(string expression)
+    {
+        try
+        {
+            ScriptEngine engine = Python.CreateEngine();
+            ScriptRuntime runtime = engine.Runtime;
+            ScriptSource source = engine.CreateScriptSourceFromString(
+                           expression,
+                           SourceCodeKind.Expression);
+
+            return (source.Execute() ?? "").ToString();
+        }
+        catch(Exception ex)
+        {
+            return ex.Message;
+        }
+    }
+
+
+Of course this could be unit tested itself.
+
+
+    #!/usr/bin/csharp
+    [TestMethod]
+    public void ModelCanDoBasicArithmetic()
+    {
+        Model model = new Model();
+        string output = model.EvaluateExpression("2+2");
+        Assert.AreEqual("4", output);
+    }
+
+
+So what are we testing? I guess its this
+
+
+    #!/usr/bin/csharp
+    public void Execute_Click(object sender, EventArgs e)
+    {
+        output.Text = _model.EvaluateExpression(input.Text);
+    }
+
+
+The only thing I had to do the application specifically to get it working in
+test environment was delete an attribute in App.xaml root element
+
+
+    #!/usr/bin/csharp
+    StartupUri="Window1.xaml"
+
+
+This has consequences. No window loads on start up! By added a constructor in
+my App class I was able to remedy this. This may have wider reaching
+consequences Im not aware of, and Im also not sure if using the OnLoad event
+is better practice. Anyway its working fine for now.
+
+
+    #!/usr/bin/csharp
+    public partial class App : Application
+    {
+        public App()
+        {
+            MainWindow w = new MainWindow();
+            w.Show();
+        }
+    }
+
+
+It was _fun_ implementing the steps in my scenario then writing the
+application and watching the behavior test turn green like a cucumber!
+
+### Isolating scenarios in separate application domains
+
+Even though everything looked looks like it was working, I wanted to add
+another scenario (which wont surprise readers of my recent posts)
+
+    Scenario: Can Execute Python statements
+
+    Given I start the application
+    When I enter hello.upper()
+    And I click GO
+    Then I should see HELLO
+
+It turns out this extra test didnt need any additional step implementations or
+changes to the WPF application itself, but did show a very real deficiency in
+what I was doing. I was reminded of the rule enforced by InvalidOperationException:
+
+> Cannot create more than one System.Windows.Application instance in the same
+AppDomain.
+
+I knew of this rule, I still _tried_ to get round it anyway. Can I close one
+somehow? Delete one? Delete one and de-reference its friends and family?
+
+Creating a new AppDomain seems a clever way round the rules reasoning, but the
+wary fear this may be some type of pandora's box, at very least additional
+complexities. Just thinking of MarshalByRefObject proxies makes me feel I
+should be spending more time enjoying life with _my_ friends and family.
+
+I got some way using DoCallBack until I realized I couldnt make the steps
+parameterized as DoCallBack doesnt have any parameters! (I also stubbornly
+know it throws runtime errors if one tries to use the looser lambda scoping to
+cheekily pass data across application domains, luckily though its the same
+stubboness that stopped me giving up this post all together).
+
+As I was thinking I _should_ use WCF for communication betweens application
+domains, another way I _could_ do to it clicked. I just needed to create my
+original steps class in a new application domain. By deriving the test class
+from MarshalByRefObject I could call its step methods from the control domain
+using it dynamic proxy. I then created a wrapper class which creates a new
+AppDomain, creates the previous steps in the new domain and uses the dynamic
+proxy to call the steps. This wrapper class now has the Step attributes for
+NGourd to pick up.
+
+    #!/usr/bin/csharp
+    [Steps]
+    public class BehaviourWrapper
+    {
+        AppDomain domain;
+        Behaviour behaviourProxy;
+
+        public void Before()
+        {
+            domain = AppDomain.CreateDomain("TestDomain");
+            behaviourProxy = domain.CreateInstanceFromAndUnwrap
+                ("DLRCalculator.BehaviourTests.dll",
+                 "DLRCalculator.BehaviourTests.Behaviour")
+                    as Behaviour;
+        }
+
+        public void After()
+        {
+            behaviourProxy.After();
+            AppDomain.Unload(domain);
+        }
+
+        [Step("start the application")]
+        public void StartApplication()
+        {
+            behaviourProxy.StartApplication();
+        }
+
+        [Step(@"enter (.*)")]
+        public void EnterScript(string script)
+        {
+            behaviourProxy.EnterScript(script);
+            Thread.Sleep(5000);
+        }
+
+        [Step(@"click GO")]
+        public void ClickGo()
+        {
+            behaviourProxy.ValidateOutput();
+        }
+
+        [Step(@"should see (.*)")]
+        public void ValidateOutput(string expected)
+        {
+            behaviourProxy.ValidateOutput(expected);
+        }
+    }
+
+
+### Running some tests with NGourd
+
+Im impressed with NGourd and have generally had a lot of fun and success
+playing with it. Its a little disappointing that no results are displayed
+until all the tests are complete. Perhaps its because my tests take ages and
+it would be nice to see what theyre doing (starting an AppDomain and running
+an Application in it isnt a lightweight task). Mainly though, I wanted to
+include an action shot of it firing up windows during the test.
+
+![image][7]
+
+### Some thoughts and reflection
+
+I didnt write this to actually use it in a real project, this was a personal
+project deliberately devised to cover some some things I was interesting in
+learning about and trying out. To do automation on a real project I would look
+further into [White][10] an open source project released by
+[ThoughtWorks][11], which I hear is really good.
+
+The concept of Cucumber is pretty cool and I was nice to have a look at the
+NGourd source code. In writing this post I enjoyed putting in practice what I
+new could be done relatively easily (creating and managing multiple
+AppDomains, Applications and Threads in a process) and I was happy to find I
+had no problems at all with NGourd itself getting the UI tests working.
+
+This is all I planned to do with NGourd, the UI steps and the Calculator, but
+Id be interested to hear what you think of all this rambling. I know _I_ got a
+lot out of it, did you? What of the other behavior driven development tools
+[MSpec][12], [NSpec][13] or [NBehave][14]? What are your experiences?
+
+Ive upload the project from this post [here][8].
+
+
+   [1]: http://code.google.com/p/ngourd/
+
+   [2]: http://en.wikipedia.org/wiki/Behavior_Driven_Development
+
+   [3]: http://cukes.info/
+
+   [4]: http://wolfbyte-net.blogspot.com/
+
+   [5]: http://cukes.info/ (http://cukes.info/)
+
+   [6]: https://tarnbarford.net/static/journal/ngourd_bdd_for_wpf_applications/calc.png
+
+   [7]: https://tarnbarford.net/static/journal/ngourd_bdd_for_wpf_applications/screenshot.png
+
+   [8]: http://static.sharpthinking.com.au/2009/ngourd-calculator/DLRCalculator.zip
+
+   [9]: http://static.tarnacious.net.s3.amazonaws.com/image.png
+
+   [10]: http://white.codeplex.com/
+
+   [11]: http://www.thoughtworks.com/
+
+   [12]: http://codebetter.com/blogs/aaron.jensen/archive/2008/05/08/introducing-machine-specifications-or-mspec-for-short.aspx
+
+   [13]: http://nspec.tigris.org/
+
+   [14]: http://nbehave.org/
+

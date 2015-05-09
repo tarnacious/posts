@@ -1,0 +1,269 @@
+My goal was to write a bit of scaffolding to make using the storage service
+fun and easy from in IronPython. The Windows Azure SDK comes with a library in
+the samples which does the low level work interfacing with the API and
+provides some nice classes to work with. There are methods to generate table
+schemas by reflecting on model classes and another sample implements all the
+standard .NET providers.
+
+I was hoping to write all the scaffolding and the model classes in IronPython
+but, in the first of a series of set backs, I found the development storage
+server behaves differently than the cloud. For some reason you need to create
+tables on the development storage server using a command line tool, passing
+your model assemblies as arguments. Apparently this will be fixed soon, but
+trying to stay focused I decided I'd have to write my models in C# for now.
+
+Once I had an assembly with some models I could use the DevTableGen.exe
+command line tool that comes with the Azure SDK to create tables on my
+development storage server.
+
+I don't think there are currently any good tools for visualizing and editing
+data, but I'm sure by the time its released it will integrate into Server
+Explorer and Query Analyzer (or perhaps it'll just be a Firefox plug-in). I've
+seen a presentation where HTTP requests are hand coded to retrieve data, but I
+wasn't up for that and tried importing the sample library into an IronPython
+console. I got enough working to convince me everything was going to work out,
+I just needed find out how to use extension methods in IronPython...
+
+Much to my surprise and disappointment, consuming extension methods in
+IronPython is still difficult. There does appear to be a way to [bind the
+extension methods][1], but I haven't seen an example binding all the Linq
+extension methods. This is a problem as it means Linq expression trees can't
+be easily built in IronPython. Passing expression trees as queries is ideal as
+the cloud can do the filtering, sorting and only return the data you want.
+
+I decided to put this problem on ice and write helpers in C# that returned a
+List<T> of all the rows. This won't work well with lots of data, but it will
+work find on small tables.
+
+I wrapped the required credentials to connect to the service in an Account
+class, mainly so I could hard code the development credentials which are
+always the same.
+
+    #!/usr/bin/python
+    public class Account
+    {
+        public Uri EndPoint { get; set; }
+        public String AccountName { get; set; }
+        public String SharedKey { get; set; }
+
+        public Account()
+        {
+            // development server defaults
+            EndPoint = new Uri("http://127.0.0.1:10002/");
+            AccountName = "devstoreaccount1";
+            SharedKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UV
+        }
+
+    }
+
+I later I will try creating Models on the DLR, but for now I created them in a
+separate assembly using C#.
+
+
+    #!/usr/bin/csharp
+    namespace DataModels
+    {
+        public class PostDataModel : TableStorageEntity
+        {
+            public PostDataModel(string partitionKey, string rowKey)
+                : base(partitionKey, rowKey)
+            {
+            }
+
+            public PostDataModel()
+                : base()
+            {
+                PartitionKey = Guid.NewGuid().ToString();
+                RowKey = String.Empty;
+            }
+
+            public string Name
+            {
+                get;
+                set;
+            }
+
+            public string Content
+            {
+                get;
+                set;
+            }
+
+        }
+    }
+
+A context is required that derives from TableStorageDataServiceContext, the
+field names in the context are used for table names and the type of the field
+describes the table row. The DataServiceContext works a bit like the LinqToSql
+data context keeping track of all the objects it returns.
+
+
+    #!/usr/bin/csharp
+    namespace DataModels
+    {
+        public class DataServiceContext : TableStorageDataServiceContext
+        {
+            public DataServiceContext(StorageAccountInfo accountInfo)
+                : base(accountInfo)
+            {
+            }
+
+            public IQueryable<PostDataModel> PostTable
+            {
+                get
+                {
+                    return this.CreateQuery<PostDataModel>("PostTable");
+                }
+            }
+
+            public IQueryable<PostDataModel> CommentTable
+            {
+                get
+                {
+                    return this.CreateQuery<PostDataModel>("CommentTable");
+                }
+            }
+        }
+    }
+
+I wrote a generic model class to hide all the details and provide a simple
+wrapper to access create, read and select operations on a table. There's a
+couple of tests in the solution that demonstrate how this work, but basically
+you just need a custom context (V), a model (T) and table name. The generic
+model can then be used to insert, select and delete from the table.
+
+
+    #!/usr/bin/csharp
+    public class Model<T, V>
+        where V : TableStorageDataServiceContext
+    {
+        private V _context;
+        public StorageAccountInfo AccountInfo { get; set; }
+        public TableStorage TableStorage { get; set; }
+        public string TableName { get; set; }
+
+        public Model(Account account, string tableName)
+        {
+            TableName = tableName;
+            AccountInfo = new StorageAccountInfo(account.EndPoint, null, account.AccountName, account.SharedKey);
+            TableStorage = TableStorage.Create(AccountInfo);
+             _context = Activator.CreateInstance(typeof(V), new object[] { AccountInfo } ) as V;
+        }
+
+
+        public List<T> Select()
+        {
+            MethodInfo field = _context.GetType().GetMethods().Where(f => f.Name == "get_" + TableName).FirstOrDefault();
+
+            if (field == null) return null; // field doesn't exist
+            IQueryable<T> fieldValue = (field.Invoke(_context, null) as DataServiceQuery<T>);
+            var results = from c in fieldValue select c;
+            TableStorageDataServiceQuery<T> query = new TableStorageDataServiceQuery<T>(results as DataServiceQuery<T>);
+            IEnumerable<T> queryResults = query.ExecuteAllWithRetries();
+            return queryResults.ToList();
+        }
+
+
+        public void Insert(object item)
+        {
+            _context.AddObject(TableName, item);
+            _context.SaveChanges();
+        }
+
+
+        public void Delete(object item)
+        {
+            // AttachTo is not required if the item was created by the context
+            _context.DeleteObject(item);
+            _context.SaveChanges();
+        }
+    }
+
+We've done all the C# code, now lets see how it can all be tied together in an
+IronPython console.
+
+
+    #!/usr/bin/bash
+    IronPython 2.0 (2.0.0.0) on .NET 2.0.50727.3053
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>>
+    >>> # import everything we need
+    >>>
+    >>> import clr
+    >>> clr.AddReference("DataModels.dll")
+    >>> clr.AddReference("DataHelper.dll")
+    >>> clr.AddReference("StorageClient.dll")
+    >>> from DataModels import *
+    >>> from DataHelper import *
+    >>> from Microsoft.Samples.ServiceHosting.StorageClient import *
+    >>>
+    >>> # create a generic model, using the default account (development server)
+    >>>
+    >>> model = Model[PostDataModel, DataServiceContext](Account(),"PostTable")
+    >>>
+    >>> # now we can add some data rows
+    >>>
+    >>> for i in range(5):
+    ...    post = PostDataModel()
+    ...    post.Name = "Post Name " + str(i)
+    ...    post.Content = "Some content for post" + str(i)
+    ...    model.Insert(post)
+    ...
+    >>>
+    >>> # we can now read them back
+    >>>
+    >>> for post in model.Select():
+    ...    print "Name", post.Name
+    ...
+    Name Post Name 3
+    Name Post Name 1
+    Name Post Name 2
+    Name Post Name 0
+    Name Post Name 4
+    >>>
+    >>> # delete them all
+    >>>
+    >>> for post in model.Select():
+    ...    model.Delete(post)
+    ...
+    >>>
+    >>> # and finally ensure they have all been removed
+    >>>
+    >>> for post in model.Select():
+    ...    print "Name", post.Name
+    ...
+    >>>
+    >>>
+
+I'm pretty excited with how it all worked out, despite the setbacks. In future
+posts hopefully I'll have a go creating tables in the cloud with models and
+context created on the DLR. I will also try and resolve using Linq Extension
+Methods in IronPython which are essential to building complex queries to be
+executed in the cloud. I'm also writing a very simple Azure MVC weblog app
+which I'll hopefully finish soon.
+
+The project can be [downloaded here][2] and I've also uploaded just the
+[compiled DataHelper assembly][3].
+
+
+I found these links useful writing this post:
+
+[Windows Azure Essential Links][4]
+
+[Walkthrough: Simple Table Storage][5]
+
+[Creating Azure Tables From Script][6]
+
+
+   [1]: http://blogs.msdn.com/saveenr/archive/2009/02/08/ironpython-consuming-extension-methods-part-iii.aspx
+
+   [2]: http://static.sharpthinking.com.au/WindowAzure-TableStorage/AzureTableStorageHelpers.zip
+
+   [3]: http://static.sharpthinking.com.au/WindowAzure-TableStorage/DataHelper.dll
+
+   [4]: http://soulsolutions.com.au/Blog/tabid/73/EntryId/558/Windows-Azure-Essential-Links.aspx
+
+   [5]: http://blogs.msdn.com/jnak/archive/2008/10/28/walkthrough-simple-table-storage.aspx
+
+   [6]: http://blogs.msdn.com/ploeh/archive/2008/12/04/creating-azure-tables-from-script.aspx
+

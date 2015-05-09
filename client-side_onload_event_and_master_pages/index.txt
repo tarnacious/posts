@@ -1,0 +1,52 @@
+First blog ever for me, YAY!  I'll add to it regularly (yeah right).
+
+Anyways, you've just added some cool JavaScript to your page and you want to
+call it when your page loads. Usually you'd just add an attribute to your body
+tag, something like:
+
+    <body onload="MyLoadFunction()">
+
+But you find that your body element is defined in your Master page and you
+can't just add it to the Master as not all the pages that use the master will
+implement MyLoadFunction(). There are heaps of ways of getting round this
+problem, but I've found the following solution to be quite elegant.
+
+The solution basically involves creating a method on your Master page to add
+an onload attribute to the body tag. So in the content page you want to add an
+onload method you would call something like
+
+    Master.SetBodyOnloadAttribute("MyLoadFunction")
+
+To implement this method we need to be able to find the body tag and add the
+attribute. We can find the body tag if we put id and runat="server" attributes
+it when we define it:
+
+    <body id="masterBody" runat="server">
+
+Then we can implement our SetBodyOnloadAttribute method:
+
+    public void SetBodyOnloadAttribute(string value)
+    {
+        HtmlGenericControl bodyControl = FindControl("masterBody") as HtmlGenericControl;
+        if (bodyControl != null)
+        {
+            bodyControl.Attributes.Add("onload", value);
+        }
+    }
+
+So now all you need to do is call the method on the master from your content
+page and make sure the content page has the JavaScript function to handle the
+event. Thats it.
+
+Note:
+
+To use specialized methods on Master, you will have to add a Master Type
+directive in the content aspx page, this will inform Visual Studios to use
+your implementation of MasterPage. This is added after the Page directive.
+
+    <%@ MasterType VirtualPath="~/MyMaster.Master" %>
+
+
+Hope this helps
+
+

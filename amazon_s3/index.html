@@ -1,0 +1,56 @@
+<div class="entry">
+<h3>Introduction</h3>
+<p>
+As this site is currently hosted on a shared hosting environment with limited bandwidth and disk space we decided we would start hosting some content on <a href="http://aws.amazon.com/s3">Amazon S3</a>. 
+</p>
+<p>
+I first saw S3 when a guy from Amazon presented it at a VIC.NET user group meeting. I thought it sounded pretty cool and signed up for an account as soon as I got home. I quickly found a use for S3 in a web application I was building at the time. I used S3 for all the files users uploaded to the site. I also used it for hosting some web components like static CSS, JavaScript and image files. 
+</p>
+<p>
+This works fine when you just want to reference static content on a web page. To do this you just need to upload the components to S3, make them public and modify the URLs in your HTML output to point to the S3 resource.&nbsp; 
+</p>
+<p>
+I did run into cross-domain browser security restrictions when I tried to host the entire site on S3 and use web services to get dynamic content. In this case I persisted and got dynamic behavior by <a href="/post/2008/06/03/Dynamically-inserting-dynamic-scripts.aspx">dynamically inserting dynamic script elements into the DOM</a>.&nbsp; While Google Maps does this very well to dynamically get map tiles, it doesn&#39;t work so well for scripts as the browsers blocks the page while a script is downloading. I would defiantly be looking at the alternatives before doing that again. In this case we just want some of the larger downloadable files off the web server and onto S3, which shouldn&#39;t be a problem.
+</p>
+<h3>Tools</h3>
+<p>
+I&#39;ve always used <a href="https://addons.mozilla.org/en-US/firefox/addon/3247">S3Fox</a> which is a Firefox plug-in to manage files on S3. But when I fired it up this morning it isn&#39;t accepting my credentials. 
+</p>
+<p>
+I tried using <a href="http://www.s3drive.net/">S3Drive</a> which is a Windows Desktop application. This defiantly wasn&#39;t what I wanted. It makes S3 look like a &quot;drive&quot; in Windows that has files and directories. This hides the fact the S3 is actually a flat file structure. It seems to use a database to manage the virtual file structure (like a file allocation table). Anyway this would be really good for backing stuff up as you can treat it like a normal drive and drag and drop entire folders. Its no good for us as our content needs to be accessed by HTTP GET Requests. 
+</p>
+<p>
+I ended up using <a href="https://addons.mozilla.org/en-US/firefox/addon/6955">s3:///</a> which is an &quot;experimental&quot; Firefox plug-in. It works fine but doesn&#39;t seem to have the tools to manage the access control list (ACL) that S3Fox has. Anyway its enough to create a bucket and upload some files (Note: The files were already public and didn&#39;t require me allow public access. This is fine for me now, but might be a problem if you were uploading sensitive information you didn&#39;t want to share)
+</p>
+<h3>Virtual Sub Domains with CNAME records</h3>
+<p>
+One of the many things I like about S3 is that you can add a CNAME record on your domain and point it to an S3 bucket on account at amazon. So while you can still download your public content from the amazonaws.com URL:
+</p>
+<p>
+<a href="http://static.sharpthinking.com.au.s3.amazonaws.com/sharpthinking.jpg">http://static.sharpthinking.com.au.s3.amazonaws.com/sharpthinking.jpg</a>
+</p>
+<p>
+You can also download the same resource from a sub domain of your own URL:
+</p>
+<p>
+<a href="http://static.sharpthinking.com.au/sharpthinking.jpg">http://static.sharpthinking.com.au/sharpthinking.jpg</a>
+</p>
+<p>
+But as you can see with trusty Firebug the image is still hosted from Amazon servers
+</p>
+<p>
+<a href="/image.axd?picture=WindowsLiveWriter/AmazonS3_D54D/image_8.png"><img style="border-width: 0px" src="image_thumb_3.png" border="0" alt="image" width="447" height="251" /></a>
+</p>
+<h3>Reading and Writing to S3 with .NET</h3>
+<p>
+I have an S3 project I used previously to read and write files to S3. I wrote it ages ago, copying large parts of Amazon examples from memory. Although it looks a little shabby, the one and only test still works, so I&#39;m confident its still working OK. I&#39;m sure there a better .NET wrappers around these days if you did a quick Google search.
+</p>
+<p>
+Here is the <a href="http://static.sharpthinking.com.au/MenuMan.Storage.2008.09.09.zip">source code</a>. You&#39;ll notice it still has the namespaces from the original project, but hopefully my S3 credentials have been removed. You&#39;ll also need to add a reference to an <a href="http://www.nunit.org">NUnit</a> assembly to run the test.
+</p>
+<h3>BlogEngine.NET, Live Writer and S3</h3>
+<p>
+As we use Live Writer to publish content to this blog, I am going to update the BlogEngine.NET Metablog API to upload the media elements to S3 instead of the file system. I&#39;ve looked into it and it should be pretty straight forward. I&#39;m pretty sure you can already get WordPress plug-ins that do this. I&#39;ll post the code when I get it working.
+</p>
+<br />
+</div>

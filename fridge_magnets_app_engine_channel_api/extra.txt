@@ -1,0 +1,5 @@
+
+Long polling is a technique where the client makes a HTTP request to the server and server doesn't immediately complete the request.
+The browser is left waiting for the request to complete. 
+When the server wants to notify the client, it completes the request which raises an event the client can bind to.
+This technique often uses iframes, I think mainly to hide hackery from the browser status bar.

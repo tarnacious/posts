@@ -1,0 +1,21 @@
+<div class="entry">
+<p>After <a href="http://www.sharpthinking.com.au/post/2010/02/16/ModalBinding-an-Interface-with-DynamicProxy.aspx">my post</a> yesterday <a href="http://kozmic.pl/">Krzysztof Kozmic</a> (<a href="http://twitter.com/kkozmic">@kkozmic</a>) <a href="http://twitter.com/kkozmic/statuses/9191658727">messaged me</a> saying I should use the <a href="http://www.castleproject.org/components/dictionaryadapter/basics.html">Castle DictionaryAdapterFactory</a> instead.</p>
+<p>For the record Krzysztof has a <a href="http://kozmic.pl/archive/2008/12/16/castle-dynamicproxy-tutorial-part-i-introduction.aspx">great series of posts on DynamicProxy</a>
+and was also very helpful <a href="http://twitter.com/kkozmic/statuses/9134188880">answering</a> a specific <a href="http://twitter.com/tarnacious/status/9134151576">question of mine</a> yesterday.</p>
+<p>Anyway this is great news! I can do the same thing only referencing <a href="https://sourceforge.net/projects/castleproject/files/DictionaryAdapter%20Component/1.1/CastleDictionaryAdapter-1.1.0.zip/download">one assembly</a>.
+The DictionaryAdapterFactory returns an object that passes all my tests from yesterday and slides staight into the model binder.</p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">FakeInterfaceModelBinder</span> : DefaultModelBinder
+{
+    <span style="color: #008000; font-weight: bold">protected</span> <span style="color: #008000; font-weight: bold">override</span> <span style="color: #B00040">object</span> <span style="color: #0000FF">CreateModel</span>(ControllerContext controllerContext,
+                                          ModelBindingContext bindingContext,
+                                          Type modelType)
+    {
+        Dictionary&lt;<span style="color: #B00040">string</span>, <span style="color: #B00040">object</span>&gt; dictionary = <span style="color: #008000; font-weight: bold">new</span> Dictionary&lt;<span style="color: #B00040">string</span>, <span style="color: #B00040">object</span>&gt;();
+        <span style="color: #008000; font-weight: bold">return</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #0000FF">DictionaryAdapterFactory</span>().GetAdapter(modelType, dictionary);
+    }
+}
+</pre></div>
+<p>It was fun playing with DynamicProxy yesterday, but I did <a href="http://twitter.com/tarnacious/status/9180071375">think</a> it might not have been a good idea for a model binder. I'm glad I was pointed in the right direction. </p>
+<p>Cheers Krzysztof!</p>
+<br />
+</div>

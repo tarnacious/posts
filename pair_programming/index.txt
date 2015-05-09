@@ -1,0 +1,120 @@
+[Arch Linux][arch-linux] is a great distribution for a programming environment and there is an [Arch AMI for Amazon EC2][arch-ami]. I choose to run it on a Large EC2 instance in Tokyo, I downloaded the generated key-pair and copied its public domain name.
+## Connecting to the instance
+
+The EC2 security group needs to be setup to allow inbound requests to port 22 for SSH.
+
+The key-pair is used to SSH into the instance as root.
+The permissions on the key file must be set so only the owner can read it.
+I also move keys to my ~/.ssh directory.
+
+    $ mv ~/Downloads/mykey.pem ~/.ssh/
+    $ chmod 400 ~/.ssh/mykey.pem
+
+SSH into the public name using the key.
+
+    $ ssh -i ~/.ssh/mykey.pem root@[ec2-instance-name]
+    [root@ip-xx-xxx-xx-xx ~]$
+
+## Update the system
+
+Firstly the system should be updated with the Arch Linux package management tool.
+
+    [root@ec2]$ pacman -Syyu
+
+It asked me something about a dependency conflict, I said yes. Things seem to be fine.
+
+## Creating users
+
+`adduser` is an interactive tool which prompts for new user information and provides defaults where possible. A username and the defaults are fine for now. User passwords can be set with `passwd`
+
+Great, users for everyone.
+
+## Allowing users remote access
+
+The SSH configuration doesn't allow for plain text passwords sent through the tunnel. This can be allowed by updating `/etc/ssh/sshd_config` and setting `PasswordAuthentication` to `yes`. But SSH keys are better, use them.
+
+The SSH daemon checks for the key in `~/.ssh/authorized_keys`. Put the users public key there.
+
+    [root@ec2]$ mkdir /home/username/.ssh
+    [root@ec2]$ mv pub-key /home/username/.ssh/authorized_keys
+
+The user can now login, the `-i` flag can be used if the default key is not used.
+
+    $ ssh username@[ec2-instance-name]
+
+## All users are not equal
+
+Privileged users should be allowed to perform actions as the root user.
+This can be done by giving permission to the `wheel` group and then adding users to the group.
+
+These rules are in `/etc/sudoers`, because the file is important there is a tool called visudo which checks for syntax errors before saving.
+
+    [root@ec2]$ visudo
+
+The line that allows the wheel group to perform actions as the root needs to be uncommented.
+
+    %wheel ALL=(ALL) ALL
+
+We can then add users we trust to the wheel group.
+
+    [root@ec2]$ gpasswd username wheel
+
+The sudo package needs to be installed at sometime.
+
+    [root@ec2]$ pacman -S sudo
+
+## Prevent root login
+
+Now a user can connect and perform actions as root, we can prevent logging in remotely as root.
+To do this we update `/etc/ssh/sshd_config` and set `PermitRootLogin` to `no`.
+We need to restart the SSH process for this to take effect.
+
+    [tarn@ec2]$ rc.d restart sshd
+
+## Install some development tools system wide
+
+We will need heaps more, but here are some to get us started.
+
+    [tarn@ec2]$ sudo pacman -S vim git screen gcc erlang /
+                   python mono openjdk6 nodejs v8 patch /
+                   curl zlib readline libxml2 libxslt /
+                   autoconf automake diffutils make /
+                   libtool bison subversion
+
+Installing packages requires root access as the packages install system wide,
+only users with permission to sudo will be permitted to do it.
+
+## Multiuser Screen
+
+To share a screen process, one user starts screen passing a socket name
+
+    [person1@ec2]$ screen -S hack-session
+
+They then must enable multiuser by invoking screen with `CTRL-a` and typing
+
+    :multiuser on
+
+Finally they must explictly allow a user, again by invoke screen with `CTRL-a`.
+
+    :acladd person2
+
+The user `person2` can now attach to the screen session
+
+    [person2@ec2]$ screen -x person1/hack-session
+
+You can then even split your screen `CTRL-S` and share two shells, perhaps Vim and a REPL? Awesome.
+
+*Note: When you allow someone to connect to your screen process you are effectively giving them permission to run as you.
+Unless you want to remotely pair on system administration,
+create an un-privleged user and use that to share a screen process.*
+
+## Build it and they will come
+
+With a shared remote programming environment I'll be able to pair with people I wouldn't otherwise. I'm nervious about pairing with programmers I know are awesome, but I also know it's a great way to learn, so lets bring it!
+
+[amazonec2]: http://aws.amazon.com/ec2/
+[arch-linux]: http://www.archlinux.org/
+[arch-ami]: https://aws.amazon.com/amis/archlinux
+[pairio]: https://pair.io/
+
+

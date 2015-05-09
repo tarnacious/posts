@@ -1,0 +1,45 @@
+Today I found the awesomeness that is [vim-slime][vim-slime], it's been an exciting day for me.
+[Slime][slime] is the "The Superior Lisp Interaction Mode for Emacs", I can almost hear the emacs crowd laughing.
+
+For those that use vim and haven't used Slime, vim-slime or [something similar][nailgun], this is why it's awesome: 
+
+**Text can be sent from any process to the stdin of a [gnu screen][screen] or [tmux][tmux] session. 
+The process in this case is vim and the screen/tmux session is a terminal**.
+
+Screen is a [really neat][screen-post] terminal multiplexer (you can run multiple terminals in a terminal window). 
+The multiplexed shell processes are children of the screen process, which itself is not a child of the terminal window process. 
+This means a screen process and its child processes keep running if you close the terminal window.
+Later you can re-connect to it, this is what makes vim-slime possible.
+
+Here is an screen shot, on the left is me in gVim writing some awful Clojure [[1]][footnote-1]. 
+On the right is a screen buffer in which I started a Clojure REPL. 
+When I want to try run some code I can send any vim text selection to the REPL in a keystroke (or two).
+
+![vim slime screenshot][screenshot]
+
+It doesn't have to be a Clojure REPL either, we can send anything to a screen shell. 
+We could run git commands, find, grep, sed, etc. Like with the Clojure REPL we can even interact with any terminal programs that use STDIN.
+
+This concept can be taken even further,
+You can even connect to a tmux session over SSH and share a terminal or a [terminal program like vim to do remote pairing][remote-pairs]!
+
+Hopefully remote pairing is the topic of my next post as there are a couple geographically distant people I know who are keen to do some pair hacking.
+I stand to learn a lot!
+
+
+<a name="footnote-1">[1]</a>
+ I learnt almost everything I know about Lisp from [The Little Schemer][schemer]. Great book.
+
+
+[nailgun]: https://github.com/vim-scripts/VimClojure
+[footnote-1]: #footnote-1
+[screen]: http://www.gnu.org/software/screen/
+[tmux]: http://tmux.sourceforge.net/
+[schemer]: http://www.ccs.neu.edu/home/matthias/BTLS/
+[screen-post]: https://tarnbarford.net/journal/oh-screen-where-have-you-been
+[remote-pairs]: http://remotepairprogramming.com/remote-pair-programming-with-tmux-and-vim-the
+[vim-slime-blog]: http://technotales.wordpress.com/2007/10/03/like-slime-for-vim/
+[slime]: http://common-lisp.net/project/slime/
+[vim-slime]: https://github.com/jpalardy/vim-slime
+[screen-post]: https://tarnbarford.net/journal/oh-screen-where-have-you-been
+[screenshot]: https://s3.amazonaws.com/static.tarnacious.net/vim-slime/screenshot.jpg

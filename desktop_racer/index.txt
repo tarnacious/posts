@@ -1,0 +1,36 @@
+I've finally got around to publicly hosting my DevSta entry - Desktop Racer.
+Turns out it was pretty easy, I was just too burnt out by it to want to do
+anything with it till now.
+
+[Play Desktop Racer Now][1]
+
+Looking at it now, I'm a little disappointed I didn't just go a little bit
+further and add a two player mode as I think it would  have actually made it
+fun to play. But honestly after the sixth day of the competition I was so over
+it I didn't care.
+
+I would like to add the two player mode and some performance improvements to
+make it a bit more fun to play, but I seriously doubt I'll ever get round to
+doing it. I'm already half way into an ASP.NET MVC weblog project and I've
+also suddenly become really interested in learning Python.
+
+I'm going to upload the source as well for anyone who is interested, but I
+warn you its probably not a great example Silverlight application as I was
+just learning what was a beta technology at the time. As the competition was
+only 200 hours I didn't spend much time pondering what would be the best way
+to implement it, I pretty much just got in and started coding. Some logic is
+nicely packaged but some classes just ended up getting way to large and
+unwieldy. I've since seen some good demos and blogs on patterns to help
+separate out the presentation and logic.
+
+There are some cool-ish parts in the code; I like how the level and all the
+level elements are defined in XAML so you can visualize the level at design
+time in Visual Studios. I also kind of like how the all the level elements the
+car can collide with implement an interface that has its geometric
+information.  This allowed my to simplify the collision logic to two type of
+geometric primitive and basically calculate and collision with all the level
+elements in a single loop.
+
+
+   [1]: http://static.sharpthinking.com.au/DesktopRacer/DesktopRacer.htm
+

@@ -1,0 +1,33 @@
+So [GNU Screen][3] has been around for a while (initially released in 1987!), but it was only recently at Yow! Brisbane 2010 that [@rioter][1] kindly suggested I check it out.
+
+For the last year or so I've used Linux exclusively for my personal computing where I play with a little Python, Ruby, Lisp, JavaScript and Erlang with Vim and a terminal. I do like [freeing myself from my mouse][4]. But there were a few area of my work flow that were bothering me:
+
+- I didn't like how I navigated up the terminal buffer to see what had happed, I could use Ctrl+PageUp/PageDown to avoid the using the mouse, but jumping by pages isn't always ideal.
+
+- I used the mouse to copy text from the terminal buffer. This constantly depressed me.
+
+- I never worked out how to run a console shell inside Vim. This resulted in using my windows manger to switch between Vim and console windows. It made copying and pasting between the two more difficult as I had to use the system clipboard. 
+
+- I sometimes had couple of windows running processes like web servers on a separate desktop.
+
+These were my *biggest* annoyances with my development environment on Linux. Enter Screen into *my world* to solve them all.
+
+![][2]
+
+GNU Screen is a terminal multiplexer with windowing support. Programs created in Screen can persist after the shell that created them, it supports disconnecting, re-connecting and sharing programs.
+
+The terminal buffers in Screen don't have scrollbars but they do support a copy mode (Ctrl+a [). This allows you to move up, down and around the window with Vim like keyboard navigation and copy text which can be pasted into other screen buffers (Ctrl+a ]). Yay, two of my problems solved!
+
+Screen provides many functions for creating and switching between programs. A new shell be be created (Ctrl+a c) and named (Ctrl+a a). The connected programs can be listed and selected into the foreground with (Ctrl+a "). Now I can create shells and have them running in the background, then switch to them when I need them.
+
+It supports splitting the current screen window horizontally and vertically (Ctrl+a S and Ctrl+a |). The focus can be switched between windows (Ctrl+a Tab). This allows me to have Vim on the top and a console on the bottom. Awesome, now I don't even need to run the console inside Vim itself.
+
+There are many more use-cases for Screen but just these functions alone have resolved some of my major frustrations working with Vim in a Linux terminal.
+
+   [1]: http://twitter.com/rioter
+
+   [2]: https://tarnbarford.net/static/journal/oh_screen_where_have_you_been%3F/screen.png 
+
+   [3]: http://www.gnu.org/software/screen/
+
+   [4]: /journal/the-mouse-is-dead--long-live-the-keyboard

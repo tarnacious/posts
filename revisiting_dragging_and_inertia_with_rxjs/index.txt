@@ -1,0 +1,196 @@
+This is my first look at RxJs the [Reactive Extensions for Javascript][1]. The
+demo isn't remotely useful or practical but it was complicated enough to get a
+feel for a range of Rx constructs and how they can be used in the Javascript
+language.
+
+The excellent [articles by Matthew Podwysocki at CodeBetter][2] provided the
+information I needed to get started and his answers to my questions on Twitter
+([1][3] [2][4] [3][5] [4][6]) helped fill the gaps for me. The dragging,
+easing and inertia maths is lifted from the excellent [project "Rosetta Stone"
+tutorials][7] but it isn't very complicated.
+
+<div>
+<div id="demo_container">
+    <div id="panel"></div>
+</div>
+</div>
+
+## What's going on here man?
+
+It's a type of drag and release behaviour that is a little bit more
+complicated than a normal drag and drop and a lot less useful. Instead of just
+moving the drag target with the mouse, it will ease towards it and once
+released it will slow to a stop. It allows you to kind-of throw the tiles.
+
+The behaviour involves mouse button events, movements and regular frames to
+animate the drag items movement. Rx provides and API to co-ordinate these
+events.
+
+The behavour could be desribed as:
+
+    #!/usr/bin/bash
+    Select mouseDowns
+        SelectMany mouseMoves
+            Select frames
+                Yield positions
+            Until mouse
+        Concat
+            Select frame
+                Yield positions
+            Until mouseDown Merge (or) itemStopedMoving
+
+
+This is almost exactly how the Rx API works. The Select, SelectMany, Until,
+Concat and Merge are all Rx functions. The code looks very similar too except
+there is a closure for each drag motion but it could be factored differently.
+
+## Enough already, show me the codez
+
+No problems, here is the pure Javascript code which can be run outside the
+browser in something like Rhino. Separating the non-browser dependant part
+helped enormously allowing me to trigger the relevant events and test the
+output in a controlled, not-so insane way.
+
+    #!/usr/bin/javascript
+    function drag(target, events) {
+       function handleOutOfBounds(position, offset) {
+           if (position.x - offset.x > 400) { position.x = 400 + offset.x; position.vx *= -1 };
+           if (position.x - offset.x < 0) { position.x = 0 + offset.x; position.vx *= -1 };
+           if (position.y - offset.y > 400) {position.y = 400 + offset.y; position.vy *= -1 };
+           if (position.y - offset.y < 0) { position.y = 0 + offset.y; position.vy *= -1 };
+           return position;
+        }
+ 
+        function dragTo(position,moveTo) {
+           var newX = position.x + ((moveTo.x - position.x) * 0.2);
+           var newY = position.y + ((moveTo.y - position.y) * 0.2);
+           return  { x : newX, y : newY, vx : newX - position.x, vy : newY - position.y };
+        }
+
+        function dragOut(position) {
+            return newPos = { x : position.x + position.vx, 
+                              y : position.y + position.vy, 
+                              vx : position.vx * 0.96, 
+                              vy : position.vy * 0.96 };
+        }
+
+        function isDragOutComplete(position) {
+            return ( Math.abs(position.vx) < 0.1 && Math.abs(position.vy) < 0.1 );
+        }
+
+        function dragMotion(start) {
+            var position = start.mouse;
+            var movementComplete = new Rx.Subject();
+
+            function targetPosition() {
+                return { target : target,
+                    x : position.x - start.offset.x,
+                    y : position.y - start.offset.y }
+            };
+
+            function easeTo(moveTo) {
+                function easeFrame (e) {
+                   position = handleOutOfBounds(dragTo(position,moveTo),start.offset);
+                   return  targetPosition();
+                }
+                return events.frame.Select(easeFrame).TakeUntil(events.mouseMove);
+            }
+
+            function easeToStop(frameEvent) {
+                position = handleOutOfBounds(dragOut(position),start.offset);
+
+                if (isDragOutComplete(position)) {
+                    movementComplete.OnNext(); 
+                }
+
+                return targetPosition();
+            }
+
+
+            return events.mouseMove.SelectMany(easeTo)
+                .TakeUntil(events.mouseUp)
+                .Concat(events.frame.Select(easeToStop)
+                .TakeUntil(events.mouseDown.Merge(movementComplete)))
+        };
+
+        return events.mouseDown.SelectMany(dragMotion);
+    };
+
+
+The RxJs extension for jQuery are used to compose the desired observable
+events from the browser.
+
+    #!/usr/bin/javascript
+    function getDomEvents(target) {
+        function getMouse(e) {
+            return { x : e.clientX,y : e.clientY }; }
+
+        function getDragItem(target) {
+            return { x : parseFloat(target.css("left").replace("px","")),
+                     y : parseFloat(target.css("top").replace("px","")) }; }
+
+        function getOffset(mouse,position) {
+            return { x: mouse.x - position.x, y : mouse.y - position.y }; }
+
+        function getDragStart(mouseEvent) {
+            mouseEvent.preventDefault();
+            var mouse = getMouse(mouseEvent);
+            var position = getDragItem(target);
+            return { mouse : mouse, position : position,
+                     offset : getOffset(mouse,position) }; 
+        }
+
+        return { mouseUp : $(document).toObservable("mouseup"),
+                 mouseDown : target.toObservable("mousedown").Select(getDragStart),
+                 mouseMove : $(document).toObservable("mousemove").Select(getMouse),
+                 frame : Rx.Observable.Interval(10) };
+    };
+
+    function dragElement(target) {
+            var events = getDomEvents(target);
+            return drag(target, events);
+    };
+
+
+Finally we we can subscribe to the composed observable and update the DOM
+element accordingly.
+
+
+    #!/usr/bin/javascript
+    $(".tile").each(
+        function(target) {
+            dragElement($(this)).Subscribe( function ( pos ) {
+                pos.target.css( { top: pos.y, left: pos.x } );
+            })});
+
+## What next
+
+It's interesting there is no reason we couldn't take the observable event
+stream we created here and compose it with more events. For example we could
+subscribe to this event stream until the tile position was in the correct
+position or until an escape key is pressed.
+
+For me Rx is a good solution to a very real problem domain. It's been fun
+learning about Rx and also a bit more about Javascript. I'm looking forward to
+using RxJs in real web applications.
+
+
+   [1]: http://msdn.microsoft.com/en-us/devlabs/ee794896.aspx
+
+   [2]: http://codebetter.com/blogs/matthew.podwysocki/default.aspx
+
+   [3]: http://twitter.com/mattpodwysocki/status/14866659412
+
+   [4]: http://twitter.com/mattpodwysocki/status/14669353423
+
+   [5]: http://twitter.com/mattpodwysocki/status/14669684258
+
+   [6]: http://twitter.com/mattpodwysocki/status/14669738261
+
+   [7]: http://channel9.msdn.com/continuum/tutorials/Dragging/
+
+   [18]: http://blog.sharpthinking.com.au/
+
+
+
+

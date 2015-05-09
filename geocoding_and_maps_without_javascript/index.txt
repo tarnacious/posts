@@ -1,0 +1,368 @@
+Since playing with [JQuery][1] I've started thinking more about [unobtrusive
+JavaScript][2] and graceful degradation. Despite [less than 5% of users
+browsing without JavaScript enabled][3], I found it very interesting disabling
+JavaScript on my Browser and checking out which sites still work and which
+ones fail. I found the [Microsoft Live Search Maps][4] has absolutely no clue
+your browsing the site without JavaScript, it just renders a loading spinning
+GIF.
+
+Without JavaScript Enabled
+
+![image][6]
+
+With JavaScript Enabled
+
+![image][7]
+
+Google maps performs much better, providing a rich client side library with
+JavaScript enabled and a functional mapping service without it.
+
+Without JavaScript Enabled
+
+![image][8]
+
+With JavaScript Enabled
+
+![image][9]
+
+There are also plenty of sites that lose some or all of their functionality,
+but let you know why. [YouTube][10] can't play videos, but you can browse them
+and it provides an message indicating why the movies don't work.
+
+> Hello, you either have JavaScript turned off or an old version of Adobe's
+Flash Player. [Get the latest Flash player][11].
+
+[StackOverflow][12] has graceful degradation implemented well. You can still
+ask and answer questions but there is a banner at the top of the page
+
+> Stack Overflow works best with JavaScript enabled
+
+You then can't expand comments and you don't get the cool Ajax features that
+indicate when you've earned a badge or someone else has answered the question
+your currently answering, but its still pretty functional.
+
+### Geocoding without JavaScript
+
+It turns out the good guys at Google have provided a REST API to do geocoding
+without using their fantastic client side JavaScript libraries. Its all
+documented in the [Geocoding API Developer's Guide][13].
+
+Google do state this in their terms for the REST geocoding service;
+
+> This service is designed for geocoding static (known) addresses using a REST
+interface, for placement of application content on a map. For dynamic
+geocoding of user-defined addresses (for example, within a user interface
+element), consult the documentation for the [JavaScript Client Geocoder][14]
+or the [Maps API for Flash Client Geocoder][15].
+
+I don't think this is a huge problem as a well designed website will only use
+this geocoding service for the 5% of users who don't have Javascript enabled.
+If JavaScript is enabled, the DOM can be updated using the rich JavaScript
+functionality.
+
+I wrote a little script to wrap around the service, I wrote the script in
+Python as I'm hoping to use it on Google App Engine, but more about that
+later. To use this script you'll need to [sign up to get a Google Maps API
+key][16] and use it to set the GeoCoder.geoCodeKey property.
+
+    #!/use/bin/python
+    import urllib2
+    from xml.dom import minidom
+
+    class GeoCoder():
+        
+        def __init__(self):
+            self.geoCodeUrl = 'http://maps.google.com/maps/geo?q=%(address)s&output=xml&oe=utf8&sensor=false&key=%(key)s'
+            self.geoCodeKey = ''
+
+        def GetUrlKey(self,address):
+            return self.geoCodeUrl % {'key':self.geoCodeKey,'address':urllib2.quote(address)}
+
+        def GetKml(self, address):
+            response = urllib2.urlopen(self.GetUrlKey(address))
+            return response.read();
+
+    class KmlParser():
+        
+        def GetText(self,node,nodeName):
+            return node.getElementsByTagName(nodeName)[0].childNodes[0].data
+
+        def GetCoordinates(self,node):
+            items = self.GetText(node, "coordinates").split(',')
+            return { 'latitude':items[0], 'longitude':items[1] }
+
+        def ParseAddress(self, node):
+            address = { 'address':self.GetText(node,'address'),
+                        'country':self.GetText(node,'CountryName'),
+                        'street':self.GetText(node,'ThoroughfareName'),
+                        'postcode':self.GetText(node,'PostalCodeNumber'),
+                        'coordinates': self.GetCoordinates(node) }
+        
+            return address
+
+        def Parse(self, xml):
+            results = []
+            dom = minidom.parseString(xml)
+
+            for placeNode in dom.getElementsByTagName('Placemark'):
+                results.append(self.ParseAddress(placeNode))
+                dom.unlink()
+        
+            return results;
+
+        def GetAddresses(address):
+            return KmlParser().Parse(GeoCoder().GetKml(address))
+
+    if __name__ == '__main__':
+
+        import sys
+        if len(sys.argv) > 1:
+
+        for address in GetAddresses(' '.join(sys.argv[1:])):
+            print address
+    else:
+        print "Enter Address to Geocode, using the Google Geocoding API"
+
+
+    from xml.dom import minidom
+
+    class GeoCoder():
+        def __init__(self):
+            self.geoCodeUrl = 'http://maps.google.com/maps/geo?q=%(address)s&output=xml&oe=utf8&sensor=false&key=%(key)s'
+            self.geoCodeKey = ''
+
+        def GetUrlKey(self,address):
+
+            return self.geoCodeUrl % {'key':self.geoCodeKey,'address':urllib2.quote(address)}
+
+        def GetKml(self, address):
+         
+            response = urllib2.urlopen(self.GetUrlKey(address))
+            return response.read();
+
+        class KmlParser():
+
+            def GetText(self,node,nodeName):
+            return node.getElementsByTagName(nodeName)[0].childNodes[0].data
+
+        def GetCoordinates(self,node):
+
+            items = self.GetText(node, "coordinates").split(',')
+            return { 'latitude':items[0], 'longitude':items[1] }
+
+        def ParseAddress(self, node):
+
+            address = { 'address':self.GetText(node,'address'),
+                        'country':self.GetText(node,'CountryName'),
+                        'street':self.GetText(node,'ThoroughfareName'),
+                        'postcode':self.GetText(node,'PostalCodeNumber'),
+                        'coordinates': self.GetCoordinates(node) }
+            return address
+
+        def Parse(self, xml):
+        
+            results = []
+            dom = minidom.parseString(xml)
+        
+            for placeNode in dom.getElementsByTagName('Placemark'):
+                results.append(self.ParseAddress(placeNode))
+
+            dom.unlink()
+            return results;
+
+        def GetAddresses(address):
+            return KmlParser().Parse(GeoCoder().GetKml(address))
+
+    if __name__ == '__main__':
+
+    import sys
+
+    if len(sys.argv) > 1:
+
+    for address in GetAddresses(' '.join(sys.argv[1:])):
+
+    print address
+
+    else:
+
+    print "Enter Address to Geocode, using the Google Geocoding API"
+
+
+Which makes geocoding pretty easy from Python
+
+    #!/use/bin/bash
+    Python 2.5.4 (r254:67916, Dec 23 2008, 15:10:54) [MSC v.1310 32 bit(Intel)] on win32
+    Type "help", "copyright", "credits" or "license" for more information.
+
+    >>> import geocoder
+    >>> addresses = geocoder.GetAddresses('main st, melbourne, victoria')
+    >>> for a in addresses: print geocoder.AddressToString(a)
+    ...
+    Main St, Mordialloc VIC 3195, Australia (145.0858270,-38.0058450)
+    Main St, Lilydale VIC 3140, Australia (145.3507800,-37.7575460)
+    Main St, Mornington VIC 3931, Australia (145.0407850,-38.2231010)
+    Main St, Greensborough VIC 3088, Australia (145.1058060,-37.7025570)
+    Main St, Diamond Creek VIC 3089, Australia (145.1478460,-37.6744410)
+    Main St, Thomastown VIC 3074, Australia (144.9994220,-37.6787790)
+    Main St, Blackburn VIC 3130, Australia (145.1491980,-37.8258150)
+    Main St, Upwey VIC 3158, Australia (145.3366500,-37.9050420)
+    Main St, Croydon VIC 3136, Australia (145.2811170,-37.7961170)
+
+Google also note this in the terms;
+
+> Geocoding is a time and resource intensive task. Whenever possible, pre-
+geocode known addresses (using the Geocoding Service described here or another
+geocoding service), and store your results in a temporary cache of your own
+design.
+
+Even though the geocoding service is actually quite quick, it does make a lot
+of sense not to make a call to an external service if its not required. I
+suggest following this advice.
+
+### Maps without JavaScript
+
+Normally some very clever JavaScript dynamically adds new map tile images to
+the DOM when sections of the map need to be rendered out, so the normal Google
+Maps service won't work without JavaScript. Luckily Google provide a REST
+Static Maps service which serves up map images. Its all documented in the
+[Static Maps API Developer's Guide][17].
+
+I wrote this Python script to get a map URL, again a [Google Maps API key][16]
+is required.
+
+    #!/use/bin/python
+    key = 'MAPS_API_KEY'
+    url = 'http://maps.google.com/staticmap?'
+    colours = ['brown', 'green', 'purple', 'yellow', 'blue', 'gray', 'orange','red', 'white','black']
+
+    def GetImageUrl(params, markers):
+        if markers:
+            marker = [','.join(p) for p in markers]
+            params['markers'] = '|'.join(marker)
+    
+        if not params.has_key('key') : params['key'] = key
+            return url + '&'.join(['='.join(p) for p in params.items()])
+
+    if __name__ == '__main__':
+
+        # Generate map URL with 10 locations in Melbourne Australia
+        letters = 'ABCDEFGHI'
+        address = [['144.9994220','-37.6787790'],
+                   ['145.2811170','-37.7961170'],
+                   ['145.0407850','-38.2231010'],
+                   ['145.3507800','-37.7575460'],
+                   ['145.3366500','-37.9050420'],
+                   ['145.1491980','-37.8258150'],
+                   ['145.1058060','-37.7025570'],
+                   ['145.1478460','-37.6744410'],
+                   ['145.0858270','-38.0058450']]
+    
+        markers = [ [e[1],e[0],colours[i]] for i, e in zip(range(len(address)),address)]
+        params = { 'size':'256x256', 'maptype':'roadmap', 'sensor':'false','markers': markers }
+        print GetImageUrl(params, markers)  
+
+
+Using this script and little more Python hacking I could quickly generate some
+HTML with a map and links to more detailed maps.
+
+![][18]
+
+A. [Main St, Thomastown VIC 3074, Australia][19]
+
+B. [Main St, Croydon VIC 3136, Australia][20]
+
+C. [Main St, Mornington VIC 3931, Australia][21]
+
+D. [Main St, Lilydale VIC 3140, Australia][22]
+
+E. [Main St, Upwey VIC 3158, Australia][23]
+
+F. [Main St, Blackburn VIC 3130, Australia][24]
+
+G. [Main St, Greensborough VIC 3088, Australia][25]
+
+H. [Main St, Diamond Creek VIC 3089, Australia][26]
+
+I. [Main St, Mordialloc VIC 3195, Australia][27]
+
+
+### Putting it all together
+
+There is still some consideration to put this all together in website that
+supports server side mapping and geocoding without JavaScript and enhances the
+mapping with unobtrusive JavaScript.
+
+Page responses need to return HTML that will work without JavaScript. If the
+browser executes the pages JavaScript, the script can attach an events and
+disable default behaviors to implement the richer client side functionality.
+
+On a page a user entered address can be geocoded, the requested HTML should
+contain a form that can post back to the server to do the geocoding. If client
+side JavaScript is not used the server can handle the post and use the
+geocoding service to respond appropriately, of course with JavaScript the
+addresses can be added to the DOM dynamically, probably with some slide or
+fade effect.
+
+On pages that display maps, the static image URL can be sent in the requested
+HTML and used if the JavaScript Google Maps can't be loaded. As on Google Maps
+some additional controls can be added to allow some panning and zooming
+without JavaScript.
+
+I'm going to see if I can get the all working on the Google App Engine, I'll
+let you know how I go.
+
+
+   [1]: http://jquery.com/
+
+   [2]: http://en.wikipedia.org/wiki/Unobtrusive_JavaScript
+
+   [3]: http://www.w3schools.com/browsers/browsers_stats.asp
+
+   [4]: http://maps.live.com.au/index.aspx
+
+   [5]: image_thumb.png
+
+   [6]: https://tarnbarford.net/static/journal/geocoding_and_maps_without_javascript/live_nojs.png
+
+   [7]: https://tarnbarford.net/static/journal/geocoding_and_maps_without_javascript/live_withjs.png
+
+   [8]: https://tarnbarford.net/static/journal/geocoding_and_maps_without_javascript/maps_nojs.png
+
+   [9]: https://tarnbarford.net/static/journal/geocoding_and_maps_without_javascript/maps_nojs.png
+
+   [10]: http://www.youtube.com/
+
+   [11]: http://www.adobe.com/go/getflashplayer/
+
+   [12]: http://stackoverflow.com
+
+   [13]: http://code.google.com/apis/maps/documentation/geocoding/
+
+   [14]: http://code.google.com/apis/maps/documentation/services.html#Geocoding
+
+   [15]: http://code.google.com/apis/maps/documentation/flash/services.html#Geocoding
+
+   [16]: http://code.google.com/apis/maps/signup.html
+
+   [17]: http://code.google.com/apis/maps/documentation/staticmaps/
+
+   [18]: http://maps.google.com/staticmap?key=ABQIAAAAgcoNW1AYyhMSY_oVDddvYBS9ThHTpu8P8555wy_Ce5KyxGr84xQ7LWK4Yn6Frdz52K2bWADxqDBtgg&sensor=false&maptype=roadmap&markers=-37.6787790,144.9994220,browna|-37.7961170,145.2811170,greenb|-38.2231010,145.0407850,purplec|-37.7575460,145.3507800,yellowd|-37.9050420,145.3366500,bluee|-37.8258150,145.1491980,grayf|-37.7025570,145.1058060,orangeg|-37.6744410,145.1478460,redh|-38.0058450,145.0858270,whitei&size=256x256
+
+   [19]: http://maps.google.com/staticmap?center=-37.6787790,144.9994220&zoom=16&markers=-37.6787790,144.9994220,red&maptype=roadmap&key=ABQIAAAAgcoNW1AYyhMSY_oVDddvYBS9ThHTpu8P8555wy_Ce5KyxGr84xQ7LWK4Yn6Frdz52K2bWADxqDBtgg&sensor=false&size=256x256
+
+   [20]: http://maps.google.com/staticmap?center=-37.7961170,145.2811170&zoom=16&markers=-37.7961170,145.2811170,red&maptype=roadmap&key=ABQIAAAAgcoNW1AYyhMSY_oVDddvYBS9ThHTpu8P8555wy_Ce5KyxGr84xQ7LWK4Yn6Frdz52K2bWADxqDBtgg&sensor=false&size=256x256
+
+   [21]: http://maps.google.com/staticmap?center=-38.2231010,145.0407850&zoom=16&markers=-38.2231010,145.0407850,red&maptype=roadmap&key=ABQIAAAAgcoNW1AYyhMSY_oVDddvYBS9ThHTpu8P8555wy_Ce5KyxGr84xQ7LWK4Yn6Frdz52K2bWADxqDBtgg&sensor=false&size=256x256
+
+   [22]: http://maps.google.com/staticmap?center=-37.7575460,145.3507800&zoom=16&markers=-37.7575460,145.3507800,red&maptype=roadmap&key=ABQIAAAAgcoNW1AYyhMSY_oVDddvYBS9ThHTpu8P8555wy_Ce5KyxGr84xQ7LWK4Yn6Frdz52K2bWADxqDBtgg&sensor=false&size=256x256
+
+   [23]: http://maps.google.com/staticmap?center=-37.9050420,145.3366500&zoom=16&markers=-37.9050420,145.3366500,red&maptype=roadmap&key=ABQIAAAAgcoNW1AYyhMSY_oVDddvYBS9ThHTpu8P8555wy_Ce5KyxGr84xQ7LWK4Yn6Frdz52K2bWADxqDBtgg&sensor=false&size=256x256
+
+   [24]: http://maps.google.com/staticmap?center=-37.8258150,145.1491980&zoom=16&markers=-37.8258150,145.1491980,red&maptype=roadmap&key=ABQIAAAAgcoNW1AYyhMSY_oVDddvYBS9ThHTpu8P8555wy_Ce5KyxGr84xQ7LWK4Yn6Frdz52K2bWADxqDBtgg&sensor=false&size=256x256
+
+   [25]: http://maps.google.com/staticmap?center=-37.7025570,145.1058060&zoom=16&markers=-37.7025570,145.1058060,red&maptype=roadmap&key=ABQIAAAAgcoNW1AYyhMSY_oVDddvYBS9ThHTpu8P8555wy_Ce5KyxGr84xQ7LWK4Yn6Frdz52K2bWADxqDBtgg&sensor=false&size=256x256
+
+   [26]: http://maps.google.com/staticmap?center=-37.6744410,145.1478460&zoom=16&markers=-37.6744410,145.1478460,red&maptype=roadmap&key=ABQIAAAAgcoNW1AYyhMSY_oVDddvYBS9ThHTpu8P8555wy_Ce5KyxGr84xQ7LWK4Yn6Frdz52K2bWADxqDBtgg&sensor=false&size=256x256
+
+   [27]: http://maps.google.com/staticmap?center=-38.0058450,145.0858270&zoom=16&markers=-38.0058450,145.0858270,red&maptype=roadmap&key=ABQIAAAAgcoNW1AYyhMSY_oVDddvYBS9ThHTpu8P8555wy_Ce5KyxGr84xQ7LWK4Yn6Frdz52K2bWADxqDBtgg&sensor=false&size=256x256
+

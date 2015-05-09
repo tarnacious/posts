@@ -1,0 +1,107 @@
+This week's post is a playable chess engine that runs in modern browsers that
+have support for websockets. The engine is [my fork] [fork] of the
+[chess-at-nite] [chessatnite] engine which is written in C++. The engine is
+compiled with [clang] [clang] to [LLVM byte code] [llvm] and then to [asmjs]
+[asmjs] with [Emscripten] [emscripten]. The engine runs in a web worker and the
+UI is built with a minimal amount of Javascript that makes use of the excellent
+[chess.js] [chessjs] and [chessboard.js] [chessboardjs] libraries.
+
+<div id="wrapper">
+<div id="game">
+    <div id="gameover">
+        <h3>Game is Drawn</h3>
+        <div>
+            <button>New Game</button>
+        </div>
+    </div>
+    <div id="options">
+        <h3>New Game</h3>
+        <div><span>Black Pieces</span>
+            <select class="black">
+                <option value="human">Human</option>
+                <option value="computer" selected>Computer</option>
+                <option value="random">Random</option>
+            </select>
+            </div>
+        <div><span>White Pieces</span>
+            <select class="white">
+                <option value="human" selected>Human</option>
+                <option value="computer">Computer</option>
+                <option value="random">Random</option>
+            </select>
+            </div>
+        <div><span>Position</span>
+            <select>
+                <option value="start">Start</option>
+            </select>
+            </div>
+            <div class="start">
+                <button>Start Game</button>
+            </div>
+    </div>
+    <div id="board" style="width: 500px"></div>
+</div>
+</div>
+
+To get started I compiled [Emscripten] [emscripten], and the Emscripten forks
+of [LLVM] [emllvm] and [clang] [emclang] as Enscripten currently prefers to use
+the ["fastcomp" LLVM backend] [fastcomp] which is not the version I had
+previously installed with [brew] [llvmbrew]. After configuring my Emscripten to
+use the new clang I could run `emcc` which is pretty much a drop-in replacement
+for `gcc`.
+
+I found the [chess-at-nite] [chessatnite] randomly by googling for chess engine
+source code. I would have liked to have used the [GNU Chess] [gnuchess] engine,
+but I have looked at the source previously and did not think it was a great
+codebase to adapt. Fortunately the chess-at-nite source compiles with `gcc` and
+looked like a pretty nice codebase to hack on.
+
+When I initially tried to compile the code with Enscripten I got a heap of
+`'error: reference to 'move' is ambiguous'` errors. Unfortunately many of the
+source files use `'using namespace std;'` and apparently the Emscripten `std`
+namespace defines `move`. After updating all the usages to only include the
+referenced parts of the `std` namespace, it compiled and even printed the menu
+in the Emscripten generated web page! And then crashed my browser.
+
+At this point I thought it would be awesome if I could compile it as a worker
+and have it automagically use `postMessage` and `onmessage` for
+`stdin`/`stdout` and `console.error` for `stderr`. I was disappointed, but this is
+a compiler option I would consider working on!
+
+I also couldn't get all of the [Worker API] [workerapi] working for some reason
+I have not investigated yet. However, I could get enough of it working to hack
+together this post. I created a new entry point in the chess-at-nite code that
+exports a C style function suitable to be called using the Emscripten Worker
+API, this part worked. I was unable to get the Worker API calling the worker,
+but noticed I could create and call the worker with normal Javascript, provided
+I posted and handled the internal message formats used by the Worker API.
+
+For this post the worker takes a [FEN] [fen] game state and returns a new FEN
+string with an updated game state. Luckily [chess.js] [chessjs] and
+[chessboard.js] [chessboardjs] support FEN strings which made wiring up the UI
+quite straight forward. As FEN strings do not provide enough information about
+previous moves to detect [threefold repetitions][threefold], the engine is quite
+susceptible to threefold repetition draws, as can be seen when it plays itself.
+
+Ideally I would have liked to have the Chess engine running in the worker,
+comunicating with the [xboard protocol] [xboard] using "standard" `stdio` over
+the web worker `onmessage`/`postMessage` interface. However I am pretty happy
+with the results and may have found a project I want to contribute too.
+
+[asmjs]: http://asmjs.org/
+[chessjs]: https://github.com/jhlywa/chess.js
+[chessboardjs]: http://chessboardjs.com/
+[chessatnite]: https://code.google.com/p/chess-at-nite/
+[emscripten]: https://github.com/kripken/emscripten
+[fastcomp]: https://github.com/kripken/emscripten/wiki/LLVM-Backend
+[emllvm]: https://github.com/kripken/emscripten-fastcomp
+[emclang]: https://github.com/kripken/emscripten-fastcomp-clang
+[clang]: http://clang.llvm.org/
+[llvm]: http://llvm.org/
+[fork]: https://github.com/tarnacious/chess-at-nite
+[llvmbrew]: https://github.com/Homebrew/homebrew/blob/master/Library/Formula/llvm.rb
+[gnuchess]: http://www.gnu.org/software/chess/
+[workerapi]: https://github.com/kripken/emscripten/blob/master/system/include/emscripten/emscripten.h#L376
+[fen]: http://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
+[threefold]: http://en.wikipedia.org/wiki/Threefold_repetition
+[xboard]: http://www.gnu.org/software/xboard/engine-intf.html

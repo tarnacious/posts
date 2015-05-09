@@ -1,0 +1,45 @@
+I added the ability to sign into this site to comment with [Mozilla
+Persona][persona]. Not that I'm expecting people to use it, I've only had a
+handful of genuine comments since I started the site some years ago. I was just
+interested in trying it out, which is why I have this site. 
+
+It was pretty straight forward as I already only support the concept of signing
+in with 3rd party authentication providers such at OpenID, Google and Twitter.
+Adding Persona was just adding another provider, I didn't need to change
+how the authentication system works. Here is the [commit][commit].
+
+A difference from the other providers is that I had to use Javascript. It's not
+that I don't like Javascript, [many][j2] [posts][j3] [here][j4]
+[have][j5] [running][j6] [Javascript][j7] [in][j8] [the][j9] [content][j10].
+It's just over the several re-writes of this site in different languages I've
+included less Javascript in the site itself. There was none on this site, I
+liked it that way.
+
+Another thing I liked is OpenID. I understand it had usability and adoption
+issues. With OpenID though, I could choose who manages my identity or I could
+[manage it myself][pythonopenid]. Apparently an email provider (in my case, me)
+can implement the Persona (BrowswerID) protocol and not depend on
+[login.persona.org][login_persona]. Perhaps that is something I will look into
+after posting this. 
+
+Finally a note on adoption; I was having dinner with &Ouml;zlem last night and tried
+to explain Persona, but was unable to convince her to even try it to sign into
+this site. To be fair it's only a sample size of one and I think &Ouml;zlem was
+hoping dinner conversation wouldn't be about online identity management.  
+
+[persona]: http://www.mozilla.org/en-US/persona/
+[commit]: https://bitbucket.org/tarnacious/author/commits/c71a9525fd22643371875316257704760e16063a
+[login_persona]: https://login.persona.org/
+[pythonopenid]: https://github.com/openid/python-openid
+[j1]: https://tarnbarford.net/journal/uhc-haskell-to-javascript
+[j2]: https://tarnbarford.net/journal/cube
+[j3]: https://tarnbarford.net/journal/tile-land
+[j4]: https://tarnbarford.net/journal/asteroids
+[j5]: https://tarnbarford.net/journal/transforms
+[j6]: https://tarnbarford.net/journal/old-school-for-fun
+[j7]: https://tarnbarford.net/journal/rxjs-zip
+[j8]: https://tarnbarford.net/journal/rxjs-capture
+[j9]: https://tarnbarford.net/journal/rxjs-merge
+[j10]: https://tarnbarford.net/journal/revisiting-dragging-and-inertia-with-rxjs
+
+

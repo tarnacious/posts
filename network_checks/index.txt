@@ -1,0 +1,83 @@
+I work with an IT manager who is very into knowing about how all the servers
+on the network are performing, and rightfully so. But the process isn't great;
+he gets an IT person to remote into all the servers daily and manually record
+information in a spreadsheet. These include things like disk usage, logs, log
+sizes, databases, web servers, processes, memory and CPU usage.
+
+A while back I wrote a Powershell Script that recorded heaps of the results
+for him. Unfortunately it didn't take many server changes before the script
+had more errors than results, I guess he could do stuff with all that extra
+time. I would fix stuff from time to time, but more often than not I was too
+busy with things I had to do or things I wanted to do.
+
+The other day I decided it would be cool if I could write all the checks as
+NUnit tests. That way he could just run NUnit, point it towards the assembly
+and get cool Red/Green light testing of the network status. I could write test
+like:
+
+    [Test]
+    public void Server1_DiskUsage_CDrive_LessThan80Percent().
+
+
+I also found this article: [Setting up CruiseControl.NET to be a Continuous
+Monitoring Server][1]. I haven't read it in detail, but I think its a pretty
+cool idea.
+
+I don't have time to implement this yet, but I have started writing some of
+the tests from the Powershell script in C#. I started some code to get the
+memory usage from a server and I was immediately reminded how annoying it was
+trying to work out how values in WMI related to the items on the Performance
+tab in task manager. So marked up an image of the task manager window with the
+corresponding properties of the WMI.
+
+[Performance][3]
+
+See [Win32_OperatingSystem_Class][4] on MSDN for all the properties and
+descriptions
+
+Anyway you might now be asking to see the C# code, well here it is. There is
+no exception handling as I was running it as an NUnit test which handled them
+for me.
+
+
+
+    private OperatingSystemInfo GetOperatingSystemInfo(string serverName)
+    {
+        string wmiObjectName = "Win32_OperatingSystem";
+        string connectionString = string.Format("\\\\{0}\\root\\cimv2:{1}",serverName, wmiObjectName);
+        ManagementClass os = new ManagementClass(connectionString);
+
+        foreach (ManagementObject obj in os.GetInstances())
+        {
+            OperatingSystemInfo osInfo = new OperatingSystemInfo();
+            osInfo.NumberOfProcesses = (uint)obj.GetPropertyValue("NumberOfProcesses");
+            osInfo.TotalVisibleMemorySize = (ulong)obj.GetPropertyValue("TotalVisibleMemorySize");
+            osInfo.TotalVirtualMemorySize = (ulong)obj.GetPropertyValue("TotalVirtualMemorySize");
+            osInfo.FreeVirtualMemory = (ulong)obj.GetPropertyValue("FreeVirtualMemory");
+            osInfo.FreeSpaceInPagingFiles = (ulong)obj.GetPropertyValue("FreeSpaceInPagingFiles");
+            osInfo.FreePhysicalMemory = (ulong)obj.GetPropertyValue("FreePhysicalMemory");
+            return osInfo;
+        }
+        return null;
+    }
+
+    public class OperatingSystemInfo
+    {
+        public uint NumberOfProcesses { get; set; }
+        public ulong TotalVisibleMemorySize { get; set; }
+        public ulong TotalVirtualMemorySize { get; set; }
+        public ulong FreeVirtualMemory { get; set; }
+        public ulong FreeSpaceInPagingFiles { get; set; }
+        public ulong FreePhysicalMemory { get; set; }
+    }
+
+
+I hope it helps. I'm getting back to playing with the Microsoft MVC Preview 3
+which is really cool and lots of fun. I hope to get a post out about what I
+like and don't like about it soon.
+
+
+   [1]: http://www.codeproject.com/KB/dotnet/cruisecontrol_continuous.aspx
+   [3]: /image.axd?picture=WindowsLiveWriter/NetworkChecksOperatingSystemPerformance_10294/Performance_2.jpg
+   [4]: http://msdn.microsoft.com/en-us/library/aa394239(VS.85).aspx
+

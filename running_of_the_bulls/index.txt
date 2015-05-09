@@ -1,0 +1,39 @@
+I'm going to [Scoopcamp] [scoopcamp] for the [hackathon] [hackathon] again this
+year as I had a lot of fun last year. I'm joining the Henri-Nannen-Schule team
+who to want to make some news games.  To help ensure I can help with their
+ideas and not get bogged down in boring technical details, I decided to have a
+look at what tools, resources, libraries and frameworks exist these days that
+might be useful.
+
+This morning I decided I would build a game with the [Phaser HTML5 game
+framework] [phaser], [Tiled map editor] [tiled] and [Texture Packer]
+[texturepacker] (trail version) and post it on this blog. I decided the game
+would be about bull fighting as I was trying to animate a bull earlier and
+because I knew Inés wouldn't approve.
+
+<div id="wrapper">
+    <div id="game">
+    </div>
+</div>
+
+I um, used, some peoples art. I hope this is ok, here is where I found it:
+
+* The awesome Batman style collisions from [Morkii] [morkki] 
+* I found the [Vega character spites in a forum] [vega] 
+* The [map tiles][maptiles] are by [Buch][buch]
+* The background is from the [Phaser Examples][phaserexamples] project
+
+It's a bit of a mess, but was fun. I think I'm better prepared and now looking
+forward to the hackathon.
+
+[henrinannen]: http://henri-nannen-schule.de/
+[scoopcamp]: http://scoopcamp.de
+[hackathon]: http://scoopcamp.de/hackathon/
+[phaser]: http://phaser.io/
+[tiled]: http://www.mapeditor.org/
+[texturepacker]: https://www.codeandweb.com/texturepacker
+[morkki]: https://dribbble.com/Morkki
+[vega]: http://universomario.foros.ws/t1500/las-aventuras-de-toad/
+[maptiles]: http://opengameart.org/content/orthographic-outdoor-tiles
+[buch]: http://opengameart.org/users/buch
+[phaserexamples]: https://github.com/photonstorm/phaser

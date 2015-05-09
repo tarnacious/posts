@@ -1,0 +1,226 @@
+<div class="entry">
+<p>I'm doing a presentation on non-relational databases at <a href="http://www.dddmelbourne.com/">DDD Melbourne</a> this weekend where I am going to demonstrate a map-reduce example with MongoDB and server side Javascript. I've been interested in both independently recently and it's been fun getting them to working together with some Javascript TDD to boot.</p>
+<p>I needed a good example to demonstrate map-reduce and decided finding word occurrences across a series of documented seemed a simple enough scenario that is suited to being solved by a map-reduce query.</p>
+<p>Below is an example of how we might solve this in plain C# </p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">using</span> <span style="color: #0000FF; font-weight: bold">System</span>;
+<span style="color: #008000; font-weight: bold">using</span> <span style="color: #0000FF; font-weight: bold">System.Collections.Generic</span>;
+
+<span style="color: #008000; font-weight: bold">using</span> <span style="color: #0000FF; font-weight: bold">System.Linq</span>;
+<span style="color: #008000; font-weight: bold">using</span> <span style="color: #0000FF; font-weight: bold">System.Text</span>;
+
+<span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">wordCounts</span> {
+
+    <span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">void</span> <span style="color: #0000FF">Main</span>(<span style="color: #B00040">string</span>[] args) {
+
+        <span style="color: #408080; font-style: italic">// Setup some data</span>
+
+        List&lt;<span style="color: #B00040">string</span>&gt; lines = <span style="color: #008000; font-weight: bold">new</span> List&lt;<span style="color: #B00040">string</span>&gt;() 
+            { 
+              <span style="color: #BA2121">&quot;Peter Piper picked a peck of pickled peppers&quot;</span>, 
+              <span style="color: #BA2121">&quot;A peck of pickled peppers Peter Piper picked&quot;</span>,
+              <span style="color: #BA2121">&quot;If Peter Piper picked a peck of pickled peppers&quot;</span>,
+              <span style="color: #BA2121">&quot;Where&#39;s the peck of pickled peppers Peter Piper picked?&quot;</span>
+
+            };
+
+        <span style="color: #408080; font-style: italic">// select all words, group, count</span>
+        var wordCounts = lines.SelectMany(m =&gt; m.Split())
+                              .GroupBy(m =&gt; m.ToLower())
+                              .Select(m =&gt; <span style="color: #008000; font-weight: bold">new</span> KeyValuePair&lt;<span style="color: #B00040">string</span>, <span style="color: #B00040">int</span>&gt;(m.Key, m.Count()));
+
+        <span style="color: #408080; font-style: italic">// Print out the results</span>
+
+        <span style="color: #008000; font-weight: bold">foreach</span> (var wordCount <span style="color: #008000; font-weight: bold">in</span> wordCounts) 
+        {
+            Console.WriteLine(<span style="color: #B00040">string</span>.Format(<span style="color: #BA2121">&quot;{0} {1}&quot;</span>, wordCount.Value, wordCount.Key));     
+        }
+    }
+}
+</pre></div>
+<br />
+<p>This prints each different word in all the lines and the number of the times it occurs. The collection of strings is isomorphic to a collection of documents in the MongoDB for this example.</p>
+<p>The SelectMany flattens lists of words from each line to a single list of words and the Group provides keys for each word, this is very similar to what the map function in the map-reduce query does.</p>
+<p>The Select function is similar to the reduce function, but as we will see some additional considerations need to be made to allow it to be distributed. </p>
+<p>I saw a <a href="http://ayende.com/Blog/archive/2010/03/14/map-reduce-ndash-a-visual-explanation.aspx">good diagram</a> ayande published on his blog but I didn't understand why he had multiple instance of the same document being mapped. </p>
+<p>I created my own low key diagram to help demonstrate how a functional map-reduce could be distributed. The diagram shows the initial items can be split in half and reduced completely independently. This is interesting as it means our query can be distributed, but it also means we have to handle reducing a little differently.</p>
+<p>It's also worth noting that this example shows a balanced tree, but it could be unbalanced and even introduce some redundancy.</p>
+<div>
+<img src="map-reduce-example.png" width="500px" />
+</div>
+<p>MongoDB allows clients to send JavaScript map and reduce functions that will get eval'd and run on the server. Here is the map function.</p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">function</span> wordMap() {
+
+    <span style="color: #408080; font-style: italic">// try find words in document text</span>
+    <span style="color: #008000; font-weight: bold">var</span> words <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">this</span>.text.match(<span style="color: #BB6688">/\w+/g</span>);
+
+    <span style="color: #008000; font-weight: bold">if</span> (words <span style="color: #666666">===</span> <span style="color: #008000; font-weight: bold">null</span>) { 
+        <span style="color: #008000; font-weight: bold">return</span>;
+    }
+
+    <span style="color: #408080; font-style: italic">// loop every word in the document </span>
+
+    <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> words.length; i<span style="color: #666666">++</span>) {
+        <span style="color: #408080; font-style: italic">// emit every word, with count of one</span>
+
+        emit(words[i], { count <span style="color: #666666">:</span> <span style="color: #666666">1</span> });
+    }
+
+}
+</pre></div>
+<br />
+<p>The misunderstood Javascript "this" will be the context from which the function is called. Mongo will call function each document in the collection we are querying, and we can call it from a test context. Unlike the SelectMany the map function doesn't return a list, instead it calls an emit function which it expects to be defined.</p>
+<p>We can write unit tests for this function by calling the function from a test mock context, calling a mock emit function (using Javascript as our mocking framework, wow).</p>
+<div class="codehilite"><pre><span style="color: #008000">eval</span>(loadFile(<span style="color: #BA2121">&quot;src/js/wordMap.js&quot;</span>));
+
+
+<span style="color: #008000; font-weight: bold">var</span> emit;
+<span style="color: #008000; font-weight: bold">var</span> results;
+<span style="color: #008000; font-weight: bold">var</span> context;
+
+testCases(test,
+
+    <span style="color: #008000; font-weight: bold">function</span> setUp() {
+        emit <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">function</span> (key, value) { 
+            results.push({ key <span style="color: #666666">:</span> key, value <span style="color: #666666">:</span> value });
+        };
+        context <span style="color: #666666">=</span> { text <span style="color: #666666">:</span> <span style="color: #BA2121">&quot;&quot;</span>, map <span style="color: #666666">:</span> wordMap };
+        results <span style="color: #666666">=</span> []; 
+    },
+
+    <span style="color: #008000; font-weight: bold">function</span> empty_string_emits_nothing() {
+        context.text <span style="color: #666666">=</span> <span style="color: #BA2121">&quot;&quot;</span>;
+        context.map();
+        assert.that(results.length, eq(<span style="color: #666666">0</span>));
+    },
+
+    <span style="color: #008000; font-weight: bold">function</span> single_word_emits_single_word() {
+        context.text <span style="color: #666666">=</span> <span style="color: #BA2121">&quot;findme&quot;</span>;
+        context.map();
+        assert.that(results.length, eq(<span style="color: #666666">1</span>));
+        assert.that(results[<span style="color: #666666">0</span>].key, eq(<span style="color: #BA2121">&quot;findme&quot;</span>));
+        assert.that(results[<span style="color: #666666">0</span>].value.count, eq(<span style="color: #666666">1</span>));
+    },
+
+    <span style="color: #008000; font-weight: bold">function</span> two_different_words_emits_twice() {
+        context.text <span style="color: #666666">=</span> <span style="color: #BA2121">&quot;for bar&quot;</span>;
+        context.map();
+        assert.that(results.length, eq(<span style="color: #666666">2</span>));
+    },
+
+    <span style="color: #008000; font-weight: bold">function</span> two_same_words_emits_twice() {
+        context.text <span style="color: #666666">=</span> <span style="color: #BA2121">&quot;test test&quot;</span>;
+        context.map();
+        assert.that(results.length, eq(<span style="color: #666666">2</span>));
+    },
+
+    <span style="color: #008000; font-weight: bold">function</span> tearDown() {
+    }
+);
+
+</pre></div>
+<br />
+<p>The reduce function must reduce a list of a chosen type to a single value of that same type; it must be transitive so it doesn't matter how the mapped items are grouped.</p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">function</span> wordReduce(key, values) {
+        <span style="color: #008000; font-weight: bold">var</span> total <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #008000; font-weight: bold">var</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> values.length; i<span style="color: #666666">++</span>) {
+            total <span style="color: #666666">+=</span> values[i].count;
+        }
+        <span style="color: #008000; font-weight: bold">return</span> { count <span style="color: #666666">:</span> total };
+    }
+
+</pre></div>
+<br />
+<p>Similarly we can test this method does exactly what we expect it to. </p>
+<div class="codehilite"><pre><span style="color: #008000">eval</span>(loadFile(<span style="color: #BA2121">&quot;src/js/wordReduce.js&quot;</span>));
+
+testCases(test,
+
+    <span style="color: #008000; font-weight: bold">function</span> reduce_one_items_returns_count_of_one() {
+        <span style="color: #008000; font-weight: bold">var</span> result <span style="color: #666666">=</span> wordReduce(<span style="color: #BA2121">&quot;test&quot;</span>, [{ count <span style="color: #666666">:</span> <span style="color: #666666">1</span> }]);
+        assert.that(result.count, eq(<span style="color: #666666">1</span>));
+    },
+
+    <span style="color: #008000; font-weight: bold">function</span> reduce_multiple_items_returns_item_count() {
+        <span style="color: #008000; font-weight: bold">var</span> result <span style="color: #666666">=</span> wordReduce(<span style="color: #BA2121">&quot;test&quot;</span>, [{ count <span style="color: #666666">:</span> <span style="color: #666666">1</span> }, { count <span style="color: #666666">:</span> <span style="color: #666666">1</span> }, { count <span style="color: #666666">:</span> <span style="color: #666666">1</span> }]);
+        assert.that(result.count, eq(<span style="color: #666666">3</span>));
+    },
+
+    <span style="color: #008000; font-weight: bold">function</span> reduce_sums_counts() {
+        <span style="color: #008000; font-weight: bold">var</span> result <span style="color: #666666">=</span> wordReduce(<span style="color: #BA2121">&quot;test&quot;</span>, [{ count <span style="color: #666666">:</span> <span style="color: #666666">2</span> }, { count <span style="color: #666666">:</span> <span style="color: #666666">3</span> }]);
+        assert.that(result.count, eq(<span style="color: #666666">5</span>));
+    },
+
+    <span style="color: #008000; font-weight: bold">function</span> reduce_is_transitive() {
+        <span style="color: #008000; font-weight: bold">var</span> result <span style="color: #666666">=</span> wordReduce(<span style="color: #BA2121">&quot;test&quot;</span>, [{ count <span style="color: #666666">:</span> <span style="color: #666666">1</span> }].concat(
+                        wordReduce(<span style="color: #BA2121">&quot;test&quot;</span>, [{ count <span style="color: #666666">:</span> <span style="color: #666666">1</span> }, { count <span style="color: #666666">:</span> <span style="color: #666666">1</span> }]
+                     ));
+        assert.that(result.count, eq(<span style="color: #666666">3</span>));
+    }
+);
+
+</pre></div>
+<br />
+<p>I'm using <a href="http://www.mozilla.org/rhino/">Rhino</a> to run the Javascript so I used <a href="http://code.google.com/p/rhinounit/">RhinoUnit</a> as a test runner as it also uses the JVM and runs as an ANT scriptdef task, the setup was pretty painless. Here are the relevant ANT script sections</p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">&lt;scriptdef</span> <span style="color: #7D9029">name=</span><span style="color: #BA2121">&quot;rhinounit&quot;</span>
+
+           <span style="color: #7D9029">src=</span><span style="color: #BA2121">&quot;lib/rhinoUnitAnt.js&quot;</span>
+           <span style="color: #7D9029">language=</span><span style="color: #BA2121">&quot;javascript&quot;</span><span style="color: #008000; font-weight: bold">&gt;</span>
+    <span style="color: #008000; font-weight: bold">&lt;attribute</span> <span style="color: #7D9029">name=</span><span style="color: #BA2121">&quot;options&quot;</span><span style="color: #008000; font-weight: bold">/&gt;</span>
+    <span style="color: #008000; font-weight: bold">&lt;attribute</span> <span style="color: #7D9029">name=</span><span style="color: #BA2121">&quot;ignoredglobalvars&quot;</span><span style="color: #008000; font-weight: bold">/&gt;</span>
+
+    <span style="color: #008000; font-weight: bold">&lt;attribute</span> <span style="color: #7D9029">name=</span><span style="color: #BA2121">&quot;haltOnFirstFailure&quot;</span><span style="color: #008000; font-weight: bold">/&gt;</span>
+    <span style="color: #008000; font-weight: bold">&lt;attribute</span> <span style="color: #7D9029">name=</span><span style="color: #BA2121">&quot;rhinoUnitUtilPath&quot;</span><span style="color: #008000; font-weight: bold">/&gt;</span>
+    <span style="color: #008000; font-weight: bold">&lt;element</span> <span style="color: #7D9029">name=</span><span style="color: #BA2121">&quot;fileset&quot;</span> <span style="color: #7D9029">type=</span><span style="color: #BA2121">&quot;fileset&quot;</span><span style="color: #008000; font-weight: bold">/&gt;</span>
+
+<span style="color: #008000; font-weight: bold">&lt;/scriptdef&gt;</span>
+
+<span style="color: #008000; font-weight: bold">&lt;target</span> <span style="color: #7D9029">name=</span><span style="color: #BA2121">&quot;javascript-tests&quot;</span><span style="color: #008000; font-weight: bold">&gt;</span>
+    <span style="color: #008000; font-weight: bold">&lt;rhinounit</span> <span style="color: #7D9029">options=</span><span style="color: #BA2121">&quot;{verbose:true, stackTrace:true}&quot;</span> 
+               <span style="color: #7D9029">haltOnFirstFailure=</span><span style="color: #BA2121">&quot;false&quot;</span> 
+               <span style="color: #7D9029">rhinoUnitUtilPath=</span><span style="color: #BA2121">&quot;lib/rhinoUnitUtil.js&quot;</span><span style="color: #008000; font-weight: bold">&gt;</span>
+
+        <span style="color: #008000; font-weight: bold">&lt;fileset</span> <span style="color: #7D9029">dir=</span><span style="color: #BA2121">&quot;test&quot;</span><span style="color: #008000; font-weight: bold">&gt;</span>
+            <span style="color: #008000; font-weight: bold">&lt;include</span> <span style="color: #7D9029">name=</span><span style="color: #BA2121">&quot;*.js&quot;</span><span style="color: #008000; font-weight: bold">/&gt;</span>
+        <span style="color: #008000; font-weight: bold">&lt;/fileset&gt;</span>
+    <span style="color: #008000; font-weight: bold">&lt;/rhinounit&gt;</span>
+
+<span style="color: #008000; font-weight: bold">&lt;/target&gt;</span>
+</pre></div>
+<p><br />
+The word count example recreated in Mongo using a Python client and passing the map/reduce functions to the server.</p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">pymongo</span> <span style="color: #008000; font-weight: bold">import</span> Connection;
+<span style="color: #008000; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">pymongo.code</span> <span style="color: #008000; font-weight: bold">import</span> Code;
+
+
+<span style="color: #408080; font-style: italic"># open connection and connect to &#39;ddd&#39; database</span>
+connection <span style="color: #666666">=</span> Connection()
+db <span style="color: #666666">=</span> connection<span style="color: #666666">.</span>ddd
+
+<span style="color: #408080; font-style: italic"># remove any existing data</span>
+db<span style="color: #666666">.</span>drop_collection(<span style="color: #BA2121">&quot;messages&quot;</span>)
+
+
+<span style="color: #408080; font-style: italic"># insert some data</span>
+lines <span style="color: #666666">=</span> <span style="color: #008000">open</span>(<span style="color: #BA2121">&quot;data/peter_piper.txt&quot;</span>)<span style="color: #666666">.</span>readlines();
+
+<span style="color: #008000; font-weight: bold">for</span> line <span style="color: #AA22FF; font-weight: bold">in</span> lines:
+    db<span style="color: #666666">.</span>messages<span style="color: #666666">.</span>insert( { <span style="color: #BA2121">&quot;text&quot;</span> : line } )
+
+
+<span style="color: #408080; font-style: italic"># load map and reduce functions</span>
+<span style="color: #008000">map</span> <span style="color: #666666">=</span> Code(<span style="color: #008000">open</span>(<span style="color: #BA2121">&quot;src/js/wordMap.js&quot;</span>,<span style="color: #BA2121">&quot;r&quot;</span>)<span style="color: #666666">.</span>read())
+<span style="color: #008000">reduce</span> <span style="color: #666666">=</span> Code(<span style="color: #008000">open</span>(<span style="color: #BA2121">&quot;src/js/wordReduce.js&quot;</span>,<span style="color: #BA2121">&quot;r&quot;</span>)<span style="color: #666666">.</span>read())
+
+
+<span style="color: #408080; font-style: italic"># run the map-reduce query</span>
+result <span style="color: #666666">=</span> db<span style="color: #666666">.</span>messages<span style="color: #666666">.</span>map_reduce(<span style="color: #008000">map</span>, <span style="color: #008000">reduce</span>)
+
+<span style="color: #408080; font-style: italic"># print the results    </span>
+<span style="color: #008000; font-weight: bold">for</span> doc <span style="color: #AA22FF; font-weight: bold">in</span> result<span style="color: #666666">.</span>find():
+    <span style="color: #008000; font-weight: bold">print</span> doc[<span style="color: #BA2121">&quot;value&quot;</span>][<span style="color: #BA2121">&quot;count&quot;</span>],doc[<span style="color: #BA2121">&quot;_id&quot;</span>]
+
+</pre></div>
+<br />
+<p>And it worked! I'd like to run the query on a larger result-set, but there isn't much point on this tiny low-spec'd netbook.</p>
+<br />
+</div>

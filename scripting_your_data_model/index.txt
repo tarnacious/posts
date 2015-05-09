@@ -1,0 +1,120 @@
+I really like the way you can script your data model from a python REPL
+console on the Django and the Google App Engine web frameworks.
+
+For me it is a hands down [better way][1] of working with data in your domain
+model than writing SQL.
+
+I've since wanted to [do it in .NET projects][2] I work on, but it wasn't till
+I was playing with Castle ActiveRecord yesterday that I decided I'd try it
+out.
+
+The [ActiveRecord pattern][3] is an intuitive way of programming with data
+persistence, so it's also nice to script with.
+
+It turned out to be really easy in the project I was playing with. I didn't
+need to write a single additional line of C# as I already had the
+configuration decoupled for integration testing with an in-memory SQLite
+database.
+
+    #!/usr/bin/csharp
+    namespace SimpleBlog.Data
+    {
+        public class Configuration : IBootstrapperTask
+        {
+            public void Execute()
+            {
+                Configure(GetDefaultSettings());
+            }
+
+            public static void Configure(IDictionary<string, string> properties)
+            {
+                InPlaceConfigurationSource source = new InPlaceConfigurationSource();
+                source.Add(typeof(ActiveRecordBase), properties);
+                ActiveRecordStarter.Initialize(source);
+                ActiveRecordStarter.RegisterAssemblies(Assembly.GetExecutingAssembly());
+
+            }
+
+            ...
+
+        }
+    }
+
+
+
+I then just wrote this little script to help with the configuration, it uses
+the static method above and passes in the properties for working with a
+development database.
+
+    #!/usr/bin/python
+    import clr
+
+    clr.AddReferenceToFile("SimpleBlog.Data.dll")
+
+    from System.Collections.Generic import Dictionary
+    from SimpleBlog.Data import Configuration
+
+    # NHibinate Setting
+    properties = Dictionary[str,str]()
+
+    properties.Add("connection.driver_class",
+                   "NHibernate.Driver.SqlClientDriver");
+
+    properties.Add("dialect",
+               "NHibernate.Dialect.MsSql2005Dialect");
+
+    properties.Add("connection.provider",
+               "NHibernate.Connection.DriverConnectionProvider");
+
+    properties.Add("connection.connection_string",
+               "Data Source=[CONNECTION_STRING]"); # Add
+
+    properties.Add("proxyfactory.factory_class",
+               "NHibernate.ByteCode.Castle.ProxyFactoryFactory,NHibernate.ByteCode.Castle");
+
+    Configuration.Configure(properties)
+
+
+Using the helper script it's pretty easy to get in and start working with the
+data in the data model.
+
+    #!/usr/bin/bash
+    IronPython 2.6 (2.6.10920.0) on .NET 2.0.50727.4927
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> import ActiveRecord
+    >>> from SimpleBlog.Data.Models import *
+    >>>
+    >>> post = Post()
+    >>> post.Title = "Working with SQL sucks!"
+    >>> post.Content = "Try using a scripting langauge instead. It rocks!"
+    >>> post.Author = "tarn"
+    >>> post.Save()
+    >>>
+    >>> post.Id
+
+    2
+
+    >>>
+    >>> posts = Post().FindAll()
+    >>>
+    >>> for p in posts:
+    ...     print p.Title, "by", p.Author
+    ...
+
+    Hey, It's alive by tarn
+    Working with SQL sucks! by tarn
+
+    >>>
+
+
+This is a simple example of a database agnostic data script using your domain
+model and a powerful scripting language. I think scripting data models like
+this could add a lot of value in many .NET development scenarios.
+
+
+   [1]: http://twitter.com/tarnacious/status/8841617430
+
+   [2]: http://twitter.com/tarnacious/status/8841455390
+
+   [3]: http://martinfowler.com/eaaCatalog/activeRecord.html
+

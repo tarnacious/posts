@@ -1,0 +1,83 @@
+<img src="https://tarnbarford.net/static/journal/ironpython_in_action/image.png" class="right" />
+
+While twittering (or [tweeting][1]) about an [IronPython presentation][2] I
+was doing, [@voidspace][3] messaged me asking if I might mention his book. I'd
+contacted Michael Foord a while back about [some code][4] I was playing around
+with. I also knew of him from his [blog][5], his prolific contribution to
+[IronPythonURLs][6] and as the co-author of the new book [IronPython in
+Action][7]. He's so all over everything IronPython he even [reads][8] this
+blog.
+
+
+Mainly because I was too cheap to buy myself a copy it,
+I hadn't read his  book. I was wrapped when he offered to get me a copy if I'd
+review it on this blog. I wanted to read it as I was learning IronPython and I
+knew it would be a good book, I'd read chapters [1][11] and [7][12] which are
+online. I happily recommended it in my presentation, here's what I thought
+about the book.
+
+_IronPython in Action_ is a fantastic resource for anyone learning IronPython
+and for anyone wondering what this dynamic language IronPython is all about
+and whether they _should_ learn it. It feels nicely balanced for both .NET
+users looking to learn about IronPython, and for Python users looking to learn
+about IronPython on .NET.
+
+I prefer software books that have plenty of discussion and can be read from
+start to finish otherwise I end up skipping through chapters I never go back
+too. I found this book well written and fun to read with interesting insight
+all the way through. There is enough about the python language and .NET to get
+you through the book, and rather than being a reference book it instead
+provides information on how to learn more.
+
+The book is divided into four main sections. The first section _Getting
+Started with Iron Python_ contains a good introduction and history of
+IronPython on the .NET Framework.
+
+The _Core Development Techniques_ section is a walkthrough of building a
+simple Windows Forms application. I think this section is fantastic as the
+text places high value on Agile Development philosophy, using a Model-View-
+Controller pattern and Test Driven Development. I think these are exciting
+ways to develop software on the .NET framework. There is also a really good
+section discussing the difficulties, pitfalls and work-arounds using
+IronPython and dynamic programming languages generally on the .NET framework.
+
+The third section _IronPython and Advanced .NET_ contains chapters about using
+the major pillars of the .NET framework with IronPython. It has chapters on
+WPF, Powershell, ASP.NET, Databases, Webservices and Silverlight. It really is
+amazing how much of the framework can be used in IronPython.
+
+The final section _Reaching Out with IronPython_ has fantastic chapters on
+extending IronPython with C#/VB and embedding an IronPython Engine in C#/VB
+applications to provide extensibility.
+
+I highly recommend this book, I enjoyed reading it and learned a lot from it.
+If you're looking for a little more insight, the [forward by Jim Hugunin][13]
+frames the language, the technology and author well.
+
+
+   [1]: http://www.googlefight.com/index.php?lang=en_GB&word1=twittering&word2=tweeting
+
+   [2]: /post/2009/05/11/IronPython-Presentation.aspx
+
+   [3]: http://twitter.com/voidspace
+
+   [4]: http://code.google.com/p/dynamic-script-control/
+
+   [5]: http://www.voidspace.org.uk/python/index.shtml
+
+   [6]: http://ironpython-urls.blogspot.com/
+
+   [7]: http://www.manning.com/foord/
+
+   [8]: http://ironpython-urls.blogspot.com/2009/04/executing-ironpython-in-err-ironpython.html
+
+   [9]: https://tarnbarford.net/static/journal/ironpython_in_action/image.png
+
+   [10]: http://www.ironpythoninaction.com/
+
+   [11]: http://www.manning.com/foord/SampleChapter1.pdf
+
+   [12]: http://www.manning.com/foord/SampleChapter7.pdf
+
+   [13]: http://blogs.msdn.com/hugunin/archive/2009/04/14/ironpython-in-action.aspx
+

@@ -1,0 +1,100 @@
+Anonymous Methods were introduced in .net 2.0. If you haven't used or seen
+them before I suggest reading some of the many blogs and MSDN articles about
+them. I'm not going to introduce them here, I'm going to briefly look into how
+the scope works when they are invoked from outside the scope they were created
+in.
+
+Below I have a simple example of a class that has a member variable and a
+method that returns an anonymous method. The only purpose of this little class
+is to investigate some scope issues.
+
+
+    public delegate string FooDelegate();
+
+    public class Foo
+    {
+        public string Bar { get; set; }
+
+        public FooDelegate GetDelegate()
+        {
+            string bar = Bar;
+            return delegate()
+                {
+                    return string.Format("Member: {0}; Local: {1}", Bar, bar);
+                };
+        }
+    }
+
+You can see that in this class the anonymous method we are creating references
+a local variable and a member variable of the class. This is completely
+legitimate code in .net 2.0, 3.0 and 3.5. Now lets see how it works, below is
+a simple example.
+
+
+    Foo foo = new Foo();
+    foo.Bar = "test";
+    
+    FooDelegate fooDelegate = foo.GetDelegate();
+    
+    string result = fooDelegate.Invoke();
+
+
+The result is "Member: test; Local: test"
+
+You can see that when we invoked the anonymous method both the local and
+member variables evaluated  to "test". Once you accept its ok to reference
+variables from the scope the anonymous method was created in, this behavior
+makes sense.
+
+But what happens if we change the property after we create the anonymous
+method? What would we expect the values to be when we invoke the method? If
+you've used anonymous methods in other languages it might be quite obvious. If
+you don't know, or want to validate that you do, the example below will do
+just that.
+
+
+    Foo foo = new Foo();
+    foo.Bar = "test";
+    
+    FooDelegate fooDelegate = foo.GetDelegate();
+    foo.Bar = "update";
+    
+    string result = fooDelegate.Invoke();
+
+
+The result is "Member: update; Local: test"
+
+As you can the see the method did use the updated property, but only for the
+class property. The value of the local variable it was referring to when the
+anonymous method was created has not been changed.
+
+Normally a local variable would be discarded and later collected by the GC
+once execution of the block is complete. In this case it's still in the scope
+of the anonymous method and is therefore not discarded while the anonymous
+method is still referenced.
+
+The local variable is not updated with the new value as we set the local
+variable when we created the delegate, and we changed the class property after
+that. In this case we can't change the value of that variable as we no longer
+have a reference to it once we leave the GetDelegate() method. Its only
+reference by the delegate itself.
+
+This example works because strings create a new instance of a string when they
+are assigned. The example would behave differently if the local variable was a
+reference to the same object as the class property.
+
+Using the local variable in an anonymous method that is called from outside
+scope it was created might not be something you ever do in .Net, but its a
+concept .Net developers should understand. I've haven't been able to think of
+a simple, relevant, real world .net example for this, but I do use the same
+concept in some Javascript I write about in [another post][1].
+
+EDIT: This is known as closure. This article I found on the VS2008 Start Page
+talks about it and discusses the MSIL generated :  [Lambdas - Know Your
+Closures][2]
+
+
+   [1]: /journal/adrotator-webcontrol-example
+
+   [2]: http://www.managed-world.com/2008/06/13/LambdasKnowYourClosures.aspx
+

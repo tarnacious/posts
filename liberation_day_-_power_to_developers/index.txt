@@ -1,0 +1,73 @@
+[image][1] I'm not in anyway formally associated Microsoft other than
+that I've been primarily using their tools to develop software for the over
+the last few years, so I was a little excited I was invited to Liberation Day
+in Sydney after placing 2nd in DevSta. I thought it would be great to see
+Steve Ballmer, infamous for this [famous clip][3] and [this][4]. He is, of
+course, also the Microsoft CEO and was going to announce Azure the new
+Microsoft cloud computing platform. He was sure to be entertaining anyway.
+
+As I'd never been to Sydney I decided I could spend a couple of days on Bondi
+Beach with my girlfriend and drop into the conference and while I was there.
+I'm expecting to be looking for a new job from next year, probably not in
+Sydney, but I thought it would also be good to see who was there and meet a
+few people anyway. I was expecting there would be a couple of DevSta judges
+there too.
+
+There were heaps of people at the event, I wouldn't be surprised if there
+actually was the 1000 developers the flyer claimed there would be. It was
+cool, I can't image an event with that many developers in Melbourne. It was
+streamed live and can be replayed on the [Power To Developers][5] site. I
+watched Steve get up and do his thing, and it was fun, not rock'n'roll, but
+fun. Unfortunately I wasn't feeling very well, almost feverish, and I had to
+duck out to find a chemist.
+
+Gianpaolo Carraro's presentation attempted to demonstrate how easy developing
+cloud solutions for the Azure was with Visual Studios 2008. I thought it was
+pretty cool despite most of his demos failing in ways he couldn't have
+imagined. The Azure platform sounded pretty awesome, basically allowing custom
+.Net assemblies to be uploaded and invoked on Microsoft servers. He also
+managed to successfully demonstrate the cloud emulator for locally running and
+debugging cloud applications. I also really like the idea of being able to a
+write LINQ query joining two data tables from a SQL Server Service in the
+cloud.
+
+[Mike Culver][6] presented the [Amazon Web Services][7] cloud solutions to the
+Vic.NET user group about a year ago and I think he sold their technology and
+the possibilities better. He showed the architecture of a video compression
+service that used a message queue service to queue requests and a controller
+application that can automatically rent, build and deploy servers capable of
+processing the requests. I thought it was pretty cool. I think Microsoft are a
+long way behind, but we'll see what the software giant is capable of. I'm
+certainly keen to get in and give it a go.
+
+I still wasn't feeling well and missed most of Tim Sneath which was a shame,
+Brodie had seen him in London years ago but said he "knew his stuff". At the
+networking drinks I chatted with [Michael Kordahi][8] which was kind of fun,
+he'd judged my entry and he is a Silverlight guy. He introduced me to a couple
+of people, one of which was [Jeremi Kelaher][9] who does [Strange Devices
+Podcasts][10]. I also ran into [Tatham Oddie][11] on the way out who I'd seen
+present MVC stuff at REMIX and Vic.NET. I would have liked to have chatted
+with Andrew Coates who is a great presenter and was also a DevSta judge, but I
+didn't end up seeing him this time.
+
+
+   [2]: /image.axd?picture=WindowsLiveWriter/LiberationDayPowerToDevelopers_141ED/image_2.png
+
+   [3]: http://au.youtube.com/watch?v=8To-6VIJZRE&feature=related
+
+   [4]: http://au.youtube.com/watch?v=wvsboPUjrGc&NR=1
+
+   [5]: http://www.microsoft.com/australia/powertodevelopers/live_rally.aspx
+
+   [6]: http://www.amazon.com/gp/pdp/profile/A2D5YJLCHYWN9Q
+
+   [7]: http://aws.amazon.com/
+
+   [8]: http://delicategeniusblog.com/
+
+   [9]: http://togetheronline.com.au
+
+   [10]: http://strangedevices.wordpress.com/
+
+   [11]: http://blog.tatham.oddie.com.au/
+

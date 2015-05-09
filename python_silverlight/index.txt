@@ -1,0 +1,189 @@
+## Context
+
+I was asked do a presentation about developing Silverlight applications to the
+[Melbourne Python User-group][1]. Hell yeah, I love participating in user
+groups but I obviously needed some content. Unfortunately I didn't know this
+local user-group existed, so I've haven't been and have little idea of number
+of people or the type of stuff they do. This has made preparing relevant
+content a little challenging, but hopefully I can find the right mix.
+
+Given it's a Python user-group I felt I might look like a bit of dick rolling
+with Windows and doing a demo with an environment and .NET tools that some
+part of the group couldn't/don't use. Besides I've always felt the Python
+language support and being able to build on any platform is a very compelling
+reason for non-.NET developers get into building Silverlight applications.
+
+I don't yet have a Mac (I'm really starting to want one) so my other option
+was to do the demo on Linux. This presented some difficulties and some
+opportunities. Firstly I'm still a bit of Linux noob and, although I'm wrapped
+to have learned a lot in the last couple of weeks there has been some pain and
+some compromise.
+
+Also Microsoft don't have a Silverlight browser plug-in for Linux, that
+support is provided by [Moonlight][2]. Moonlight is currently at version 2 and
+although it supports some of the features of Silverlight 3 it doesn't have the
+key version 3 features which have really improved the Python development
+environment (namely IronPython 2.6 support) and application deployment (namely
+allowing static assemblies that add dynamic languages support to be downloaded
+independently of the application and therefore cached in the browser).
+
+Plugin and development support on both Mac and Windows is much better, but I'm
+happy here sacrificing some of the newer features for inclusivity (and
+apparently inventing words). We're targeting Silverlight 2/Moonlight 2 and
+effectively using no development tools besides a couple of Python scripts
+which I'll get onto.
+
+## Dynamic Language Silverlight Applications
+
+Silverlight applications are packaged into binary files with an "xap"
+extension. It turns out these packages are just standard zip files containing
+all the "stuff" needed by the application. The minimum "stuff" needed in
+dynamic language application is;
+
+  * An XML based application manifest file (app.manifest) that describes the
+target runtime, language type, entry point and some other information needed
+to run the application
+
+  * A collection of assemblies that add dynamic language and Python support to
+the Silverlight runtime.
+
+  * A plain text file containing the your Python script to make the
+application dance.
+
+The package can contain more Python scripts, binary assemblies (which can be
+imported as modules) and XAML files (which are declarative xml type format
+typically used for describing user interfaces). Resources such as images and
+video can also be included in the package but it usually make more sense for
+the application to download them independently when they are required.
+
+Serving the application on a webpage is also quite straight forward. An object
+tag in the html has attributes to tell the browser the URL to download the
+application and that the Silverlight/Moonlight plugin should be used to run
+the application.
+
+## Helper Scripts and Templates
+
+With a couple of templates and Python scripts we can get started developing
+Silverlight applications in any environment with that has Python and a browser
+with a Silverlight/Moonlight plug-in.
+
+**xap.py** builds xaps by adding all the files from a source code directory
+and an assemblies directory into xap file and writing it to disk.
+
+**http_server.py** is the simplest python server which just serves all the
+files in the current directory on a specified port.
+
+**index.html** contains the object tag referencing sample.xap and a tiny bit
+of Javascript to catch, format and display critical error messages that may be
+caused by the application.
+
+**app.manifest** is a template with everything needed to describe a typical
+Python Silverlight application. The template should be fine as-is unless
+additional assemblies are required or you want to change the script entry
+point. The template is surprisingly small and undaunting.
+
+**app.py** is the script entry point of the application.
+
+**assemblies** a folder with all the additional assemblies need by the
+Silverlight runtime to run Python scripts.
+
+## Packaging and Running an Application
+
+So you've skipped the previous three sections and jumped straight here. I
+don't blame you. Here's how to get going with the script and templates
+described above.
+
+Download [this zip][3] containing the assemblies, scripts and templates and
+unzip it someone, anywhere.
+
+From the terminal/console/command-line go the the place you unzipped it to and
+run the following command to build an xap.
+
+    python xap.py samples.xap assemblies source
+
+A sample.xap should be generated in the same directory.
+
+To fire-up the basic web server just run
+
+    python http_server.py
+
+Then just fire up a browsers and go to http://localhost:8000/ and you should
+see the sample Silverlight application running.
+
+That's it. Now you can edit app.py to add functionality and repeat.
+
+## Going further
+
+Clearly this a very bare bones approach to development which has very limited
+development and debugging tools (and a server that can only serve files).
+There is more tooling out there, but surprisingly litte for Python developers.
+
+[MonoDevelop 2.2][4], the Moonlight SKD and Python bindings may provide some
+sort of IDE support but it's only just been released, it is not easy to get up
+and running and I not sure if it even supports packaging or debugging of
+dynamic language Silverlight applications.
+
+You might think Visual Studio 2008/2010 would provide significant additional
+support, but as far as I'm aware only the Windows Debugger which is free in
+the Windows SDK is much help.
+
+Chiron is a .NET tool provided in the [Microsoft Dynamic Language SDK][5]
+which can package and server XAP's much like I've described above. I found I
+could compile it on Mono, but couldn't get it serving files. I don't think
+your missing much here.
+
+[XamlPad][6] is my favourite free XAML editor, but it doesn't work on Linux.
+Blend and Expression Studio are pay to play Microsoft tools for designing and
+developing XAML. Maybe someone should write a good one in Silverlight.
+
+[IronPython][7] can be downloaded and run on Mono.
+
+## Some Thoughts
+
+It's easy to get started writing and deploying Silverlight applications in
+Python on any platform but I think it's fair to say the tooling and support is
+just not there yet. On any platform.
+
+The Silverlight 2/Moonlight implementations of Python are still missing large
+parts of the Python standard library, which will come as a bit of a shock to
+Python developers and makes it difficult to import modules that depend on it.
+Almost the entire Silverlight 2 Base Class Library is accessible through
+Python but although the Python/.NET integratation is very impressive, working
+with the BCL does seem to limit the expressivness of the code.
+
+Silverlight 3 appears to have some additional built-in support for interacting
+with the application at runtime through a Python REPL console, it supports
+IronPython 2.6 (which implements a lot more of the Python standard library)
+and has additional deployment improvements discussed above.
+
+## Finally
+
+I hope to do another post before the meeting with some examples I'll be
+showing, but as always I won't promise anything (in case I get distracted
+writing a Socket Server in Erlang I've been thinking about). In the mean time
+I do have some examples on PythonSilverScripting that can be run from the
+browser.
+
+I'd love to know the tools other people are using to develop
+Python/Silverlight and thoughts people have of it. If your in Melbourne and
+your at all interested you should come down to the [meeting][1].
+
+_Update 26/01/10: Updated scripts and templates to work in Windows_
+
+Here is a [zip][3] with the bits and pieces.
+
+
+   [1]: http://wiki.python.org/moin/MelbournePUG
+
+   [2]: http://www.mono-project.com/Moonlight
+
+   [3]: http://sharpthinking.com.au/file.axd?file=2010%2f1%2fsample_silverlight.zip
+
+   [4]: http://monodevelop.com/Download/What%27s_new_in_MonoDevelop_2.2
+
+   [5]: http://silverlight.net/learn/dynamic-languages/
+
+   [6]: http://www.kaxaml.com/
+
+   [7]: http://www.ironpython.com/
+

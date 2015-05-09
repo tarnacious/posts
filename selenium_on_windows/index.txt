@@ -1,0 +1,144 @@
+I've been wanting to post about using Selenium and TeamCity to build and test .NET websites on Windows for a while.
+Unfortunately it hasn't been forthcoming as I only really use Windows/.NET at work these days.
+
+I decided I would get my shit together today and write, what may be my last post on .NET for a while,
+in response to [@DavidBurela][davidburela]'s [Developer Blog Banter][blogbanter] topic
+"How do you test your applications?"
+
+I'm going skip unit-testing (which do and try to get better at), BDD and JavaScript testing (which I would like to do and get better at) and focus on automated browser testing.
+
+## The Build Process
+
+Watching automated test may be fun the first few runs, [but that won't last long][compiling].
+Anyway if you want automated browsers tests, surely you want to automate the automated tests, right?
+
+The build process is going to need to somehow automate the browser and run the site the browser is browsing.
+For this we use IIS which is scriptable with the PowerShell WebAdministration module (maybe I will write another post on .NET).
+
+![Standard Build Process][StandardBuild]
+
+The problem with having the UI Test step in this iterative process is it very quickly starts taking ages.
+This sucks, I want feedback as soon as possible.
+TeamCity provides feedback after each stage, but we don't get our green light.
+
+This could be resolved by putting the UI tests in a nightly build, but I think a staged build or build pipeline would be better.
+
+The first stage compiles and unit tests and produces a deployable website as an artifact, this process is hopefully quite fast.
+If the first stage is successful the next stage in the pipeline is triggered which can be setup in the TeamCity administration web interface.
+
+![Pipeline Build Process][PipelineBuild]
+
+If you want to get awesome you can also start using Selenium Grid to distribute test agents or a cloud based solution like source labs
+
+## Tools
+
+Our automated build process consists of a few tools.
+
+[TeamCity][teamcity] for our build management and CI server.
+After years of using CC.Net and a very brief and painful exposure to TFS, I love TeamCity.
+I also hear great thing about Hudson.
+
+[NUnit][nunit] and included [NUnit-Console][nunitconsole]. It does what I want a unit test framework and runner. I am yet to be convinced to changed.
+
+[MSBuild][msbuild] with the [MSBuild Community Tasks][msbuildtasks] for our build scripts.
+I think you have to have some sort of build script to do continuous integration when not using TFS.
+I would like to be using script or DSL instead, but msbuild is doing the job for now.
+
+[Selenium][selenium] for our browsers automation tests.
+
+## Creating Tests
+
+SeleniumIDE is a Firefox plug-in for recording and running tests.
+
+![SeleniumIDE][SeleniumIDE]
+
+SeleniumIDE is pretty slick and importantly it's a tool non-developer-testers-types can quickly get their head round and start producing some tests.
+
+What we really want though, is to have our tests in code so we can run on them on build machine and version them in a repository.
+
+## Test Scripts
+
+![SeleniumID Export][SeleniumIDE_Export]
+
+That should generated something like this.
+
+![Generated code][testcode]
+
+This is pretty sweet, it generates test files you can pretty much just add to your project as NUnit tests.
+For me this mean automation tests can be run by the nunit-console just as our unit tests projects were.
+
+The .NET client drivers are in the [Selenium Core download][seleniumdownload].
+
+I think it is worth considering generating C# test scripts may not necessarily be ideal.
+
+## Selenium
+
+Selenium server run of the JVM - Yes Java - Suck it up, TeamCity does too :)
+
+Any version of the standard JRE should be fine.
+If you've installed Java correctly it should be in your path and you should be able to type this in a console.
+
+    c:\>java -version
+
+    java version "1.6.0_18"
+    Java(TM) SE Runtime Environment (build 1.6.0_18-b07)
+    Java HotSpot(TM) Client VM (build 16.0-b13, mixed mode, sharing)
+
+This should output the Java version and build information. If so you have successfully installed a java runtime. Yay!
+
+You need to download the [SeleniumRC][seleniumdownload] JAR file.
+
+Once you have Java and the Selenium JAR you should be able to start the server from the command-line.
+
+    java -jar selenium-server.jar
+
+
+## Selenium as a Service
+
+I wanted to run SeleniumRC (the same Jar) as a service. Console windows on servers, not so cool.
+Another, probably better, option is to have the build script itself instantiate the server and take down the server.
+I went with the service.
+
+I found a [solution][seleniumasserver] but it [didn't work on Windows 2008][servicesinwin2k8], luckily that lead me to the [Non Sucking Service Manager][nssmsite].
+
+![Non sucking service manager][nssm]
+
+The parameters I used were "-Xrs -jar [path/to/selenium-server.jar]"
+
+## Discussion
+
+I went down the path of browsers automation because I was finding none of our other testing efforts, while valuable,
+were actually ensuring the website would work.
+
+We were still have problems where a page or an entire site would return a HTTP 500 Server Error.
+Sometimes it was code and a unit-test would would ensure the fix, Sometimes it was IOC or ORM/Database configuration.
+What we needed was an end-to-end integration test. Browser automation provides these tests, and it helps.
+
+I actually don't see the tests themselves as being particularly fragile.
+No doubt they can be, but I think it also encourages clean markup.
+If the hierarchy or class/id attributes change in the markup then UI tests are not the only thing the could break.
+Stylesheets, scripts and some server logic also depend on it.
+
+While I have found the testing value of browser automation is good,
+I feel that mocking out the entire web framework (like gaeunit for appengine)
+or testing at HTTP level could achieve the same thing more easily and run quicker.
+
+[StandardBuild]: https://s3.amazonaws.com/static.tarnacious.net/selenium_on_windows/BuildProcess.png
+[PipelineBuild]: https://s3.amazonaws.com/static.tarnacious.net/selenium_on_windows/BuildProcessPipeline.png
+[SeleniumIDE]: https://s3.amazonaws.com/static.tarnacious.net/selenium_on_windows/SeleniumIDE.png
+[SeleniumIDE_Export]: https://s3.amazonaws.com/static.tarnacious.net/selenium_on_windows/SeleniumIDE_Export.png
+[nssm]: https://s3.amazonaws.com/static.tarnacious.net/selenium_on_windows/nssm.png
+[testcode]: https://s3.amazonaws.com/static.tarnacious.net/selenium_on_windows/generatedtest.png
+[teamcity]: http://www.jetbrains.com/teamcity/
+[nunit]: http://www.nunit.org/
+[nunitconsole]: http://www.nunit.org/index.php?p=nunit-console&r=2.4
+[msbuild]: http://msdn.microsoft.com/en-us/library/0k6kkbsd.aspx
+[msbuildtasks]: http://msbuildtasks.tigris.org/
+[selenium]: http://seleniumhq.org/
+[davidburela]: http://twitter.com/DavidBurela
+[blogbanter]: http://davidburela.wordpress.com/2010/10/13/developer-blog-banter-2-how-do-you-test-your-applications/
+[nssmsite]: http://iain.cx/src/nssm/
+[seleniumasserver]: http://unintelligible.org/blog/2009/07/28/installing-selenium-rc-as-a-windows-service/|
+[servicesinwin2k8]: http://serverfault.com/questions/58025/install-service-in-windows-server-2008
+[compiling]: http://xkcd.com/303/
+[seleniumdownload]: http://seleniumhq.org/download/

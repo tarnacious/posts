@@ -1,0 +1,358 @@
+<div class="entry">
+<h3><strong>The Problem, The Opportunity</strong></h3> <p>&nbsp;</p> <p>Brodie and my initiatives in the area of search have been rewarded by management with a two week project to improve search on our sites. In the two weeks we also intend to fix one of the darkest corners of the code base, the Product/Site publishing logic, which is the main reason the search needs revisiting. We couldn't get the two weeks just to improve infrastructure, so we promised sub one second search results and better relevance as a carrot. </p> <p>The web application powers multiple sites (&gt;100) and has lots of products (&gt;100,000). There needed to be some way of controlling what products belonged to what site. As products can appear on multiple sites and new sites are constantly being added, this is not trivial. The solution implemented is a site publishing rules system. Products can be <strong><em>excluded</em></strong> from a site by Classification, Product or Brand. </p> <p>So far the logic is pretty simple, but another type of rule was also added. Products, Classifications and Brands can also be made <strong><em>specific</em></strong> to a site (they can actually be made specific to multiple sites). The logic is that a Product, Classification or Brand that is specific to a site will appear on that site, but not on other sites. In my opinion this is kind of crazy, but the thinking is; If you have a very specific product that should only be published on one or two sites, its easier to make it specific to those two sites rather than excluding it from every other site and new sites. Ok, fair enough.</p> <p>The problem is that this logic is scattered through all our layers down to the database. There is duplication of logic over separate layers causing maintenance problems and it has been identified as a clear performance bottle-neck of any product list retrieval operation.</p> <p>The scope of this prototype is a quick, robust, maintainable and fully unit tested solution that implements the product site publish logic. </p> <h3><strong>Database</strong></h3> <p>&nbsp;</p> <p>These rules are held in 6 SQL joining tables, which I think is interesting itself. The primary keys are not unique across products, brands and classifications meaning to enforce referential integrity and not allow nulls you <strong>do</strong> need a few tables. While I think this is a very good argument to have primary keys unique across all your database objects, its not always an option. </p> <p>We could also have used 3 tables by combining the excluded and specific tables and adding a flag or lookup id. I think less is better, less tables means we can be more flexible with how we manipulate the data in code. Even in T-SQL I think I'd prefer less tables, less joins and more where statements - de-normalized. But that just my opinion in this scenario.&nbsp; </p> <p>As I move this logic out of the database and into managed code I'll end up abstracting the data to one table anyway, for this prototype it doesn't matter how the rules are created or persisted.</p> <h3><strong>Functional Languages</strong></h3> <p>&nbsp;</p> <p>Now back to the title of this post, I think this problem is really suited to functional programming. I've become more interested in functional programming after listening to a <a href="http://herdingcode.com/?p=45">Heading Code pod cast with Matt Podwysocki</a>. My experience with functional programming is limited and I've never found it very exciting. I learnt a bit of Haskel to help a mate with a computer science subject he was doing, but I was never really going to get to into it. At that time I believed all languages were inferior to C++. </p> <p>As I've become more involved in software development I think its more important to use other languages. There is an inevitability that your language of choice will be relegated to legacy tasks as newer languages emerge better suited modern computing and user experience. C# code making heavy use of generics, extension methods, anonymous delegates and LINQ is just not the same language as the C# that rolled out with .Net 1.0. Dynamic and functional languages are becoming first class citizens. </p> <p>I'm not actually going to write this in F# for now, but I think the way I've implemented my solution in C# is very functional although I leverage some OO concepts I might not be able to use in a strictly functional language.</p> <p>&nbsp;</p> <h3><strong>Solution Overview</strong></h3> <p>&nbsp;</p> <p>Instead of having all these separate lists of rules I've just created one list which can be queried. It makes heavy use of what Rob Conery described as a Pipes and Filters pattern in the ASP.NET MVC Storefront series. The pipes and filters are implemented as extension methods that add filters and data transformations. A collection of these small and easily testable extension methods can be used to build very powerful data retrieval and processing constructs to clearly describe business logic. </p> <p>The scope of the prototype is really just a single function that implements the site publishing logic described earlier. It takes a Product, Site and List of Rules as parameters and returns the publish rule. </p> <p>As soon as I started thinking about a solution to the problem I knew there was one thing I didn't want to do. I could see there was potentially a lot of repeated code for calling logic for products, classifications and brands individually. There is no need as it is the same logic that needs to be applied to each. I wanted to find a more elegant solution. I used an object orientated solution; the Rule class itself is abstract and is inherited by ProductRule, ClassificationRule and BrandRule. </p><pre class="csharpcode"><span class="kwrd">public</span> <span class="kwrd">abstract</span> <span class="kwrd">class</span> Rule
+{
+    <span class="kwrd">public</span> <span class="kwrd">int</span> SiteId { get; set; }
+    <span class="kwrd">public</span> RuleType Type { get; set; }
+    <span class="kwrd">public</span> <span class="kwrd">int</span> Value;
+    <span class="kwrd">public</span> <span class="kwrd">abstract</span> <span class="kwrd">bool</span> Compare(Product product);
+}
+</pre>
+<p>&nbsp;</p>
+<p>The only thing implemented by the specific rule classes is how to bind the Value to a property on the Product class.</p><pre class="csharpcode"><span class="kwrd">public</span> <span class="kwrd">class</span> ClassificationRule : Rule
+{
+    <span class="kwrd">public</span> <span class="kwrd">override</span> <span class="kwrd">bool</span> Compare(Product product)
+    {
+        <span class="kwrd">return</span> (Value == product.ClassificationId);
+    }
+}
+
+
+<span class="kwrd">public</span> <span class="kwrd">class</span> ProductRule : Rule
+{
+    <span class="kwrd">public</span> <span class="kwrd">override</span> <span class="kwrd">bool</span> Compare(Product product)
+    {
+        <span class="kwrd">return</span> (Value == product.ProductId);
+    }
+}
+
+..</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>&nbsp;</p>
+<p>I could have implemented this in a more functional way, but it does seem like a clean solution given I am using C#.&nbsp; </p>
+<h3><strong>Testing the Bits and Pieces </strong></h3>
+<p>Testing the extension methods is easy with such simple domain objects. For most of the extension methods I only wrote a couple of small tests like this:</p><pre class="csharpcode">[TestMethod]
+<span class="kwrd">public</span> <span class="kwrd">void</span> FromSite_ReturnsSiteRule()
+{
+    List&lt;Rule&gt; rules = <span class="kwrd">new</span> List&lt;Rule&gt;() { { <span class="kwrd">new</span> ProductRule() { SiteId = 1 } } };
+    Assert.AreEqual(1, rules.FromSite(1).Count());
+}
+
+[TestMethod]
+<span class="kwrd">public</span> <span class="kwrd">void</span> FromSite_FiltersSiteRule()
+{
+    List&lt;Rule&gt; rules = <span class="kwrd">new</span> List&lt;Rule&gt;() { { <span class="kwrd">new</span> ProductRule() { SiteId = 1 } } };
+    Assert.AreEqual(0, rules.FromSite(2).Count());
+}</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>&nbsp;</p>
+<p>I used LINQ constructs rather than the trusty delegates I use everywhere else for the extension methods. I like it, its clear and easy to read. And this is my point, its changed the language dramatically.</p><pre class="csharpcode"><span class="kwrd">public</span> <span class="kwrd">static</span> IEnumerable&lt;Rule&gt; FromSite(<span class="kwrd">this</span> IEnumerable&lt;Rule&gt; rules, <span class="kwrd">int</span> SiteId)
+{
+    <span class="kwrd">return</span> from rule <span class="kwrd">in</span> rules
+           <span class="kwrd">where</span> rule.SiteId == SiteId
+           select rule;
+}</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>&nbsp;</p>
+<h3><strong>Generic Test Classes</strong></h3>
+<p>&nbsp;</p>
+<p>I'm going to start using the the Microsoft Visual Studios Unit Test Framework. It means people who don't use the same testing framework flavour don't get build errors when they download code download and try to build it. As the attributes work with NUnit GUI and TestDriven.NET I'm happy to use it for now. I not sure if there is any mock testing support, but it does allow inheriting templated test methods. </p>
+<p>For the same reason I didn't want to write code that called product rules, classification rules and brand rules individually, I don't want to write tests for them individually either. </p><pre class="csharpcode"><span class="kwrd">public</span> <span class="kwrd">class</span> GenericSiteRulesTests&lt;T&gt;
+    <span class="kwrd">where</span> T : Rule
+{
+
+    [TestMethod]
+    <span class="kwrd">public</span> <span class="kwrd">void</span> ProductWithNoRules_ProductIsReturned()
+    {
+        Assert.IsTrue(RuleLogic.ProcessRules(<span class="kwrd">new</span> Product(), <span class="kwrd">new</span> List&lt;Rule&gt;(), 1));
+    }
+
+    [TestMethod]
+    <span class="kwrd">public</span> <span class="kwrd">void</span> ProductIdCanBeExcluded_ExcludedProductIsNotReturned()
+    {
+        List&lt;Rule&gt; rules = <span class="kwrd">new</span> List&lt;Rule&gt;() {{ CreateRule(1, RuleType.Excluded, 0 )}};
+        Assert.IsFalse(RuleLogic.ProcessRules(<span class="kwrd">new</span> Product(), rules, 1));
+    }
+
+    ..
+
+}</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>&nbsp;</p>
+<p>The way this is done I think is pretty cool, I did something similar when I was looking at testing Text Search algorithms recently. All the generic rule tests are written in a generic test class which must be templated to a type the derives from Rule.&nbsp; The class doesn't have a test class attribute. This is because the test classes we want to run are actually classes that inherit from the generic test class. </p><pre class="csharpcode">[TestClass]
+<span class="kwrd">public</span> <span class="kwrd">class</span> ClassificationSiteRulesTests 
+    : GenericSiteRulesTests&lt;ClassificationRule&gt;
+{
+}
+
+[TestClass]
+<span class="kwrd">public</span> <span class="kwrd">class</span> ProductSiteRulesTest 
+    : GenericSiteRulesTests&lt;ProductRule&gt;
+{
+}
+
+[TestClass]
+<span class="kwrd">public</span> <span class="kwrd">class</span> BrandSiteRulesTest 
+    : GenericSiteRulesTests&lt;BrandRule&gt;
+{
+}</pre><pre class="csharpcode">&nbsp;</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>These classes do have the test class attributes. Although they are empty, they expose all the templated methods inherited from the generic test class. These methods can be executed by a test runner. </p>
+<p>&nbsp;</p>
+<p>&nbsp; <a href="http://blog.sharpthinking.com.au/image.axd?picture=WindowsLiveWriter/FunctionalProgramming_908A/image_2.png"><img style="border-top-width: 0px; border-left-width: 0px; border-bottom-width: 0px; border-right-width: 0px" height="529" alt="image" src="image_thumb.png" width="497" border="0" /></a> </p>
+<p>NUnit GUI has running all the tests.</p>
+<h3><strong>The Logic</strong></h3>
+<p>&nbsp;</p>
+<p>Ok, so its not really "clear and easy to read", but it is very compact and concise.</p><pre class="csharpcode"><span class="kwrd">public</span> <span class="kwrd">class</span> RuleLogic
+{
+    <span class="kwrd">public</span> <span class="kwrd">static</span> <span class="kwrd">bool</span> ProcessRules(Product product,  IEnumerable&lt;Rule&gt; rules, <span class="kwrd">int</span> siteId)
+    {
+        <span class="rem">// return false if there is any exclusion rule that applies to this product</span>
+        <span class="kwrd">if</span> (rules.FromSite(siteId)
+                 .WithType(RuleType.Excluded)
+                 .AppliesTo(product)
+                 .Count() &gt; 0) <span class="kwrd">return</span> <span class="kwrd">false</span>;
+
+        <span class="rem">// every rule type (ie ProductRule) that any site has a specific rule relating too</span>
+        <span class="kwrd">foreach</span> (Type type <span class="kwrd">in</span> rules.WithType(RuleType.Specific)
+                                   .AppliesTo(product)
+                                   .RuleTypes())
+        {
+            <span class="rem">// this product requires a specific rule of this type</span>
+            <span class="kwrd">if</span> (rules.WithType(RuleType.Specific)
+                     .WithTarget(type)
+                     .FromSite(siteId)
+                     .AppliesTo(product)
+                     .Count() == 0) <span class="kwrd">return</span> <span class="kwrd">false</span>;
+        }
+
+        <span class="kwrd">return</span> <span class="kwrd">true</span>;
+    }
+}</pre>
+<style type="text/css">.csharpcode, .csharpcode pre
+{
+	font-size: small;
+	color: black;
+	font-family: consolas, "Courier New", courier, monospace;
+	background-color: #ffffff;
+	/*white-space: pre;*/
+}
+.csharpcode pre { margin: 0em; }
+.csharpcode .rem { color: #008000; }
+.csharpcode .kwrd { color: #0000ff; }
+.csharpcode .str { color: #006080; }
+.csharpcode .op { color: #0000c0; }
+.csharpcode .preproc { color: #cc6633; }
+.csharpcode .asp { background-color: #ffff00; }
+.csharpcode .html { color: #800000; }
+.csharpcode .attr { color: #ff0000; }
+.csharpcode .alt 
+{
+	background-color: #f4f4f4;
+	width: 100%;
+	margin: 0em;
+}
+.csharpcode .lnum { color: #606060; }
+</style>
+<p>&nbsp;</p>
+<h3><strong>Conclusion </strong></h3>
+<p>&nbsp;</p>
+<p>It all seems fine, all the 33 tests are running and passing, coverage is at 100%.. still I have some strange feeling there is still a critical bug in there, somewhere.&nbsp; </p>
+<p><a href="http://blog.sharpthinking.com.au/image.axd?picture=WindowsLiveWriter/FunctionalProgramming_908A/image_4.png"><img style="border-top-width: 0px; border-left-width: 0px; border-bottom-width: 0px; border-right-width: 0px" height="252" alt="image" src="image_thumb_1.png" width="483" border="0" /></a> </p>
+<p>We'll wait and see Monday morning if the project will go ahead and this prototype can be extended into part of a production quality product publishing rules engine. Oh, and the sub 1 second product searching.. </p>
+<br />
+</div>

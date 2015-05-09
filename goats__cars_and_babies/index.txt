@@ -1,0 +1,111 @@
+I watched the movie "21" the other night and although I thought it was
+rubbish, I was slightly intrigued in the explanation to a question posed in
+the movie, which turns out to be the [Monty Hall Problem][1].
+
+<div id="demo_container"></div>
+
+I was surprised then, while catching up on feeds, to see [Jeff Atwoods][2]
+post [The Problem of the Unfinished Game][3] on a similar topic. Jeff asks
+
+> Let's say, hypothetically speaking, you met someone who told you they had
+two children, and one of them is a girl. **What are the odds that person has a
+boy _and_ a girl?**
+
+It turns out that I've always hated this type of math despite generally
+enjoying using math to solve engineering problems, having a pretty good
+understanding of No-Limit Texas Hold'em and perpetually trying to crack all
+those math tricks that make you do a series of seeded numerical operations to
+magically reveal some significant number. For me the probability math in
+quantum physics was bewildering and in statistical process control it was
+incredibly boring as well.
+
+Asked this question last week and I would probably have meekly replied, "Umm,
+maybe 50%?" and mumbled something about "stupid probability questions" then
+maybe attempted to draw out some permutations before giving up with absolutely
+no confidence in my answer.
+
+Having no confidence in my answer may have been wise in that case, but in his
+following post about the answer to a similar problem, Jeff made a point that
+resonated with me:
+
+> You don't need to be a mathematician to prove this. I'm just a crappy
+programmer, and even my crappy code can brute force the answer by simulating
+results from thousands of games.
+
+As soon as I read that I decided I was going to give the Monty Hall Problem
+the same treatment, at that stage I'd only heard the explanation in the movie
+which didn't make much sense to me.
+
+    #!/usr/bin/python
+    import random;
+
+    class GameShow:
+
+      def __init__(self):
+        self.prizeDoor = random.randint(1,3);
+        print "\nCreating Game, Prize Door is ", self.prizeDoor;
+
+      def SelectDoor(self, door):
+        self.firstSelection = door;
+        print "Contestant Selects Door", self.firstSelection;
+
+      def HostOpenDoor(self):
+        options = filter(lambda m: (m != self.prizeDoor) and (m !=self.firstSelection), range(1,4))
+        self.hostOffer = options[random.randint(0, options.__len__()-1)];
+        print "Host opens door", self.hostOffer;
+
+      def ChangeDoor(self, swap):
+        self.swap = swap;
+        print "Contestant", self.swap and "Takes Swap" or "Keeps Original Choice";
+
+      def OpenDoor(self):
+        self.alternativeDoor = filter(lambda m: (m != self.hostOffer) and (m!= self.firstSelection), range(1,4))[0];
+        self.selectedDoor = (self.swap and self.alternativeDoor or self.firstSelection);
+        self.wins = (self.selectedDoor == self.prizeDoor);
+
+        print "Contestant Selects", self.selectedDoor, "and", self.wins and "Wins Prize" or "Looses";
+
+    def RunGame(swap):
+      game = GameShow();
+      game.SelectDoor(random.randint(1,3));
+      game.HostOpenDoor();
+      game.ChangeDoor(swap);
+      game.OpenDoor();
+      return game.wins;
+
+    def RepeatRun(swap, repeats):
+      wins = 0;
+      for i in range(repeats):
+        if (RunGame(swap)): wins += 1;
+
+      return wins;
+
+    if __name__ == "__main__":
+      iterations = 1000;
+
+      swapWins = RepeatRun(True, iterations);
+      stayWins = RepeatRun(False, iterations);
+
+      print "\nOverall Results\n";
+      print "Swap Wins",swapWins/float(iterations),"%";
+      print "Stay Wins",stayWins/float(iterations),"%";
+
+
+After some fooling around with Python I got my brute force results that proved
+to me making the swap was the right choice. Actually I'd proved it to myself
+by the time I'd written the code that works out which doors the host can open.
+It turns out that if you select a door with a goat behind it first, the host
+can only open one door to reveal a goat, the other is the car. And that is the
+key; If your first selection is a goat which is a 2/3 chance, then the switch
+will always yield a car (this is better than the 1/3 chance first selection).
+
+I've satisfied my interest in counter intuitive probability problems for now,
+which is good because my friends are sick of me talking about them.
+
+
+   [1]: http://en.wikipedia.org/wiki/Monty_Hall_problem
+
+   [2]: http://www.codinghorror.com
+
+   [3]: http://www.codinghorror.com/blog/archives/001203.html
+

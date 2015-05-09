@@ -1,0 +1,57 @@
+My first [Code Camp Oz][1] was the best Microsoft event I've attended. It's
+basically a large user group meeting held over an entire weekend at Charles
+Stuart University in Wagga Wagga. Its a long way to travel but some cool
+people from the Australian .Net development community attend and it's a great
+opportunity to get to know them.
+
+I found the meeting people aspect more interesting than the presentations
+which was the reason I came anyway, I can watch the Mix video anytime. I met
+an awesome group of guys from Albury outside a Silverlight 3 presentation. Due
+to lateness we spent the entire presentation outside chatting which was lots
+of fun. I didn't realize until I signed into Twitter one of the guys was [Matt
+Hamilton][2] who I knew of from his massive Stack Overflow reputation.
+
+The Alt.Net presentation was one I'd penciled in as interesting before the
+event and was pleased find I shared common development values and principles
+with the Alt.Net community. I had a good chat with the presenter [Liam
+McLennan][3] and ended up hanging out with him a fair bit during the weekend.
+
+Saturday night at the pub was good fun. I had an interesting chat about what
+was involved in becoming a Microsoft MVP and the [value of vender
+certification][4]. It turns out you don't need to have any Microsoft
+Certification to become an MVP which I think is good. For me personally I
+think there are other things I'd prefer to do to become a better developer.
+
+An interesting aspect of the event was Twitter. I've never really got that
+into Twitter, but the constant background commentary and discussion really
+added to the experience. The informal way you can listen and contribute to
+conversation is great. It meant I didn't take any notes, but I can always
+search the #ccoz09 tags for quotes, links and photos from the event.
+
+I think it would be really cool break from the power point presentations and
+maybe looking at some open source code like the ASP.NET MVC framework at this
+type of event. I could see this working with a series of presenters reviewing
+the architecture and highlighting certain areas of code for discussion. I'm
+not sure if this would actually work, but I think it could be really fun and
+interesting.
+
+I was a little concerned my return train departed Wagga at 3am Monday morning
+and arrived in Melbourne at 8am, but I met a couple of guys to who gave me a
+lift back to Melbourne on Sunday and happily abandoned my 3am train.
+
+Overall it was a really well organized and attended event. I extend my
+gratitude to [Mitch Denny][5] and all the people involved in making it happen.
+
+Hopefully I'll see you all at Code Camp Oz 2010.
+
+
+   [1]: http://www.codecampoz.com/
+
+   [2]: http://www.madprops.org
+
+   [3]: http://hackingon.net/
+
+   [4]: http://www.codinghorror.com/blog/archives/000771.html
+
+   [5]: http://notgartner.wordpress.com/
+

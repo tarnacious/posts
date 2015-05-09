@@ -1,0 +1,29 @@
+<script src="https://tarnbarford.net/static/journal/rxjs_capture/jquery-1.10.2.min.js" type="text/javascript"></script>
+<script src="https://tarnbarford.net/static/journal/rxjs_capture/rx.js" type="text/javascript"></script>
+<script src="https://tarnbarford.net/static/journal/rxjs_capture/rx.aggregates.js" type="text/javascript"></script>
+<script src="https://tarnbarford.net/static/journal/rxjs_capture/rx.jQuery.js" type="text/javascript"></script>
+<script src="https://tarnbarford.net/static/journal/rxjs_capture/rx.joins.js" type="text/javascript"></script>
+
+<script>
+    $(function () {
+
+        // Setup observables 
+        var buttonStart = $("#buttonStart").toObservable("click");
+        var buttonCapture = $("#buttonCapture").toObservable("click");
+        var buttonStop = $("#buttonStop").toObservable("click");
+
+        // Compose an event
+        var compose = buttonStart.SelectMany(function () { 
+            return buttonCapture.Select(function () { 
+                return "Captured Click"; 
+                }).TakeUntil(buttonStop); 
+            });
+
+        // Subscribe to, and handle event
+        compose.Subscribe(function (result) {
+            var val = $("<li/>").html(result);
+            val.appendTo($("#results"));
+        });
+
+    });
+</script>

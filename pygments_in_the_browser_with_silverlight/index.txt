@@ -1,0 +1,110 @@
+** 17-02-2010 I've updated the demo to use the BackgroundWorker and [posted
+about the update][1] **
+
+I decided it might be fun to try get [Python Markdown][2] and [Pygments][3]
+running in the browser to enhance a markdown preview experience by eliminating
+the server-side round trips and provide a more responsive preview.
+
+I managed to get it working entirely in Python but I found the application
+size excessively large (almost 3mb) and, more annoyingly, it seems to block
+the entire browser when it initially loads the pygments module. I think there
+is some sort of silverlight background thread I should be using.
+
+I think it would work better with [MarkdownSharp][4] as pure C# silverlight
+applications are a fair bit leaner in size and probably run a little quicker
+than dynamic language applications. But this was for fun and I prefer coding
+in Python when not working.
+
+** 17-02-2010 I've since found the MarkdownSharp doesn't do syntax
+hightlighting **
+
+I ended up having to write so little Python code to get this working that I
+can include it all here, syntax highlighted with Pygments of course.
+
+
+    from System.Windows import Application
+    from System.Windows.Controls import UserControl
+    from System.Windows.Browser import HtmlPage
+    from System import EventHandler
+
+    class App:
+
+        def __init__(self):
+
+            # load relevent HTML DOM elements
+            self.input = HtmlPage.Document.GetElementById("input")
+            self.source = HtmlPage.Document.GetElementById("output")
+            self.language = HtmlPage.Document.GetElementById("lang")
+
+            # fire javascript functions to indicate the application has been load
+            HtmlPage.Window.CreateInstance("silverlight_loaded");
+
+            # pygmentize initial
+            self.pygmentize()
+
+            # register events
+            self.input.AttachEvent('onkeyup', EventHandler(self.update_handler ))
+            self.language.AttachEvent('onchange', EventHandler(self.update_handler ))
+
+            # fire javascript function to indicated the pygments has been loaded
+            HtmlPage.Window.CreateInstance("pygments_loaded");
+
+
+        # handle language or input changes by pygmentizing
+        def update_handler(self, sender, e):
+            self.pygmentize()
+
+
+        def pygmentize(self):
+            input = self.input.GetProperty("value")
+
+            # attempt to pygmentize input with current language
+            try:
+                from pygments import highlight
+                from pygments.lexers import get_lexer_by_name
+                from pygments.formatters import HtmlFormatter
+
+                lexer = get_lexer_by_name(self.language.value, stripall=True)
+                formatter = HtmlFormatter(linenos=False, cssclass="source")
+                markup = highlight(input, lexer, formatter)
+
+                # update the preview
+                self.source.SetProperty("innerHTML",markup)
+
+            except:
+
+                # indicate there was an error in pygmentize
+                self.source.SetProperty("innerHTML", "Error Generating Markup")
+
+
+    # Do it!
+    App()
+
+
+
+Despite the fact that there isn't much code, the development experience
+writing silverlight application in python is a bit of a pain in the arse.
+Granted it's much better with the python console in the browser and better
+error reporting in most recent SDK, but it still sucks; debugging and logging
+support is very limited and on some errors the application dies without
+reporting anything.
+
+Another difficulty is having to manually copy all the python standard library
+modules required by the module from the library folders into the application
+(which explains something about the bloated application size). And even though
+the code in the demo works, some very similar code from the pygments quick
+start doesn't.
+
+Check out the [live demo][5].
+
+
+   [1]: http://blog.sharpthinking.com.au/post/2010/02/20/Revisiting-Pygments-in-the-browser-with-Silverlight-now-with-BackgroundWorker.aspx
+
+   [2]: http://www.freewisdom.org/projects/python-markdown/
+
+   [3]: http://pygments.org/
+
+   [4]: http://code.google.com/p/markdownsharp/
+
+   [5]: http://markdown-madness.appspot.com/silverlight-pygments
+

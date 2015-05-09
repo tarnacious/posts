@@ -1,0 +1,98 @@
+<div class="entry">
+<p>A couple of week ago I <a href="http://blog.sharpthinking.com.au/post/2010/01/31/Pygments-in-the-browser-with-Silverlight.aspx">blogged</a> about using <a href="http://www.google.com.au/url?sa=t&amp;source=web&amp;ct=res&amp;cd=1&amp;ved=0CAgQFjAA&amp;url=http%3A%2F%2Fpygments.org%2F&amp;ei=8IV_S8e6CIHUsgPtofz1Aw&amp;usg=AFQjCNGVIxeCqQ14mGgLNznFat5nyACb5Q">Pygments</a> to do live syntax highlighting in the browser using Silverlight. </p>
+<p>A major problem with the sample was that it did the pygmentizing on the UI thread which caused most
+browsers to become unresponsive. Today I wanted to fix that by using the <a href="http://msdn.microsoft.com/en-us/library/system.componentmodel.backgroundworker%28VS.95%29.aspx">BackgroundWorker</a> to do the 
+pygmentizing in a background thread.</p>
+<p>Firstly I refactored the pygmentizing into a method that didn't interact with the UI. </p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">pygmentize_text</span>(<span style="color: #008000">self</span>, text, language):
+    <span style="color: #408080; font-style: italic"># attempt to pygmentize input with current language </span>
+    <span style="color: #008000; font-weight: bold">try</span>:
+
+        <span style="color: #008000; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">pygments</span> <span style="color: #008000; font-weight: bold">import</span> highlight
+        <span style="color: #008000; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">pygments.lexers</span> <span style="color: #008000; font-weight: bold">import</span> get_lexer_by_name
+        <span style="color: #008000; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">pygments.formatters</span> <span style="color: #008000; font-weight: bold">import</span> HtmlFormatter
+
+        lexer <span style="color: #666666">=</span> get_lexer_by_name( language, stripall<span style="color: #666666">=</span><span style="color: #008000">True</span>)
+        formatter <span style="color: #666666">=</span> HtmlFormatter(linenos<span style="color: #666666">=</span><span style="color: #008000">False</span>, cssclass<span style="color: #666666">=</span><span style="color: #BA2121">&quot;source&quot;</span>)
+        markup <span style="color: #666666">=</span> highlight(text, lexer, formatter)
+
+        <span style="color: #008000; font-weight: bold">return</span> markup
+
+    <span style="color: #008000; font-weight: bold">except</span>:
+
+        <span style="color: #008000; font-weight: bold">return</span> <span style="color: #BA2121">&quot;Error Generating Markup&quot;</span>
+</pre></div>
+<p><br /> <br />
+I then added a method that could be passed into a DoWorkEventHandler. It gets it arguments as a tuple from 
+the event arguments and then sets the event argument result with the marked up HTML. The lack of explicit 
+typing and use of tuples is good example of how some python idioms can be used when working with the .NET framework.</p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">worker</span>(<span style="color: #008000">self</span>, sender, e):
+
+    <span style="color: #408080; font-style: italic"># do work off UI thread. </span>
+    e<span style="color: #666666">.</span>Result <span style="color: #666666">=</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>pygmentize_text(e<span style="color: #666666">.</span>Argument[<span style="color: #666666">0</span>],e<span style="color: #666666">.</span>Argument[<span style="color: #666666">1</span>])
+</pre></div>
+<p><br />
+The required BackgroundWorker and DoWorkEventHandler can be simply imported from the System.ComponentModel
+namespace. </p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">System.ComponentModel</span> <span style="color: #008000; font-weight: bold">import</span> BackgroundWorker, DoWorkEventHandler
+</pre></div>
+<p><br />
+The BackgroundWorker can then be setup and started. Again it's syntactically nice how the tuple can be created
+ and passed as a RunWorkerAsync parameter. <br />
+</p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">start_pygmentize</span>(<span style="color: #008000">self</span>):
+
+    <span style="color: #408080; font-style: italic"># update application state</span>
+    <span style="color: #008000">self</span><span style="color: #666666">.</span>input_changed <span style="color: #666666">=</span> <span style="color: #008000">False</span>        
+    <span style="color: #008000">self</span><span style="color: #666666">.</span>pygmentizing <span style="color: #666666">=</span> <span style="color: #008000">True</span>
+    <span style="color: #008000">self</span><span style="color: #666666">.</span>show_message(<span style="color: #BA2121">&quot;pygmentizing..&quot;</span>)
+
+    <span style="color: #408080; font-style: italic"># get paremters</span>
+    <span style="color: #008000">input</span> <span style="color: #666666">=</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>input<span style="color: #666666">.</span>GetProperty(<span style="color: #BA2121">&quot;value&quot;</span>)
+    language <span style="color: #666666">=</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>language<span style="color: #666666">.</span>value
+
+    <span style="color: #408080; font-style: italic"># setup background worker</span>
+    worker <span style="color: #666666">=</span> BackgroundWorker()
+    worker<span style="color: #666666">.</span>DoWork <span style="color: #666666">+=</span> DoWorkEventHandler(<span style="color: #008000">self</span><span style="color: #666666">.</span>worker)
+    worker<span style="color: #666666">.</span>RunWorkerCompleted <span style="color: #666666">+=</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>complete
+
+    <span style="color: #408080; font-style: italic"># start the worker</span>
+    worker<span style="color: #666666">.</span>RunWorkerAsync( (<span style="color: #008000">input</span>,language) )
+</pre></div>
+<p><br />
+The completed event handler is the responsible for taking the markup generated by the BackgroundWorker and 
+updating the DOM. It also fires off another worker if the source has changed since the 
+last worker started.</p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">complete</span>(<span style="color: #008000">self</span>, sender, e):
+
+    <span style="color: #008000; font-weight: bold">if</span> e<span style="color: #666666">.</span>Error:
+
+        <span style="color: #408080; font-style: italic"># handle errors/exceptions in worker</span>
+        <span style="color: #008000">self</span><span style="color: #666666">.</span>source<span style="color: #666666">.</span>SetProperty(<span style="color: #BA2121">&quot;innerHTML&quot;</span>,e<span style="color: #666666">.</span>Error<span style="color: #666666">.</span>Message)
+
+    <span style="color: #008000; font-weight: bold">else</span>:
+
+        <span style="color: #408080; font-style: italic"># show the result</span>
+        <span style="color: #008000">self</span><span style="color: #666666">.</span>source<span style="color: #666666">.</span>SetProperty(<span style="color: #BA2121">&quot;innerHTML&quot;</span>,e<span style="color: #666666">.</span>Result)
+
+    <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>input_changed:
+
+        <span style="color: #408080; font-style: italic"># input has changed, starty pygmentize again</span>
+        <span style="color: #008000">self</span><span style="color: #666666">.</span>start_pygmentize()
+
+    <span style="color: #008000; font-weight: bold">else</span>:
+
+        <span style="color: #408080; font-style: italic"># no work queued</span>
+        <span style="color: #008000">self</span><span style="color: #666666">.</span>pygmentizing <span style="color: #666666">=</span> <span style="color: #008000">False</span>
+        <span style="color: #008000">self</span><span style="color: #666666">.</span>hide_message()
+</pre></div>
+<p><br /> <br />
+The update has made the sample much more responsive, however it appears downloading the Silverlight application is still causing some browers to become a little unresponsive 
+which is annoying. I will be interested to find out if this effect can be mitigated.</p>
+<p>The actually pygmentizing processing could possibly be made a little faster by reusing the BackgroundWorker and 
+only doing the Pygment imports once but the responsiveness of the browser has improved the 
+sample enormously. <br />
+</p>
+<p>Check out the updated demo <a href="http://markdown-madness.appspot.com/silverlight-pygments">here</a>.</p>
+<br />
+</div>

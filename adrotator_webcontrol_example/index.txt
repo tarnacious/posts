@@ -1,0 +1,58 @@
+I didn't really actually want to write another ad rotator, but I did think it
+would be a good example control to implement. It has the scope to cover some
+aspects of writing web controls I wanted to learn more about and discuss. I
+decided to build an ASP.Net web control that cycles through a list of images
+on the client side. There are a few areas I want to discuss.
+
+I wanted the control completely encapsulated within an assembly. So all you'd
+need to use the control would be a copy of the assembly. To do this I embedded
+some resources in the assembly and read them out at runtime. I discuss this in
+the article.
+
+  * [AdRotator: Embedding resources in an assembly][1]
+
+I wanted the control to be able to be created completely declaratively, and I
+thought providing the sort of intellisense you get when using standard ASP.Net
+controls would be nice.
+
+  * [AdRotator: Declaratively setting a collection property][2]
+
+I wanted the server-side control to inject Javascript into the output. I
+wanted the control to be smart enough to only output the Javascript prototype,
+or class definition once, even if there were multiple controls on the page. I
+wanted the client side code to be as object orientated as possible.
+
+  * [AdRotator: Injecting client scripts][3]
+
+  * [AdRotator: Client-side code][4]
+
+  * [AdRotator: Json serialization][5]
+
+You can download the source code which includes an example website in the
+solution.
+
+  * [Source Download][6]
+
+I would like to add a post about supporting difference storage mechanisms and
+using the control, but I have other projects demanding my attention. Hopefully
+I'll get back to it sometime.
+
+I Hope you've found some of these articles useful or interesting. I'll keep
+and eye on the comments, contribute to further discussion, and update the
+posts where errors or omissions are noted.
+
+Cheers
+
+
+   [1]: /journal/adrotator-embedding-resources-in-an-assembly
+
+   [2]: /journal/adrotator-declaratively-setting-a-collection-property
+
+   [3]: /journal/adrotator-injecting-scripts
+
+   [4]: /journal/adrotator-client-side-code
+
+   [5]: /journal/adrotator-json-serialization
+
+   [6]: /downloads/AdRotatorExample.zip
+

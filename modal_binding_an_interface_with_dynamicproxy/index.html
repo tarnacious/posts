@@ -1,0 +1,174 @@
+<div class="entry">
+<p><br /><strong>Update: I posted an <a href="http://www.sharpthinking.com.au/post/2010/02/17/Revisting-Modal-Binding-an-Interface-now-with-DictionaryAdapterFactorye2808f.aspx">update to this post</a> which uses the Castle DictionaryAdapterFactory after getting some feedback from this post.</strong><br /></p>
+<p>This started while I was playing with some ASP.NET MVC architectural ideas in simple application.</p>
+<p>I wanted to less code than other projects I'd worked on but still have it decoupled and testable.<br />
+</p>
+<p>At some point I started ranting on twitter (<a href="http://twitter.com/tarnacious/status/9090317966">1</a>, <a href="http://twitter.com/tarnacious/status/9090453396">2</a>, <a href="http://twitter.com/tarnacious/status/9090509896">3</a>)
+about wanting a Model Binder that could bind to an interface without needing a concrete type.</p>
+<p>It was quickly <a href="http://twitter.com/craigtech/statuses/9091802953">pointed out</a> that what I <em>probably</em> wanted was a Model Binder that resolves an implementation at runtime with IOC.</p>
+<p>While this was <em>probably</em> true as I was using already using StuctureMap and it did seemed like a much better idea I still some <a href="http://twitter.com/tarnacious/status/9092355362">my reservations</a>.
+But mainly <a href="http://twitter.com/tarnacious/status/9133991635">I wanted to try</a> using the <a href="http://www.castleproject.org/dynamicproxy/index.html">Castle DynamicProxy</a> in an application.</p>
+<p>Clearly the reason the default model binder can't bind to an interface is because it can't create an instance of it.
+Thanks to some nice extensibility hooks in the default model binder, all I had to do was override the CreateModel method and return my DynamicProxy instance.
+The default model binder then could do the rest of binding work as normal.</p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">FakeInterfaceModelBinder</span> : DefaultModelBinder
+{
+    <span style="color: #008000; font-weight: bold">protected</span> <span style="color: #008000; font-weight: bold">override</span> <span style="color: #B00040">object</span> <span style="color: #0000FF">CreateModel</span>(ControllerContext controllerContext,
+                                          ModelBindingContext bindingContext,
+                                          Type modelType)
+    {
+        var generator = <span style="color: #008000; font-weight: bold">new</span> ProxyGenerator();
+        <span style="color: #008000; font-weight: bold">return</span> generator.CreateInterfaceProxyWithoutTarget(modelType,
+                <span style="color: #008000; font-weight: bold">new</span> <span style="color: #0000FF">FakePropertiesInterceptor</span>());
+    }
+}
+</pre></div>
+<br />
+<p>What I needed then was a DynamicProxy object that had properties the behaved like you'd <em>expect</em> properties to on a normal class.
+I came up with some test scenarios I'd expect the proxy to pass using a test interface.</p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">interface</span> IDynamicProxyTest
+{
+    <span style="color: #B00040">int</span> Integer { <span style="color: #008000; font-weight: bold">get</span>; <span style="color: #008000; font-weight: bold">set</span>; }
+    <span style="color: #B00040">string</span> String { <span style="color: #008000; font-weight: bold">get</span>; <span style="color: #008000; font-weight: bold">set</span>; }
+    DateTime Date { <span style="color: #008000; font-weight: bold">get</span>; <span style="color: #008000; font-weight: bold">set</span>; }
+}
+</pre></div>
+<br />
+<p>I figured the Model Binder would set values on the Dynamic Proxy object and the controller would get the properties back to validate and pass them to the data layer or something like that.
+I came up with these tests.</p>
+<div class="codehilite"><pre><span style="color: #7D9029">[Test]</span>
+<span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">void</span> <span style="color: #0000FF">If_date_has_been_set_then_return_it</span>()
+{
+    var date = DateTime.Now;
+    var proxy = CreateProxy();
+    proxy.Date = date;
+    Assert.AreEqual(date, proxy.Date);
+}
+
+<span style="color: #7D9029">[Test]</span>
+<span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">void</span> <span style="color: #0000FF">If_string_has_been_set_then_return_it</span>()
+{
+    var proxy = CreateProxy();
+    proxy.String = <span style="color: #BA2121">&quot;Hello Proxy&quot;</span>;
+    Assert.AreEqual(<span style="color: #BA2121">&quot;Hello Proxy&quot;</span>, proxy.String);
+}
+
+<span style="color: #7D9029">[Test]</span>
+<span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">void</span> <span style="color: #0000FF">If_int_has_been_set_then_return_it</span>()
+{
+    var proxy = CreateProxy();
+    proxy.Integer = <span style="color: #666666">42</span>;
+    Assert.AreEqual(<span style="color: #666666">42</span>, proxy.Integer);
+}
+</pre></div>
+<br />
+<p>After implementing these I was <a href="http://twitter.com/tarnacious/status/9133692420">surprised</a> to find the default model binder did some gets on the properties before sets.
+So I added some more tests.</p>
+<div class="codehilite"><pre><span style="color: #7D9029">[Test]</span>
+<span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">void</span> <span style="color: #0000FF">For_date_instance_if_value_not_set</span>()
+{
+    var proxy = CreateProxy();
+    var b = proxy.Date;
+}
+
+<span style="color: #7D9029">[Test]</span>
+<span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">void</span> <span style="color: #0000FF">For_int_instance_if_value_not_set</span>()
+{
+    var post = CreateProxy();
+    var b = post.Integer;
+}
+
+<span style="color: #7D9029">[Test]</span>
+<span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">void</span> <span style="color: #0000FF">For_string_instance_if_value_not_set</span>()
+{
+    var post = CreateProxy();
+    var b = post.String;
+}
+</pre></div>
+<br />
+<p>My property interceptor isn't as clean as I'd like it but did the job passing tests.</p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">ProperyInterceptor</span> : IInterceptor
+{
+    Type _type;
+
+    Dictionary&lt;<span style="color: #B00040">string</span>, <span style="color: #B00040">object</span>&gt; properties;
+
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #0000FF">ProperyInterceptor</span>(Type type)
+    {
+        properties = <span style="color: #008000; font-weight: bold">new</span> Dictionary&lt;<span style="color: #B00040">string</span>, <span style="color: #B00040">object</span>&gt;();
+        _type = type;
+        var fields = _type.GetProperties();
+    }
+
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">void</span> <span style="color: #0000FF">Intercept</span>(IInvocation invocation)
+    {
+        <span style="color: #008000; font-weight: bold">if</span> (IsSetter(invocation))
+        {
+            properties[Name(invocation)] = invocation.Arguments[<span style="color: #666666">0</span>];
+        }
+
+        <span style="color: #008000; font-weight: bold">if</span> (IsGetter(invocation))
+        {
+            <span style="color: #008000; font-weight: bold">if</span> (properties.ContainsKey(Name(invocation)))
+            {
+                invocation.ReturnValue = properties[Name(invocation)];
+            }
+            <span style="color: #008000; font-weight: bold">else</span>
+            {
+                GetDefaultValue(invocation);
+            }
+        }
+    }
+
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">void</span> <span style="color: #0000FF">GetDefaultValue</span>(IInvocation invocation)
+    {
+        <span style="color: #008000; font-weight: bold">if</span> (invocation.Method.ReturnType == <span style="color: #008000; font-weight: bold">typeof</span>(<span style="color: #B00040">string</span>))
+        {
+            invocation.ReturnValue = <span style="color: #BA2121">&quot;&quot;</span>;
+        }
+        <span style="color: #008000; font-weight: bold">else</span>
+        {
+            invocation.ReturnValue = Activator.CreateInstance(invocation.Method.ReturnType);
+        }
+    }
+
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #B00040">string</span> <span style="color: #0000FF">Name</span>(IInvocation method)
+    {
+        <span style="color: #008000; font-weight: bold">return</span> method.Method.Name.Substring(<span style="color: #666666">4</span>);
+    }
+
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #B00040">bool</span> <span style="color: #0000FF">IsSetter</span>(IInvocation method)
+    {
+
+        <span style="color: #008000; font-weight: bold">return</span> method.Method.IsSpecialName &amp;&amp;
+               method.Method.Name.StartsWith(<span style="color: #BA2121">&quot;set_&quot;</span>, StringComparison.Ordinal);
+
+    }
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #B00040">bool</span> <span style="color: #0000FF">IsGetter</span>(IInvocation method)
+    {
+
+        <span style="color: #008000; font-weight: bold">return</span> method.Method.IsSpecialName &amp;&amp;
+               method.Method.Name.StartsWith(<span style="color: #BA2121">&quot;get_&quot;</span>, StringComparison.Ordinal);
+
+    }
+}
+</pre></div>
+<br />
+<p>I used the <a href="http://mokhan.lostechies.com/blogs/jimmy_bogard/archive/2009/03/17/a-better-model-binder.aspx">better model binder</a> Jimmy Bogard discusses as it makes
+writing binders for derived types and specific "types of type" more straight forward.</p>
+<div class="codehilite"><pre><span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">InterfaceBinder</span> : FakeInterfaceModelBinder, IFilteredModelBinder
+{
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #B00040">bool</span> <span style="color: #0000FF">IsMatch</span>(Type modelType)
+    {
+        <span style="color: #008000; font-weight: bold">return</span> modelType.IsInterface;
+    }
+}
+</pre></div>
+<br />
+<p>I did try writing a test which ran my model binder, but found it too much trouble. When I tried it out in a sample web project it worked exactly as I expected.</p>
+<p>While this was fun I don't actually think it's a very good idea.
+I was thinking about the interface as DTO's and it breaks down if you want any additional methods on the interface, as they just won't work.
+Anyway it's been fun as always and maybe I'll find a good place to use these dynamic proxies in the future.</p>
+<p>Source code with the sample website is all <a href="http://static.sharpthinking.com.au/2010/DynamicProxyModelBinder.zip">here</a>.</p>
+<br />
+</div>

@@ -1,0 +1,53 @@
+    <script type="text/javascript" src="https://tarnbarford.net/static/journal/transforms/transform_animation.js"></script>
+    <script type="text/javascript">
+        window.onload = function() { 
+
+            // Demo 1
+            var demo1_start = document.getElementById("demo1_start"); 
+            var demo1 = document.getElementById('demo1').getContext('2d');
+            drawStandard([], demo1)
+            demo1_start.onclick = function() {
+                demo1_start.style.display = "none";
+                if (demo1) {
+                    var transforms1 = [animateTranslate(50,50),
+                        animateRotation(Math.PI/4),
+                        animateTranslate(-25,-25) ];
+                    animateTransforms(demo1, transforms1, [], addToStart, drawStandard,
+                            function() { demo1_start.style.display = "block" } );
+                }
+                return false;
+            }            
+            
+            // Demo 2
+            var demo2_start = document.getElementById("demo2_start"); 
+            var demo2 = document.getElementById('demo2').getContext('2d');
+            drawStandard([], demo2)
+            demo2_start.onclick = function() {
+                demo2_start.style.display = "none";
+                if (demo2) {
+                    var transforms2 = [animateTranslate(50,50),
+                        animateRotation(Math.PI/4),
+                        animateTranslate(-25,-25) ];
+                    animateTransforms(demo2, transforms2.reverse(), [], addToEnd, drawStandard,
+                            function() { demo2_start.style.display = "block" } );
+                }
+                return false;
+            }
+
+            // Demo 3
+            var demo3_start = document.getElementById("demo3_start"); 
+            var demo3 = document.getElementById('demo3').getContext('2d');
+            drawStandard([], demo3)
+            demo3_start.onclick = function() {
+                demo3_start.style.display = "none";
+                if (demo3) {
+                    var alt = [animateTranslate(-50,-50),
+                        animateRotation(-Math.PI/4),
+                        animateTranslate(25,25) ];
+                    animateTransforms(demo3, alt.reverse(), [], addToStart, drawAlternate,
+                            function() { demo3_start.style.display = "block" } );
+                }
+                return false;
+            }
+        }
+    </script>
