@@ -72,7 +72,7 @@ I also couldn't get all of the [Worker API] [workerapi] working for some reason
 I have not investigated yet. However, I could get enough of it working to hack
 together this post. I created a new entry point in the chess-at-nite code that
 exports a C style function suitable to be called using the Emscripten Worker
-API, this part worked. I was unable to get the Worker API calling the worker,
+API, this partly worked. I was unable to get the Worker API calling the worker,
 but noticed I could create and call the worker with normal Javascript, provided
 I posted and handled the internal message formats used by the Worker API.
 
