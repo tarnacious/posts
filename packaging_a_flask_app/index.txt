@@ -213,6 +213,8 @@ user. This is OK as I intend to proxy it though [nginx] [nginx], this is quite
 simple to configure but it would be nice to manage this configuration via
 [Puppet] [puppet], which I hope to write about in my next post.
 
+:)
+
 [packaging]: http://www.plankandwhittle.com/packaging-a-flask-app-in-a-debian-package/
 [demosite]: https://github.com/tarnacious/demosite
 [flask]: http://flask.pocoo.org/
