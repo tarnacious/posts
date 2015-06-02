@@ -373,7 +373,7 @@ While this verifies the signature is ok, I wasn't entirely satisfied and wanted
 to see what was going on. The `DKIM-Signature` header has a body hash field
 `bh` which is specified in the header as being an `rsa-sha256` hash. Once this
 is verified the signature itself can be verified on the headers alone as the
-headers contain a hash of the valid hash of the body contents.
+headers contain a hash of the body contents.
 
     $ printf "hello, DKIM.\r\n" | openssl dgst -binary -sha256 | openssl base64
     YocFhtTgjr2exNi9eb3SUWb8spcRxFH1Tqh/0OcRcfA=
