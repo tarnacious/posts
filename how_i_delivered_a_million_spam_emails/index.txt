@@ -42,7 +42,7 @@ now, I'm busy" I snapped back, shocking him and me. I broke my trance like
 stare from the shell on my screen, turned around and explained that my mail
 server had been compromised and appeared to by trying to send spam.
 
-I turned back to my computer to see a message from Micheal, we share a physical
+I turned back to my computer to see a message from Michal, we share a physical
 server which we run virtual machines on using KVM. "Hey", this cannot have been
 unrelated so I beat him to the punch, "my server was spamming :'(".  He'd
 received an abuse email from our hosting provider.
@@ -354,7 +354,7 @@ Postfix. Below is an example of a DKIM signed message I sent to myself.
     hello, DKIM.
 
 My DKIM public key for this message can be found based on the from header and
-the `s` param in the DKIM signature.
+the `s` field in the DKIM signature.
 
     $ dig +short -t txt mail._domainkey.tarnbarford.net
     "v=DKIM1\; k=rsa\; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC0LNf8wdRCk2eXt1+EAIAdDSfq4aLMR/a6hCdPzJdAZ5OB1Z2LvOJlUGtx81MAttOG2lztjMmdrEq4mmGe0LUXOmOTqMcY8/woNspqvj9N4zPUEZXFP6yrYlgVGuVcLYWV6huCviwlt49KciaB9al+E2PogZJxDda5/cYffrI4PQIDAQAB"
