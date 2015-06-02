@@ -1,0 +1,558 @@
+I've been running my own personal mail server for almost two years. On Friday
+May 15, I tried to send an email and immediately received a undeliverable mail
+response from my mail server.
+
+    This is the mail system at host tarnbarford.net.
+
+    I'm sorry to have to inform you that your message could not
+    be delivered to one or more recipients. It's attached below.
+
+    For further assistance, please send mail to postmaster.
+
+    If you do so, please include this problem report. You can
+    delete your own text from the attached returned message.
+
+                       The mail system
+
+    <xxxxxxxx@xxxxxxxx>: host gmail-smtp-in.l.google.com[74.125.136.26] said:
+        550-5.7.1 [144.76.187.44      12] Our system has detected that this message
+        is 550-5.7.1 likely unsolicited mail. To reduce the amount of spam sent to
+        Gmail, 550-5.7.1 this message has been blocked. Please visit 550-5.7.1
+        http://support.google.com/mail/bin/answer.py?hl=en&answer=188131 for 550
+        5.7.1 more information. y7si5709303wjw.181 - gsmtp (in reply to end of DATA
+        command)
+
+A week earlier a friend told me that one of my mails had been marked as spam by
+GMail, which was concerning, but I figured maybe I could take some steps to
+ensure my mail server looked more legitimate, like setting up [reverse DNS
+lookup][9], [SPF][3] and [DKIM][4] correctly. This seemed much more concerning.
+I took a break outside think about and what I should do next and why Google was
+picking on me all of a sudden? Slowly it dawned on me that maybe my server had
+been compromised.
+
+I rushed back to my computer, shelled into the server and ran `tail -f` on the
+mail log. I was immediately presented a continuous stream of log messages.
+*Fuck*. I stopped the tail to see what was happening, it didn't look good
+"delivery temporarily suspended", "ERROR: Mail Refused", "Retrying will NOT
+succeed.". I stopped postfix and re-ran the tail command, the tail of log
+appeared but thankfully new log messages were not appearing.
+
+"Table tennis?" a colleague had approached me from behind and shocked me. "Not
+now, I'm busy" I snapped back, shocking him and me. I broke my trance like
+stare from the shell on my screen, turned around and explained that my mail
+server had been compromised and appeared to by trying to send spam.
+
+I turned back to my computer to see a message from Micheal, we share a physical
+server which we run virtual machines on using KVM. "Hey", this cannot have been
+unrelated so I beat him to the punch, "my server was spamming :'(".  He'd
+received an abuse email from our hosting provider.
+    
+    15:41:48 piwoni: hey
+    15:41:54 tarnacious: yes?
+    15:42:05 tarnacious: my server was spamming :'(
+    15:42:09 piwoni: yes
+    15:42:14 tarnacious: I don't know how
+    15:42:16 piwoni: wanted to tell you
+    15:42:19 tarnacious: thanks
+    15:42:22 tarnacious: too late
+    15:42:44 tarnacious: you get email from hetzner?
+    15:42:45 tarnacious: :D
+    15:42:49 piwoni: yes
+    15:42:53 tarnacious: today?
+    15:42:55 piwoni: yes
+    15:42:58 tarnacious: ok.
+    15:43:05 tarnacious: has been 4 days.
+    15:43:11 tarnacious: ip address is ruined :(
+    15:43:33 piwoni: how did it happen?
+    15:43:42 tarnacious: I don't know yet.
+    15:43:45 piwoni: ok
+    15:44:05 piwoni: do you have anyting on your
+    15:44:08 piwoni: site?
+    15:44:13 piwoni: form?
+    15:44:36 tarnacious: nope.
+    15:44:37 piwoni: is the smtp with auth
+    15:44:45 tarnacious: yep.
+    15:44:56 tarnacious: maybe brute force the auth
+    15:45:10 tarnacious: I do not know yet.
+    15:45:49 tarnacious: queue was pretty massive, but most mail servers have stopped talking to me.
+
+### What happened
+
+I still hadn't worked out how my server had been compromised. I've been running
+it for almost two years and I was pretty confident it wasn't an open relay. I
+looked through the logs and found a message from `android@tarnbarford.net`. I
+ran `grep from= /var/log/mail.log`, this account was trying to send a lot of
+mail.
+
+    15:51:43 tarnacious: ok, i see what has happened :(
+    15:51:49 piwoni: ?
+    15:52:39 tarnacious: in my mail logs...
+    15:52:47 tarnacious: sasl_username=android connects.
+    15:52:51 tarnacious: and me.
+    15:53:06 piwoni: android?
+    15:53:11 piwoni: username
+    15:53:11 piwoni: :P
+    15:53:17 tarnacious: android is an account I created to build android.
+    15:53:21 piwoni: heh
+    15:53:25 piwoni: and pass ?
+    15:53:28 tarnacious: I guess I must have given him a week password.
+    15:53:29 piwoni: empty ?
+    15:53:53 piwoni: how do you store them ?
+    15:54:57 tarnacious: unix password
+    15:55:13 piwoni: change it
+    15:56:44 tarnacious: no shit
+
+I use this machine for many other things including; a web server, a VPN server,
+a git server, for connecting to IRC servers, for [pair programming][0], and for
+running arbitrary long running processes. I try to manage the system like I
+think a Unix system administer would; I create user accounts for everything, I
+care about file permissions and try to run a much as possible as non-privileged
+users.
+
+The `android` account was created for building a custom [CyanogenMod][15].
+Aside from taking ages to build, it also requires significantly more disk space
+than I can free on my Macbook Air. As the user was not in the `sudoers` file
+and password SSH connections are not allowed, I hadn't thought the password was
+very important and presumably created an extremely weak one.
+
+What I had not thought of was that the password could be used to authenticate
+with the SMTP server, this is because I have postfix set-up to use Linux
+accounts as users. It appeared that someone had managed to guess a
+username/password combination on the SMTP server. A friend later joked that the
+attacker may have been surprised to get access so early in their dictionary
+attack.
+
+I changed the `android` users password, cleared the entire postfix mail queue,
+restarted postfix and watched the logs. There were a few intermittent failed
+login attempts, but the server didn't seem to be trying to send any more mail.
+
+### What was sent
+
+Feeling like I had done enough to temporarily safely start running the server
+again while still keeping an eye on the logs I moved onto working out what had
+happened. For this I had copied all the logs to a working directory and
+unzipped them. I had logs from April 19th to May 17th, 12GB in total, which
+itself was pretty ominous.
+
+I initially attempted to analyse the logs myself with some `awk` scripts but
+found the postfix logs quite difficult to extract useful summaries from. The
+problem is there can be many log entries for a single message and useful
+information is spread across them. There is some sort of ID in each log message
+and I initially thought that the ID would be unique per message and I could
+group on that and work out what happened for each ID, but it turns out it is a
+little more complicated than that as messages can have multiple recipients.
+Probably worth looking around, surely someone has solved the problem.
+
+After a quick search I found a script, [pflogsumm.pl][13], that seemed to
+summarise the type of information I was looking for. I'm not sure how accurate
+it is or what these numbers mean, but it is very clear that my little mail
+server had been quite busy. 
+
+
+    Grand Totals
+    ------------
+    messages
+
+     493404   received
+       1543k  delivered
+          0   forwarded
+     311685   deferred  (33608k deferrals)
+     448708   bounced
+        486   rejected (0%)
+          0   reject warnings
+          0   held
+          0   discarded (0%)
+
+       2406m  bytes received
+       5826m  bytes delivered
+        672   senders
+       1166   sending hosts/domains
+       1053k  recipients
+     105817   recipient hosts/domains
+
+
+The per day traffic summary was quite interesting to me as I shows that the
+account had been compromised a few weeks earlier than I thought. I also find
+the usage patterns quite interesting, it looks like it was compromised on April
+26 and a few thousand emails were sent, possibly to test if the server could be
+used to send spam. Then it is used in bursts, with no email at been sent
+between May 7 and May 9.
+
+    Per-Day Traffic Summary
+    -----------------------
+        date          received  delivered   deferred    bounced     rejected
+        --------------------------------------------------------------------
+        Apr 19 2015        21         21          0          0         12 
+        Apr 20 2015        35         35          0          0         30 
+        Apr 21 2015        32         32          0          0         14 
+        Apr 22 2015        30         30          0          0         44 
+        Apr 23 2015        34         34          0          0          8 
+        Apr 24 2015        28         28          0          0         13 
+        Apr 25 2015        22         22          0          0         10 
+        Apr 26 2015       110       2030          0       2039          9 
+        Apr 27 2015        61         60          0          0         18 
+        Apr 28 2015     67547     193033        565k     52301         15 
+        Apr 29 2015       149      11711     453347      10425         21 
+        Apr 30 2015    136912     460833       1244k     90682         17 
+        May  1 2015     11679     194702       4523k     26787         15 
+        May  2 2015       113      10189       3798k      2113         10 
+        May  3 2015        69       7538       3601k       850          9 
+        May  4 2015        44       5902       3344k      6094         10 
+        May  5 2015       109      19998       3064k        64         14 
+        May  6 2015        63       7587     187980          0          9 
+        May  7 2015        52         54         43          0         18 
+        May  8 2015        65         64         21          0         17 
+        May  9 2015        50         50         21          0         27 
+        May 10 2015     35576      74756     335577      22229         14 
+        May 11 2015     48658     125790        668k     68149         22 
+        May 12 2015     88920     203938       3024k    115446         26 
+        May 13 2015        73       5227       3056k     11819         13 
+        May 14 2015        76       3157       2885k      6634         13 
+        May 15 2015    102763     253975       2876k     33070         12 
+        May 16 2015        48         48          0          3         30 
+        May 17 2015        65         65          0          3         16 
+
+The top domains is pretty uninteresting, except that I can clearly see why
+GMail decided to start blocking emails from me.
+
+    Host/Domain Summary: Message Delivery 
+    --------------------------------------
+     sent cnt  bytes   defers   avg dly max dly host/domain
+     -------- -------  -------  ------- ------- -----------
+     281109     1116m    1540k    4.8 h   87.7 h  hotmail.com
+     247760      705m   15277k   13.1 h  121.2 h  yahoo.com
+     152088     1129m       0     1.2 m    4.9 h  tarnbarford.net
+     118590   371368k  132586     5.3 h  120.9 h  gmail.com
+      40608   130322k  359555     2.5 h   37.5 h  aol.com
+      35961   132388k       1     2.8 h   15.5 h  telenet.be
+      23607    73362k      12     7.3 h   17.3 h  163.com
+      21060    77012k  206635    11.9 h  120.8 h  skynet.be
+      18418    73872k  481938    25.0 h   76.2 h  hanmail.net
+      17039    61274k   88959     4.4 h   82.1 h  msn.com
+      15737    57300k   62322     5.4 h   15.5 h  live.nl
+      13636    42315k       9     6.2 h   17.3 h  126.com
+      13020    34618k   58867     6.9 h   21.1 h  ameritech.net
+      11876    36937k   95879    10.5 h   77.1 h  vip.sina.com
+      11828    30012k    1176k    8.0 h  121.1 h  adelphia.net
+      11168    40958k   38749     5.1 h   31.7 h  hotmail.fr
+      10203    33512k  267776    15.7 h  120.9 h  yahoo.fr
+       9005    29039k       0     6.8 h   17.3 h  sina.com
+
+These are the top two recipients, the next ten are genuine and then a huge list
+of addresses used three or less times. 
+
+    Recipients by message count
+    ---------------------------
+     150742   android@tarnbarford.net
+      34696   ppway2323@hotmail.com
+
+I have no idea why `ppway2323@hotmail.com` was sent so many emails and I also
+don't know where the 150742 emails to `android@tarnbarford.net` are. There are
+only 87 emails in the `Maildir` of the user, they are all delivery status
+notifications. Usually the delivery status emails contain the original email,
+so we get some information on what was sent. They are not all the same, but
+they are all spam, this one is quite common.
+
+    Subject: Re: Part time job opportunity
+    To: Recipients <android@tarnbarford.net>
+    From: android@tarnbarford.net
+    Date: Thu, 14 May 2015 15:49:24 -0700
+    Reply-To: tinagerardi9470@gmail.com
+
+    Our Ref: Bny/23/9swd/34
+    Your Ref: ABWN/NYT/87E3
+
+    Position: Retail Product Research Coordinator.
+
+    We are a reputable Survey Company handling products and services survey
+    evaluation for most Fortune 500 companies in the United States of America. We
+    are seeking Dedicated Part time staff for the position of Retail Product
+    Research Coordinator. You will work as a team to test products pricing and
+    product display in your Geographical Zone.It is probationary assignments that
+    will last 18 months.Your basic pay per assignment will be $900.00. You will be
+    entitled to a pay review after 90 days. You only need 1hr in a day to carry out
+    your assignment. If interested in this position please send your reply to
+    tinagerardi9470@gmail.com. Include your full name, Address and a Day time
+    Telephone number. We will send you a package with your first Assignment as soon
+    as we we hear from you.
+
+    Sincerely;  Tina Gerardi.
+    Survey  Coordinator.
+
+### Adding security and anti-spam measures
+
+My initial thoughts were to build a new mail server on its own machine, I had
+wanted to do this anyway as the mail server was was both relatively important
+to me and relatively difficult to set up. If not automate the set up, I wanted
+to at least document it. I decided against building it now as it appeared the
+server itself wasn't compromised, I didn't have the time and I would probably
+have to deal with my host name being on email blacklists even if I changed IP
+address. So I decided to see if I could harden this server and get myself off
+the blacklists. 
+
+I immediately added [`smtpd_sender_restrictions`][2] to only allow mail to be
+sent by specified users. Although I will probably create users with `
+--disabled-password` in the future, there are potentially other accounts on the
+system with weak passwords. It was quite easy to verify this was working, I
+just removed myself from the list, restarted postfix and tried to send a mail.
+
+    $ cat mail.eml | msmtp -a tarn tarn.barford@retresco.de
+    msmtp: recipient address tarn.barford@retresco.de not accepted by the server
+    msmtp: server message: 554 5.7.1 <tarn@tarnbarford.net>: Sender address rejected: Access denied
+    msmtp: could not send mail (account tarn from /Users/tarn/.msmtprc)
+
+I enabled [`fail2ban`][15] jails for `postfix` and `sasl` which means any IP
+address that fails to authenticate 3 times will be banned for an hour. This was
+just a matter of [enabling some sections][7] in the `fail2ban` configuration as
+I already had it running for `ssh` connections. I found out this works the hard
+way by accidentally banning myself while testing other SMTP logins failed.
+
+I used [`policyd`][17] to setup per-address rate limiting for sending and
+receiving mail.  This was a bit more tricky, but I found [a guide][12] that
+helped me get it set-up. I tested this works by setting the quota really low
+and sending a few messages.
+
+    $ cat mail.eml | msmtp -a tarn tarn.barford@retresco.de
+    $ cat mail.eml | msmtp -a tarn tarn.barford@retresco.de
+    $ cat mail.eml | msmtp -a tarn tarn.barford@retresco.de
+    $ cat mail.eml | msmtp -a tarn tarn.barford@retresco.de
+    msmtp: recipient address tarn.barford@retresco.de not accepted by the server
+    msmtp: server message: 554 5.7.1 <tarn@tarnbarford.net>: Sender address rejected: Sender quota exceed.
+    msmtp: could not send mail (account tarn from /Users/tarn/.msmtprc)
+
+Setting up a [Sender Policy Framework (SPF)][4] is just a matter setting a
+`TXT` record on the domain name.
+
+    $ dig +short -t txt tarnbarford.net
+    "v=spf1 mx a -all"
+
+In my case all mail from my domain should come from the IP that is in the
+[`MX`][18] record, and if not then it should be rejected.
+
+To send [DomainKeys Identified Mail (DKIM)][4] you need to create a key-pair,
+publish the public key as a domain record and add a header each email with a
+signature of the contents. There is a Debian package for [`OpenDKIM`][19] that
+includes a daemon that can sign mails and is [easy to integrate][6] with
+Postfix. Below is an example of a DKIM signed message I sent to myself.  
+    
+    DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=tarnbarford.net;
+        s=mail; t=1432809266;
+        bh=YocFhtTgjr2exNi9eb3SUWb8spcRxFH1Tqh/0OcRcfA=;
+        h=Date:From:To:Subject:From;
+        b=PAy0LzlmVsAQaQ9NzI4d+RSLMpz8Fg/eqNrVYU9rFlc7WHnIkBwBpFol2NQy8T+yg
+        Dxuw3OAjDh0kjV7W9LF0Y2rnjVfVJ5RLQRVe0HJiVOkLyS9cESoZZ63Ki4uUb/oB8N
+        hhvWPjrKw6hukPZYGSCOhGg8Zz8da1EviMHB6oP4=
+    Date: Thu, 28 May 2015 12:34:24 +0200
+    From: Tarn Barford <tarn@tarnbarford.net>
+    To: tarn@tarnbarford.net
+    Subject: DKIM
+    MIME-Version: 1.0
+    Content-Type: text/plain; charset=us-ascii
+    Content-Disposition: inline
+    User-Agent: Mutt/1.5.23 (2014-03-12)
+
+    hello, DKIM.
+
+My DKIM public key for this message can be found based on the from header and
+the `s` param in the DKIM signature.
+
+    $ dig +short -t txt mail._domainkey.tarnbarford.net
+    "v=DKIM1\; k=rsa\; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC0LNf8wdRCk2eXt1+EAIAdDSfq4aLMR/a6hCdPzJdAZ5OB1Z2LvOJlUGtx81MAttOG2lztjMmdrEq4mmGe0LUXOmOTqMcY8/woNspqvj9N4zPUEZXFP6yrYlgVGuVcLYWV6huCviwlt49KciaB9al+E2PogZJxDda5/cYffrI4PQIDAQAB"
+
+There are plenty of tools to create and validate DKIM mail signatures including
+[a Python library][21]. This validated that my DKIM signature was valid for the
+above mail.
+
+    $ virtualenv .
+    $ ./bin/pip install dkimpy
+    $ ./bin/pip install dnspython
+    $ ./bin/dkimverify.py < test.eml
+    signature ok
+
+While this verifies the signature is ok, I wasn't entirely satisfied and wanted
+to see what was going on. The `DKIM-Signature` header has a body hash field
+`bh` which is specified in the header as being an `rsa-sha256` hash. Once this
+is verified the signature itself can be verified on the headers alone as the
+headers contain a hash of the valid hash of the body contents.
+
+    $ printf "hello, DKIM.\r\n" | openssl dgst -binary -sha256 | openssl base64
+    YocFhtTgjr2exNi9eb3SUWb8spcRxFH1Tqh/0OcRcfA=
+
+This matches the body hash in the signature, so we can continue. To verify the
+authenticity of this mails headers a signature, a public key and the exact
+headers that were signed with the private key are required.
+
+The `b` field in the `DKIM-Signature` header is the signature. It is `base64`
+encoded and `openssl` requires the binary form, so it needs to be decoded and
+saved.
+
+    printf "PAy0LzlmVsAQaQ9NzI4d+RSLMpz8Fg/eqNrVYU9rFlc7WHnIkBwBpFol2NQy8T+ygDxuw3OAjDh0kjV7W9LF0Y2rnjVfVJ5RLQRVe0HJiVOkLyS9cESoZZ63Ki4uUb/oB8NhhvWPjrKw6hukPZYGSCOhGg8Zz8da1EviMHB6oP4=" | openssl enc -base64 -d -A > signature
+
+The `p` field in the `mail._domainkey` is a base64 encoded, [DER][23] encoded
+public key.
+
+    $ printf "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC0LNf8wdRCk2eXt1+EAIAdDSfq4aLMR/a6hCdPzJdAZ5OB1Z2LvOJlUGtx81MAttOG2lztjMmdrEq4mmGe0LUXOmOTqMcY8/woNspqvj9N4zPUEZXFP6yrYlgVGuVcLYWV6huCviwlt49KciaB9al+E2PogZJxDda5/cYffrI4PQIDAQAB" | openssl enc -base64 -d -A > key.der
+
+This can be verified this by converting it back into a familiar looking public
+key and saving it as `key.pub`.
+
+    $ openssl rsa  -pubin -inform DER < key.derwriting RSA key | tee key.pub
+    writing RSA key 
+    -----BEGIN PUBLIC KEY-----
+    MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC0LNf8wdRCk2eXt1+EAIAdDSfq
+    4aLMR/a6hCdPzJdAZ5OB1Z2LvOJlUGtx81MAttOG2lztjMmdrEq4mmGe0LUXOmOT
+    qMcY8/woNspqvj9N4zPUEZXFP6yrYlgVGuVcLYWV6huCviwlt49KciaB9al+E2Po
+    gZJxDda5/cYffrI4PQIDAQAB
+    -----END PUBLIC KEY-----
+
+The modulus and exponent of this public key can also be checked and should be
+rejected if it isn't long enough. 
+
+    $ openssl rsa -noout -text -pubin < key.pub
+    Modulus (1024 bit):
+        00:b4:2c:d7:fc:c1:d4:42:93:67:97:b7:5f:84:00:
+        80:1d:0d:27:ea:e1:a2:cc:47:f6:ba:84:27:4f:cc:
+        97:40:67:93:81:d5:9d:8b:bc:e2:65:50:6b:71:f3:
+        53:00:b6:d3:86:da:5c:ed:8c:c9:9d:ac:4a:b8:9a:
+        61:9e:d0:b5:17:3a:63:93:a8:c7:18:f3:fc:28:36:
+        ca:6a:be:3f:4d:e3:33:d4:11:95:c5:3f:ac:ab:62:
+        58:15:1a:e5:5c:2d:85:95:ea:1b:82:be:2c:25:b7:
+        8f:4a:72:26:81:f5:a9:7e:13:63:e8:81:92:71:0d:
+        d6:b9:fd:c6:1f:7e:b2:38:3d
+    Exponent: 65537 (0x10001)
+
+The `DKIM-Signature` also specifies a list of headers in the `h` field. These
+are the headers, followed by the `DKIM-Signature` header itself minus the
+signature field `b` that are hashed and then signed. There are some rules about
+formatting these headers before they are signed; line wrapping must be removed,
+the header key and value are separated by a single colon without spaces and
+headers are separated with a `Carriage Return` and `Line Feed`.
+
+    $ printf "date:Thu, 28 May 2015 12:34:24 +0200\r\n" > headers
+    $ printf "from:Tarn Barford <tarn@tarnbarford.net>\r\n" >> headers
+    $ printf "to:tarn@tarnbarford.net\r\n" >> headers
+    $ printf "subject:DKIM\r\ndkim-signature:v=1; a=rsa-sha256; c=relaxed/simple; d=tarnbarford.net; s=mail; t=1432809266; bh=YocFhtTgjr2exNi9eb3SUWb8spcRxFH1Tqh/0OcRcfA=; h=Date:From:To:Subject:From; b=" >> headers
+
+Now `openssl` can again be used, this time to verify the key, the signature and
+the headers.
+
+    $ openssl dgst -sha256 -verify key.der -keyform DER -signature signature headers 
+    Verified OK
+
+Great, it verifies as expected. There is obviously more detail in the
+[RFCs][24] or by looking at an open source implementation, but I found it
+interesting to see how it worked for one email.
+
+A [Domain-based Message Authentication, Reporting and Conformance (DMARC)][5]
+policy is simply another DNS record that allows a domain to specify what action
+other mail servers should take with mail purportedly from this domain based on
+the combined results of SPF and DKIM checks (allow, reject, hold, etc). It also
+provides an email address for participating mail servers to send reports. 
+
+    $ dig +short -t txt _dmarc.tarnbarford.net                                                         
+    "v=DMARC1\;p=reject\;pct=100\;rua=mailto:postmaster@tarnbarford.net"
+
+My DMARC policy says to reject 100% of mails that fail either SPF or DKIM
+checks and mail conformance information to `postmaster@tarnbarford.net`. I now
+get digest DMARC reports from participating mail servers, here is what Google
+sent me. 
+    
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <feedback>
+      <report_metadata>
+        <org_name>google.com</org_name>
+        <email>noreply-dmarc-support@google.com</email>
+        <extra_contact_info>https://support.google.com/a/answer/2466580</extra_contact_info>
+        <report_id>12005498305772839030</report_id>
+        <date_range>
+          <begin>1432684800</begin>
+          <end>1432771199</end>
+        </date_range>
+      </report_metadata>
+      <policy_published>
+        <domain>tarnbarford.net</domain>
+        <adkim>r</adkim>
+        <aspf>r</aspf>
+        <p>reject</p>
+        <sp>reject</sp>
+        <pct>100</pct>
+      </policy_published>
+      <record>
+        <row>
+          <source_ip>144.76.187.44</source_ip>
+          <count>1</count>
+          <policy_evaluated>
+            <disposition>none</disposition>
+            <dkim>pass</dkim>
+            <spf>pass</spf>
+          </policy_evaluated>
+        </row>
+        <identifiers>
+          <header_from>tarnbarford.net</header_from>
+        </identifiers>
+        <auth_results>
+          <spf>
+            <domain>tarnbarford.net</domain>
+            <result>pass</result>
+          </spf>
+        </auth_results>
+      </record>
+    </feedback>
+
+### Blacklists
+
+I found [MXToolbox][14] which checks a domain or IP address against quite a few
+email blacklists. It is quite useful as it also provides some information and
+links to get your IP off each list. My IP was listed in eight blacklists, I was
+able to get it off six almost immediately by following the delisting
+procedures. I believe I was on the other two remaining lists already as our
+other IP addresses in the network are also on the list, and are not even mail
+servers.
+
+Google has been more difficult, ["How to Remove Your IP from the Gmail
+Blacklist"][20] goes into some detail and links to a [Google Support page][21]
+where you can submit delivery issues. The post says it will take 3-7 days to
+process provided you fixed the reason it was blocked in the first place. I
+filled the form out a few weeks ago after stopping the spamming and adding the
+sending restrictions. I thought I had done enough at that stage to be
+unblocked, but apparently Google didn't think so as I am still blocked. I have
+since added SPF, DKIM, DMARC and rate limiting and I will fill the form out
+again after I post this story.
+
+### Conclusion
+
+This story shouldn't be seen as a reason not to run your own mail server, if
+you want to you should, it's fun! This was a pretty embarrassing security
+failure, but the exploit was crude and relatively harmless. In working out what
+happened and putting systems in place to prevent it occurring again I have
+learned a lot and added a range of anti-spam and security features to my little
+mail server.
+
+Hopefully soon I will again be able to mail Google addresses, I will update
+this post when this happens (or doesn't).
+
+[0]: https://tarnbarford.net/journal/pair-programming
+[1]: https://support.google.com/mail/answer/81126?hl=en
+[2]: http://www.postfix.org/postconf.5.html#smtpd_sender_restrictions
+[3]: http://en.wikipedia.org/wiki/Sender_Policy_Framework
+[4]: http://en.wikipedia.org/wiki/DomainKeys_Identified_Mail
+[5]: http://en.wikipedia.org/wiki/DMARC
+[6]: https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-dkim-with-postfix-on-debian-wheezy
+[7]: https://scottlinux.com/2011/05/26/prevent-postfix-brute-force/
+[8]: http://www.linuxmail.info/postfix-restrict-sender-recipient/
+[9]: http://en.wikipedia.org/wiki/Reverse_DNS_lookup
+[10]: https://www.captainark.net/2015/tutorial/mailserver/
+[15]: http://www.cyanogenmod.org/
+[11]: http://wiki.policyd.org/
+[12]: http://uname.pingveno.net/blog/index.php/post/2015/03/11/Configure-sender-rate-limits-to-prevent-spam,-using-cluebringer-%28policyd%29-with-Postfix
+[13]: http://jimsun.linxnet.com/postfix_contrib.html
+[14]: http://mxtoolbox.com/SuperTool.aspx?action=blacklist%3atarnbarford.net&run=toolpage
+[15]: http://www.fail2ban.org/wiki/index.php/Main_Page
+[17]: http://wiki.policyd.org/
+[18]: http://en.wikipedia.org/wiki/MX_record
+[19]: http://www.opendkim.org/
+[20]: http://www.rackaid.com/blog/gmail-blacklist-removal/
+[21]: https://support.google.com/mail/contact/msgdelivery
+[22]: https://launchpad.net/dkimpy 
+[23]: http://en.wikipedia.org/wiki/X.690#DER_encoding
+[24]: http://dkim.org/#sign
