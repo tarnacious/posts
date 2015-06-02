@@ -26,7 +26,7 @@ A week earlier a friend told me that one of my mails had been marked as spam by
 GMail, which was concerning, but I figured maybe I could take some steps to
 ensure my mail server looked more legitimate, like setting up [reverse DNS
 lookup][9], [SPF][3] and [DKIM][4] correctly. This seemed much more concerning.
-I took a break outside think about and what I should do next and why Google was
+I took a break outside to think about and what I should do next and why Google was
 picking on me all of a sudden? Slowly it dawned on me that maybe my server had
 been compromised.
 
