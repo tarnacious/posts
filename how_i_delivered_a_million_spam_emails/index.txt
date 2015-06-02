@@ -386,7 +386,7 @@ The `b` field in the `DKIM-Signature` header is the signature. It is `base64`
 encoded and `openssl` requires the binary form, so it needs to be decoded and
 saved.
 
-    printf "PAy0LzlmVsAQaQ9NzI4d+RSLMpz8Fg/eqNrVYU9rFlc7WHnIkBwBpFol2NQy8T+ygDxuw3OAjDh0kjV7W9LF0Y2rnjVfVJ5RLQRVe0HJiVOkLyS9cESoZZ63Ki4uUb/oB8NhhvWPjrKw6hukPZYGSCOhGg8Zz8da1EviMHB6oP4=" | openssl enc -base64 -d -A > signature
+    $ printf "PAy0LzlmVsAQaQ9NzI4d+RSLMpz8Fg/eqNrVYU9rFlc7WHnIkBwBpFol2NQy8T+ygDxuw3OAjDh0kjV7W9LF0Y2rnjVfVJ5RLQRVe0HJiVOkLyS9cESoZZ63Ki4uUb/oB8NhhvWPjrKw6hukPZYGSCOhGg8Zz8da1EviMHB6oP4=" | openssl enc -base64 -d -A > signature
 
 The `p` field in the `mail._domainkey` is a base64 encoded, [DER][23] encoded
 public key.
