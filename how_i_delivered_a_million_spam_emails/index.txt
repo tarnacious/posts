@@ -360,7 +360,7 @@ the `s` field in the DKIM signature.
     "v=DKIM1\; k=rsa\; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC0LNf8wdRCk2eXt1+EAIAdDSfq4aLMR/a6hCdPzJdAZ5OB1Z2LvOJlUGtx81MAttOG2lztjMmdrEq4mmGe0LUXOmOTqMcY8/woNspqvj9N4zPUEZXFP6yrYlgVGuVcLYWV6huCviwlt49KciaB9al+E2PogZJxDda5/cYffrI4PQIDAQAB"
 
 There are plenty of tools to create and validate DKIM mail signatures including
-[a Python library][21]. This validated that my DKIM signature was valid for the
+[a Python library][22]. This validated that my DKIM signature was valid for the
 above mail.
 
     $ virtualenv .
