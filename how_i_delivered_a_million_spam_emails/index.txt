@@ -531,6 +531,8 @@ mail server.
 Hopefully soon I will again be able to mail Google addresses, I will update
 this post when this happens (or doesn't).
 
+*Update June 19, 2014: I never actually re-sent that request to Google to unblock me, but today it seems I am able to send mail to GMail accounts again. Thanks GMail!*
+
 [0]: https://tarnbarford.net/journal/pair-programming
 [1]: https://support.google.com/mail/answer/81126?hl=en
 [2]: http://www.postfix.org/postconf.5.html#smtpd_sender_restrictions
