@@ -1,0 +1,66 @@
+*I originally set out documenting all the steps I used to setup a Raspberry Pi
+as a backup server, but decided against posting all the details as there are
+already a heap blogs and tutorials on the subject. I would like to share some
+of thoughts on how and why I setup mine as I did though, perhaps it is
+interesting and I [appreciate][0] [feedback][1].*
+
+I currently run my own email server, ownCloud and git server amongst other
+things on a VM running on a physical machine we rent from Hetzner. I now depend
+on not losing data from these servers. 
+
+I could have created a cron job on the machine itself that sends backups to an
+FTP Server or to something like Amazon S3. The main problem with this is the
+server needs to keep the credentials to whatever backup system is used, which
+would not be good if the server was ever compromised as the attacker would also
+gain credentials to the backup system. If the attacker was malicious, this
+could be a disaster.
+
+Instead I connect over SSH using a key-pair and pull the backups from the
+system. Ideally the backup server shouldn't accept connections from the
+Internet at all, thereby reducing its surface area for attack. For this I am
+using a Raspberry Pi securely protected from in-bound connections by my home
+router (actually this isn't very secure at all as I don't trust the router or
+the other devices connected to it, but it is vaguely more secure than the open
+Internet).
+
+The SSH keys that can be used to access the server need to be stored on the
+Raspberry PI, this means someone could just take the SD card and copy the keys
+off it. To prevent this I [encrypted the root partition and set it up so it
+will try and read the secret key from a USB stick during the boot][2]. This way
+if I remove the USB stick after it has booted and the Raspberry Pi and SD card
+were stolen, the thief would still need to break the disk encryption to get the
+SSH keys. Of course this also means it won't restart after a power outage
+unless the USB stick is inserted.
+
+It was tempting to allow the backup server root access on the target machine as
+it makes it easier to backup everything, but this is not ideal. If the backup
+server is somehow compromised then root access to the target machine is also
+given. To limit this risk I created an unprivileged user the backup server
+could connect to the target machine as. I granted this user permissions to dump
+databases I wanted to backup and added secondary groups to the user for
+`www-data` and the private groups of the users I wanted it to backup. This way
+the backup server has read access to all the data it needs much not much more. 
+
+I sync everything I want to backup from the server on a local encrypted disk
+connected to the Raspberry Pi. As the root partition of the Raspberry PI is
+itself encrypted it is reasonably safe to keep the key for the local disk on
+the root partition. 
+
+I don't really trust my local disk (disk failure, apartment disaster!), so I
+also transfer my backups to Amazon S3 who I trust not to lose data but not
+really for privacy. To protect my data privacy on Amazon I encrypt it with my
+GPG key. This is secure enough that it would cost more than I would bet anyone
+would pay to crack my backups.
+
+The backup process is just a `cron` job running a bash script that uses `rsync`
+and `ssh` to get the latest backup. It periodically takes a snapshot, encrypts
+it with `gpg` and pushes the snapshot to Amazon. I don't bother with any clean
+up yet, but might consider it when I get an Amazon storage bill of more than
+$2.
+
+Now I think my backup system is relatively secure from attackers and unlikely
+to lose data, my main risk of data loss is probably me losing a key.
+
+[0]: https://twitter.com/ExchServPro/status/605914061960642560
+[1]: http://www.reddit.com/r/sysadmin/comments/387rck/how_i_sent_a_million_spam_emails_and_what_to_do/crt1okj
+[2]: http://deadunicornz.org/blog/2013/12/20/raspberrypi-root-partition-encryption/
