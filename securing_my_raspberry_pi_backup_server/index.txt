@@ -42,19 +42,14 @@ really for privacy. To protect my data privacy on Amazon I encrypt it with [my
 GPG key][3]. This is secure enough that it would cost more than I would bet anyone
 would pay to crack my backups.
 
-The backup process is just a `cron` job running a bash script that uses `rsync`
-and `ssh` to get the latest backup. It periodically takes a snapshot, encrypts
-it with `gpg` and use `s3cmd` to push the snapshots to Amazon. I don't bother
-with any clean up yet, but might consider it when I get an Amazon storage bill
-of more than $2.
 
 Below is the script I run as a daily cron job. It backs up several databases
 and directories. It snapshots the backup directory every day to the local disk
 and every Sunday it pushes a PGP encrypted snapshot to Amazon S3. When it
 finishes, successfully or not, it emails me with the result and the logs. It
 also prevents multiple backups running simultaneously and cleans up old
-snapshots on the local disk. I expect I'll find a bug or two over the next few
-weeks, but it seems to work well.
+snapshots on the local disk. I don't bother removing old snapshot from S3 yet,
+but might consider it when I get an Amazon storage bill of more than $2.
 
     #!/bin/bash
     #!/bin/bash
