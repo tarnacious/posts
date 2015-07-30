@@ -55,10 +55,10 @@ but might consider it when I get an Amazon storage bill of more than $2.
     #!/bin/bash
     set -e 
 
-    ssh_host=raspberry@tarnbarford.net
-    ssh_port=17971
-    email=tarn@tarnbarford.net
-    s3_bucket=snapshots.tarnbarford
+    ssh_host=someone@somehost.com
+    ssh_port=22
+    email=someone@somehost
+    s3_bucket=some.bucket
     log_path=/mnt/backup/logs
     backup_path=/mnt/backup/current
     snapshot_path=/mnt/backup/snapshots
