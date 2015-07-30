@@ -1,29 +1,19 @@
-*I originally set out documenting all the steps I used to setup a Raspberry Pi
-as a backup server, but decided against posting all the details as there are
-already a heap blogs and tutorials on the subject. I would like to share some
-of thoughts on how and why I setup mine as I did though, perhaps it is
-interesting and I [appreciate][0] [feedback][1].*
+*I run my own email server, ownCloud server, this blog and git server on a VM
+running on a physical machine we rent from Hetzner. I depend on not losing data
+from these servers so I setup my Raspberry Pi as a backup server. Here are some
+thoughts on how I have tried to secure everything, perhaps it is interesting
+and I [appreciate][0] [feedback][1].*
 
-I currently run my own email server, ownCloud and git server amongst other
-things on a VM running on a physical machine we rent from Hetzner. I now depend
-on not losing data from these servers. 
+Ideally the backup server shouldn't accept connections from the Internet at
+all, thereby reducing its surface area for attack. For this my Raspberry Pi
+securely protected from in-bound connections by my home router! Actually this
+isn't very secure at all as I don't trust the router or the other devices
+connected to it, although it is likely to see less random attacks then on the
+open Internet. As I run the server headless I need `sshd` running so I added
+some basic security; disallowed password and root SSH login and installed
+`fail2ban`.
 
-I could have created a cron job on the machine itself that sends backups to an
-FTP Server or to something like Amazon S3. The main problem with this is the
-server needs to keep the credentials to whatever backup system is used, which
-would not be good if the server was ever compromised as the attacker would also
-gain credentials to the backup system. If the attacker was malicious, this
-could be a disaster.
-
-Instead I connect over SSH using a key-pair and pull the backups from the
-system. Ideally the backup server shouldn't accept connections from the
-Internet at all, thereby reducing its surface area for attack. For this I am
-using a Raspberry Pi securely protected from in-bound connections by my home
-router (actually this isn't very secure at all as I don't trust the router or
-the other devices connected to it, but it is vaguely more secure than the open
-Internet).
-
-The SSH keys that can be used to access the server need to be stored on the
+The SSH keys that are used to access the server need to be stored on the
 Raspberry PI, this means someone could just take the SD card and copy the keys
 off it. To prevent this I [encrypted the root partition and set it up so it
 will try and read the secret key from a USB stick during the boot][2]. This way
@@ -32,35 +22,169 @@ were stolen, the thief would still need to break the disk encryption to get the
 SSH keys. Of course this also means it won't restart after a power outage
 unless the USB stick is inserted.
 
-It was tempting to allow the backup server root access on the target machine as
+It is tempting to allow the backup server root access on the target machine as
 it makes it easier to backup everything, but this is not ideal. If the backup
 server is somehow compromised then root access to the target machine is also
 given. To limit this risk I created an unprivileged user the backup server
-could connect to the target machine as. I granted this user permissions to dump
-databases I wanted to backup and added secondary groups to the user for
-`www-data` and the private groups of the users I wanted it to backup. This way
+could connect to the as. I granted this user permissions to dump databases I
+wanted to backup and added secondary groups to the user for `www-data` and the
+private groups of the users home directories I wanted it to backup. This way
 the backup server has read access to all the data it needs much not much more. 
 
-I sync everything I want to backup from the server on a local encrypted disk
+I sync everything I want to backup from the server to a local encrypted disk
 connected to the Raspberry Pi. As the root partition of the Raspberry PI is
 itself encrypted it is reasonably safe to keep the key for the local disk on
 the root partition. 
 
 I don't really trust my local disk (disk failure, apartment disaster!), so I
 also transfer my backups to Amazon S3 who I trust not to lose data but not
-really for privacy. To protect my data privacy on Amazon I encrypt it with my
-GPG key. This is secure enough that it would cost more than I would bet anyone
+really for privacy. To protect my data privacy on Amazon I encrypt it with [my
+GPG key][3]. This is secure enough that it would cost more than I would bet anyone
 would pay to crack my backups.
 
 The backup process is just a `cron` job running a bash script that uses `rsync`
 and `ssh` to get the latest backup. It periodically takes a snapshot, encrypts
-it with `gpg` and pushes the snapshot to Amazon. I don't bother with any clean
-up yet, but might consider it when I get an Amazon storage bill of more than
-$2.
+it with `gpg` and use `s3cmd` to push the snapshots to Amazon. I don't bother
+with any clean up yet, but might consider it when I get an Amazon storage bill
+of more than $2.
+
+Below is the script I run as a daily cron job. It backs up several databases
+and directories. It snapshots the backup directory every day to the local disk
+and every Sunday it pushes a PGP encrypted snapshot to Amazon S3. When it
+finishes, successfully or not, it emails me with the result and the logs. It
+also prevents multiple backups running simultaneously and cleans up old
+snapshots on the local disk. I expect I'll find a bug or two over the next few
+weeks, but it seems to work well.
+
+    #!/bin/bash
+    #!/bin/bash
+    set -e 
+
+    ssh_host=raspberry@tarnbarford.net
+    ssh_port=17971
+    email=tarn@tarnbarford.net
+    s3_bucket=snapshots.tarnbarford
+    log_path=/mnt/backup/logs
+    backup_path=/mnt/backup/current
+    snapshot_path=/mnt/backup/snapshots
+    snapshot_name=`date +"%Y%m%d_%H%M%S"`.tar.gz
+    snapshot_file=$snapshot_path/$snapshot_name
+    scriptname=$(basename $0)
+    pidfile="/tmp/${scriptname}"
+
+    function log {
+        echo "[$(date)]: $*"
+    }
+
+    initialize_directories() {
+        log "Initializing directories"
+        mkdir -p $backup_path
+        mkdir -p $snapshot_path
+        mkdir -p $log_path
+    }
+
+    backup_databases() {
+        cat databases | while read database; do
+            log "Backing up database: $database"
+            ssh -p $ssh_port $ssh_host "pg_dump --data-only $database" > $backup_path/$database.sql
+        done
+    }
+
+    backup_files() {
+        cat locations | while read remote_path local_path; do 
+            log "Backing up $remote_path to $local_path"
+
+            log "Ignoring files:"
+            ssh -n -p $ssh_port $ssh_host "find $remote_path -type d -a ! -executable -prune -o ! -readable -a ! -type l" | 
+                cut -c ${#remote_path}- > /tmp/unreadable
+            cat /tmp/unreadable 
+
+            log "Start rsync"
+            rsync --delete -rltzuv --exclude-from="/tmp/unreadable" -e "ssh -p $ssh_port" $ssh_host:$remote_path $backup_path/$local_path
+        done
+    }
+
+    snapshot() {
+        log "Taking snapshot $snapshot_name"
+        tar -czf $snapshot_file $backup_path
+    }
+
+    remove_old_snapshots() {
+            $snapshot_path -name "*.tar.gz" | sort -r | tail -n +10 | xargs rm
+    }
+
+    should_push_offsite() {
+        # Returns successfully if the backups should be pushed offsite.
+        # Currently it returns successfully on Sundays, but it would be better
+        # if it checked how long since the last successful offsite push.
+        day_of_week=$(date +%u)
+        sunday=7
+        if [ $day_of_week = $sunday ]; then
+            return 0;
+        else
+            return 1;
+        fi
+    }
+
+
+    push_offsite() {
+        log "Encrypting snapshot"
+        gpg --encrypt -o $snapshot_file.gpg --recipient $email $snapshot_file 
+        log "Send encrypting snapshot"
+        s3cmd put $snapshot_file.gpg s3://$s3_bucket/$snapshot_name.gpg
+    }
+
+    get_lock() {
+        log "Attempting to aquire lock"
+        exec 200>$pidfile
+        if flock -n 200; then 
+            pid=$$
+            log "Lock aquired for process $pid"
+            echo $pid 1>&200
+            return 0;
+        else 
+            log "Failed to aquire lock"
+            return 1;
+        fi
+    }
+
+    do_backup() {
+        get_lock
+        initialize_directories
+        backup_databases
+        backup_files
+        snapshot
+        if should_push_offsite; then
+            push_offsite
+            remove_old_snapshots
+        else
+            log "Skipping offsite storage"
+        fi
+        log "Completed backup."
+    }
+
+    main() {
+        do_backup | tee $log_path/$snapshot_name.log
+
+        if [ ${PIPESTATUS[0]} -eq 0 ]; then
+            log "Sending report to $email."
+            gpg -ea -r $email -o $log_path/$snapshot_name.log.asc $log_path/$snapshot_name.log
+            echo "Results attached" | mail -s "Buckup Succeeded" -a $snapshot_file.log.asc $email
+        else
+            log "Backup failed, sending report to $email."
+            gpg -ea -r $email -o $log_path/$snapshot_name.log.asc $log_path/$snapshot_name.log
+            echo "Results attached" | mail -s "Buckup Failed" -a $snapshot_file.log.asc $email
+        fi
+        log "Completed."
+    }
+
+    main
 
 Now I think my backup system is relatively secure from attackers and unlikely
-to lose data, my main risk of data loss is probably me losing a key.
+to lose data, my main risk of data loss is probably me losing a key or
+un-plugging the Raspberry Pi.
 
 [0]: https://twitter.com/ExchServPro/status/605914061960642560
 [1]: http://www.reddit.com/r/sysadmin/comments/387rck/how_i_sent_a_million_spam_emails_and_what_to_do/crt1okj
 [2]: http://deadunicornz.org/blog/2013/12/20/raspberrypi-root-partition-encryption/
+[3]: https://tarnbarford.net/static/pgp.txt
