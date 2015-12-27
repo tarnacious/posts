@@ -2,11 +2,11 @@
 order to compile code from an x86_64 GNU/Linux system to an ARM GNU/Linux
 system.*
 
-Building cross-compiler tools chains [is][1] [complicated][2] and in some cases
+Building cross-compiler toolchains [is][1] [complicated][2] and in some cases
 using a prebuilt one might be preferable, for example Ubuntu has a [package][3]
 for an `arm-unkown-linux-gnueabi` toolchain. However the crosstool-ng makes
 compiling toolchains quite straight forward and makes customization possible if
-we require it.
+required.
 
 First specify the crosstools-ng version and some build directories. The final
 toolchain is built to `~/x-tools` by default.
@@ -25,10 +25,10 @@ Make the directories used to build the cross-compiler.
     mkdir -p $CROSS_TOOL_PREFIX
     mkdir -p $TOOLCHAIN_HOME
 
-Downloading, verifing and building `crosstools-ng` is pretty straight forward
-in a sane build environment. I have found that I sometimes need apply a minor
-patch to get the entire toolchain to build, so far these have not been too
-difficult to work out or find a patch for.
+Downloading, verifing and building `crosstools-ng` should be no problems in
+sane build environment. I have found that I sometimes need apply a minor patch
+to get the entire toolchain to build, so far these have not been too difficult
+to work out or find a patch for.
 
     #!/bin/bash
     cd $CROSS_TOOL_HOME
