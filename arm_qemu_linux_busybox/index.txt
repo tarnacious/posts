@@ -100,5 +100,5 @@ I use my system qemu package, but it is not hard to build.
 [busybox]: https://busybox.net/
 [qemu]: http://wiki.qemu.org
 [arm-unknown-linux-gnueabi]: https://tarnbarford.net/journal/arm-unknown-linux-gnueabi
-[screenshot]: /static/journal/arm-qemu-linux-busy-box/static/arm-qemu-busybox.png
+[screenshot]: /static/journal/arm-qemu-linux-busybox/static/arm-qemu-busybox.png
 [briolidz]: https://briolidz.wordpress.com/2012/02/07/building-embedded-arm-systems-with-crosstool-ng/
