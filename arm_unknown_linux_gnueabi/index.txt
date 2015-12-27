@@ -9,7 +9,7 @@ compiling toolchains quite straight forward and makes customization possible if
 we require it.
 
 First specify the crosstools-ng version and some build directories. The final
-toolchain is build to `~/x-tools` by default.
+toolchain is built to `~/x-tools` by default.
 
     #!/bin/bash
     CROSSTOOL_VERSION=1.22.0
