@@ -7,9 +7,10 @@ by Kamel Messaoudi, which also includes debugging user programs. I'm posting my
 notes as I go through them again and which hope to use as reference points for
 future posts.
 
-A Linux kernel the can be emulated by [qemu][qemu] can built using the
-`versatile_defconfig` and [a working cross-compiler][arm-unknown-linux-gnueabi].
+A Linux kernel that can be emulated by [QEMU][qemu] can built using the
+`versatile_defconfig` and a [working cross-compiler][arm-unknown-linux-gnueabi].
 
+    #!/bin/bash
     wget https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.3.3.tar.xz
     wget https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.3.3.tar.sign
 
@@ -32,6 +33,7 @@ A Linux kernel the can be emulated by [qemu][qemu] can built using the
 shell.
 
 
+    #!/bin/bash
     wget https://busybox.net/downloads/busybox-1.24.1.tar.bz2
     wget https://busybox.net/downloads/busybox-1.24.1.tar.bz2.sign
 
@@ -46,6 +48,7 @@ shell.
 This builds a miniumal filesystem in `./_install`. Some additional directories
 are required. 
 
+    #!/bin/bash
     cd _install
     mkdir -p lib proc sys dev etc etc/init.d
 
@@ -54,11 +57,13 @@ can be found using the `arm-unknown-linux-gnueabi-readelf` program. I'm just
 going to copy all the libaries from [my toolchain][arm-unknown-linux-gnueabi]
 to the target.
 
+    #!/bin/bash
     cp ~/x-tools/arm-unknown-linux-gnueabi/arm-unknown-linux-gnueabi/sysroot/lib/* lib
 
 Next we add an init script at `/etc/init.d/rcS` which will be executed by the
 busybox init script.
 
+    #!/bin/bash
     cat > ./etc/init.d/rcS << EOF
     #!/bin/sh
 
@@ -75,22 +80,25 @@ busybox init script.
 
 It needs to be executable.
 
+    #!/bin/bash
     chmod +x etc/init.d/rcS
 
 A compressed disk image of this filesystem which can be read by `qemu` can be
 made using the `cpio` program.
 
+    #!/bin/bash
     find . | cpio -o --format=newc | gzip > ../../rootfs.img.gz
 
 I use my system qemu package, but it is not hard to build.
 
+    #!/bin/bash
     qemu-system-arm -M versatilepb -m 128M -kernel ./linux-3.2/arch/arm/boot/zImage -initrd ./rootfs.img.gz -append "root=/dev/ram rdinit=/sbin/init"
 
 
-
-
+![qemu screenshot][screenshot]
 
 [busybox]: https://busybox.net/
 [qemu]: http://wiki.qemu.org
 [arm-unknown-linux-gnueabi]: https://tarnbarford.net/journal/arm-unknown-linux-gnueabi
+[screenshot]: /static/journal/arm-qemu-linux-busy-box/static/arm-qemu-busybox.png
 [briolidz]: https://briolidz.wordpress.com/2012/02/07/building-embedded-arm-systems-with-crosstool-ng/
