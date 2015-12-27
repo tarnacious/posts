@@ -4,9 +4,9 @@ system.*
 
 Building cross-compiler tools chains [is][1] [complicated][2] and in some cases
 using a prebuilt one might be preferable, for example Ubuntu has a [package][3]
-for an `arm-unkown-linux-gnueabi` toolchain. For many toolchains however,
-crosstool-ng make compilation quite straight forward and make customization
-possible if we require it.
+for an `arm-unkown-linux-gnueabi` toolchain. However the crosstool-ng makes
+compiling toolchains quite straight forward and makes customization possible if
+we require it.
 
 First specify the crosstools-ng version and some build directories. The final
 toolchain is build to `~/x-tools` by default.
