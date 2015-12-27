@@ -1,0 +1,286 @@
+In this post I build a GNU cross-compiler toolchain using
+[crosstool-ng][crosstool-ng] in order to compile code from my x86_64 GNU/Linux
+system to an ARM GNU/Linux system.
+
+Building cross-compiler tools chains [is][1] [complicated][2] and in some cases
+using a prebuilt one might be preferable, for example Ubuntu has a [package][3]
+for the cross-compiler I am building. For many toolchains however, crosstool-ng
+make compilation quite straight forward and make customization possible if we
+require it.
+
+First specify the crosstools-ng version and some build directories. The final
+toolchain is build to `~/x-tools` by default. 
+
+    CROSSTOOL_VERSION=1.22.0
+    BASEDIR=~/arm-tool-chain
+    CROSS_TOOL_HOME=$BASDIR/crosstool/source/
+    CROSS_TOOL_PREFIX=$BASDIR/crosstool/bin/
+    TOOLCHAIN_HOME=$BASDIR/toolchain/
+
+Make the directories used to build the cross-compiler.
+
+    mkdir -p $CROSS_TOOL_HOME
+    mkdir -p $CROSS_TOOL_PREFIX
+    mkdir -p $TOOLCHAIN_HOME
+
+Downloading, verifing and building `crosstools-ng` is pretty straight forward
+in a sane build environment. I have found that I sometimes need apply a minor
+patch to get the entire toolchain to build, so far these have not been too
+difficult to work out or find a patch for.
+
+    cd $CROSS_TOOL_HOME
+    wget http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-$CROSSTOOL_VERSION.tar.bz2
+    tar xjf crosstool-ng-$CROSSTOOL_VERSION.tar.bz2
+
+
+    # The package signed with Bryan Hundven's gpg key, this can be verified by
+    # downloading the key are verifying the signature.
+    wget http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-$CROSSTOOL_VERSION.tar.bz2.sig
+    gpg --recv-keys 35B871D1
+    gpg --verify crosstool-ng-$CROSSTOOL_VERSION.tar.bz3.sig
+
+
+    cd crosstool-ng
+
+    # I had to apply this patch to get the native gdb to compile,
+    # https://github.com/crosstool-ng/crosstool-ng/pull/273/files
+
+    ./configure --prefix=$CROSS_TOOL_PREFIX
+    make
+    make install
+    PATH="${PATH}:$CROSS_TOOL_PREFIX/bin"
+
+In this case configuring the toolchain is a simple as selecting a predefined
+sample. In other cases `crosstool-ng` has a Linux kernel like `menuconfig`
+command to browse and update settings.
+
+
+    cd $TOOLCHAIN_HOME
+    ct-ng arm-unknown-linux-gnueabi
+
+    # If you want to furthur configure the build, I didn't make any changes here,
+    # but if your target has hardware floating point support for example you might
+    # want to enable it here.
+    #   ct-ng menuconfig
+
+    ct-ng build
+
+If all works out well the tools and libraries should have been build to
+`~/x-tools/arm-unknown-linux-gnueabi/`.
+
+    $ ls -1a ~/x-tools/arm-unknown-linux-gnueabi/bin/
+    .
+    ..
+    arm-unknown-linux-gnueabi-addr2line
+    arm-unknown-linux-gnueabi-ar
+    arm-unknown-linux-gnueabi-as
+    arm-unknown-linux-gnueabi-c++
+    arm-unknown-linux-gnueabi-cc
+    arm-unknown-linux-gnueabi-c++filt
+    arm-unknown-linux-gnueabi-cpp
+    arm-unknown-linux-gnueabi-ct-ng.config
+    arm-unknown-linux-gnueabi-dwp
+    arm-unknown-linux-gnueabi-elfedit
+    arm-unknown-linux-gnueabi-g++
+    arm-unknown-linux-gnueabi-gcc
+    arm-unknown-linux-gnueabi-gcc-5.2.0
+    arm-unknown-linux-gnueabi-gcc-ar
+    arm-unknown-linux-gnueabi-gcc-nm
+    arm-unknown-linux-gnueabi-gcc-ranlib
+    arm-unknown-linux-gnueabi-gcov
+    arm-unknown-linux-gnueabi-gcov-tool
+    arm-unknown-linux-gnueabi-gdb
+    arm-unknown-linux-gnueabi-gprof
+    arm-unknown-linux-gnueabi-ld
+    arm-unknown-linux-gnueabi-ld.bfd
+    arm-unknown-linux-gnueabi-ldd
+    arm-unknown-linux-gnueabi-ld.gold
+    arm-unknown-linux-gnueabi-nm
+    arm-unknown-linux-gnueabi-objcopy
+    arm-unknown-linux-gnueabi-objdump
+    arm-unknown-linux-gnueabi-populate
+    arm-unknown-linux-gnueabi-ranlib
+    arm-unknown-linux-gnueabi-readelf
+    arm-unknown-linux-gnueabi-size
+    arm-unknown-linux-gnueabi-strings
+    arm-unknown-linux-gnueabi-strip
+
+We should add this to our path if we want to use them:
+
+    PATH=$PATH:~/x-tools/arm-unknown-linux-gnueabi/
+
+The `-v` option will tell us a little about the toolchain:
+
+    $ arm-unknown-linux-gnueabi-gcc -v
+    Using built-in specs.
+    COLLECT_GCC=arm-unknown-linux-gnueabi-gcc
+    COLLECT_LTO_WRAPPER=/home/dev/x-tools/arm-unknown-linux-gnueabi/libexec/gcc/arm-unknown-linux-gnueabi/5.2.0/lto-wrapper
+    Target: arm-unknown-linux-gnueabi
+    Configured with:
+    /home/dev/projects/arm-tool-chain/build/bin/.build/src/gcc-5.2.0/configure
+    --build=x86_64-build_pc-linux-gnu --host=x86_64-build_pc-linux-gnu
+    --target=arm-unknown-linux-gnueabi
+    --prefix=/home/dev/x-tools/arm-unknown-linux-gnueabi
+    --with-sysroot=/home/dev/x-tools/arm-unknown-linux-gnueabi/arm-unknown-linux-gnueabi/sysroot
+    --enable-languages=c,c++ --with-float=soft --with-pkgversion='crosstool-NG crosstool-ng-1.22.0' --disable-sjlj-exceptions --enable-__cxa_atexit
+    --disable-libmudflap --disable-libgomp --disable-libssp
+    --disable-libquadmath --disable-libquadmath-support --disable-libsanitizer
+    --with-gmp=/home/dev/projects/arm-tool-chain/build/bin/.build/arm-unknown-linux-gnueabi/buildtools
+    --with-mpfr=/home/dev/projects/arm-tool-chain/build/bin/.build/arm-unknown-linux-gnueabi/buildtools
+    --with-mpc=/home/dev/projects/arm-tool-chain/build/bin/.build/arm-unknown-linux-gnueabi/buildtools
+    --with-isl=/home/dev/projects/arm-tool-chain/build/bin/.build/arm-unknown-linux-gnueabi/buildtools
+    --with-cloog=/home/dev/projects/arm-tool-chain/build/bin/.build/arm-unknown-linux-gnueabi/buildtools
+    --with-libelf=/home/dev/projects/arm-tool-chain/build/bin/.build/arm-unknown-linux-gnueabi/buildtools
+    --enable-lto --with-host-libstdcxx='-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm' --enable-threads=posix
+    --enable-target-optspace --enable-plugin --enable-gold --disable-nls
+    --disable-multilib
+    --with-local-prefix=/home/dev/x-tools/arm-unknown-linux-gnueabi/arm-unknown-linux-gnueabi/sysroot
+    --enable-long-long
+    Thread model: posix
+    gcc version 5.2.0 (crosstool-NG crosstool-ng-1.22.0)
+
+We can also try using it to build something simple:
+
+    $ cd /tmp
+    $ cat > ./etc/init.d/rcS << EOF
+    #include <stdio.h>
+
+    int main (void) {
+        printf ("Hello, ARM!\n");
+        return 0;
+    }
+    EOF
+    $ arm-unknown-linux-gnueabi-gcc hello.c -o hello
+
+Obviously we can't run it on the host as it is compiled for an ARM system:
+
+    $ ./hello 
+    bash: ./hello: cannot execute binary file: Exec format error
+    
+We can get a bit of information about the binary using the `file` command:    
+
+    $ file hello
+    hello: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.3, for GNU/Linux 4.3.0, not stripped
+
+We can get a lot more information using the `readelf` (some of the output remove for verbosity):
+
+    $ arm-unknown-linux-gnueabi-readelf -a hello
+    ELF Header:
+      Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+      Class:                             ELF32
+      Data:                              2's complement, little endian
+      Version:                           1 (current)
+      OS/ABI:                            UNIX - System V
+      ABI Version:                       0
+      Type:                              EXEC (Executable file)
+      Machine:                           ARM
+      Version:                           0x1
+      Entry point address:               0x102c8
+      Start of program headers:          52 (bytes into file)
+      Start of section headers:          4676 (bytes into file)
+      Flags:                             0x5000202, has entry point, Version5 EABI, soft-float ABI
+      Size of this header:               52 (bytes)
+      Size of program headers:           32 (bytes)
+      Number of program headers:         8
+      Size of section headers:           40 (bytes)
+      Number of section headers:         29
+      Section header string table index: 26
+
+    ..
+
+    Program Headers:
+      Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+      EXIDX          0x0004a4 0x000104a4 0x000104a4 0x00008 0x00008 R   0x4
+      PHDR           0x000034 0x00010034 0x00010034 0x00100 0x00100 R E 0x4
+      INTERP         0x000134 0x00010134 0x00010134 0x00013 0x00013 R   0x1
+          [Requesting program interpreter: /lib/ld-linux.so.3]
+      LOAD           0x000000 0x00010000 0x00010000 0x004b0 0x004b0 R E 0x10000
+      LOAD           0x0004b0 0x000204b0 0x000204b0 0x0011c 0x00120 RW  0x10000
+      DYNAMIC        0x0004bc 0x000204bc 0x000204bc 0x000e8 0x000e8 RW  0x4
+      NOTE           0x000148 0x00010148 0x00010148 0x00020 0x00020 R   0x4
+      GNU_STACK      0x000000 0x00000000 0x00000000 0x00000 0x00000 RW  0x10
+
+    ..
+
+    Dynamic section at offset 0x4bc contains 24 entries:
+      Tag        Type                         Name/Value
+     0x00000001 (NEEDED)                     Shared library: [libc.so.6]
+
+    ..
+
+Amongst the information here we can see the it links to the
+`/lib/ld-linux.so.3` and `libc.so.6` and shared libraries. These libraries were
+built with the cross-compiler and will need to be present in the `/lib`
+directory on the target system.
+
+    $ ls -1a ~/x-tools/arm-unknown-linux-gnueabi/arm-unknown-linux-gnueabi/sysroot/lib
+    .
+    ..
+    ld-2.22.so
+    ld-linux.so.3
+    libanl-2.22.so
+    libanl.so.1
+    libatomic.a
+    libatomic.so
+    libatomic.so.1
+    libatomic.so.1.1.0
+    libBrokenLocale-2.22.so
+    libBrokenLocale.so.1
+    libc-2.22.so
+    libcrypt-2.22.so
+    libcrypt.so.1
+    libc.so.6
+    libdl-2.22.so
+    libdl.so.2
+    libgcc_s.so
+    libgcc_s.so.1
+    libitm.a
+    libitm.so
+    libitm.so.1
+    libitm.so.1.0.0
+    libitm.spec
+    libm-2.22.so
+    libmemusage.so
+    libm.so.6
+    libnsl-2.22.so
+    libnsl.so.1
+    libnss_compat-2.22.so
+    libnss_compat.so.2
+    libnss_db-2.22.so
+    libnss_db.so.2
+    libnss_dns-2.22.so
+    libnss_dns.so.2
+    libnss_files-2.22.so
+    libnss_files.so.2
+    libnss_hesiod-2.22.so
+    libnss_hesiod.so.2
+    libnss_nis-2.22.so
+    libnss_nisplus-2.22.so
+    libnss_nisplus.so.2
+    libnss_nis.so.2
+    libpcprofile.so
+    libpthread-2.22.so
+    libpthread.so.0
+    libresolv-2.22.so
+    libresolv.so.2
+    librt-2.22.so
+    librt.so.1
+    libSegFault.so
+    libstdc++.a
+    libstdc++.so
+    libstdc++.so.6
+    libstdc++.so.6.0.21
+    libstdc++.so.6.0.21-gdb.py
+    libsupc++.a
+    libthread_db-1.0.so
+    libthread_db.so.1
+    libutil-2.22.so
+    libutil.so.1
+
+In a follow up post I write about using this cross compiler toolchain to
+compile a Linux kernel and Busybox and then run them in the `qemu` emulator.
+
+[1]: http://wiki.osdev.org/GCC_Cross-Compiler
+[2]: http://preshing.com/20141119/how-to-build-a-gcc-cross-compiler/
+[crosstool-ng]: http://crosstool-ng.org/
+[3]: http://packages.ubuntu.com/precise/devel/gcc-arm-linux-gnueabi
