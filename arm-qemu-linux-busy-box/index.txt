@@ -1,0 +1,95 @@
+*Cross compiling a minimal Linux sytem for the ARM architecure and emulating it
+in qemu.*
+
+A Linux kernel the can be emulated by [qemu][qemu] can built using the
+`versatile_defconfig` and [a working cross-compiler][arm-unknown-linux-gnueabi].
+
+    wget https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.3.3.tar.xz
+    wget https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.3.3.tar.sign
+
+    gpg --recv 6092693E
+    unxz linux-4.3.3.tar.xz
+    gpg --verify linux-4.3.3.tar.sign 
+
+    tar xf linux-4.3.3.tar
+
+    cd linux-4.3.3
+    make ARCH=arm versatile_defconfig
+    # to furthur configure the build
+    #make ARCH=arm menuconfig
+    make ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi- all
+
+    # this builds a kernal image to `./arch/arm/boot/zImage` 
+    cp linux-4.3.3/arch/arm/boot/zImage .
+
+[Busybox][busybox] is a single binary combining many unix utilies including a
+shell.
+
+
+    wget https://busybox.net/downloads/busybox-1.24.1.tar.bz2
+    wget https://busybox.net/downloads/busybox-1.24.1.tar.bz2.sign
+
+    gpg --recv ACC9965B
+    gpg --verify busybox-1.24.1.tar.bz2.sign 
+
+    tar xf busybox-1.24.1.tar.bz2
+    cd xf busybox-1.24.1
+    make ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi- defconfig
+    make ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi- install
+
+This builds a miniumal filesystem in `./_install`. Some additional directories
+are required. 
+
+    cd _install
+    mkdir -p lib proc sys dev etc etc/init.d
+
+Some shared libraries are required by the busy box binary, the exact libraries
+can be found using the `arm-unknown-linux-gnueabi-readelf` program. I'm just
+going to copy all the libaries from [my toolchain][arm-unknown-linux-gnueabi]
+to the target.
+
+    cp ~/x-tools/arm-unknown-linux-gnueabi/arm-unknown-linux-gnueabi/sysroot/lib/* lib
+
+Next we add an init script at `/etc/init.d/rcS` which will be executed by the
+busybox init script.
+
+    cat > ./etc/init.d/rcS << EOF
+    #!/bin/sh
+
+    # Mount the /proc and /sys filesystems
+    mount -t proc none /proc
+    mount -t sysfs none /sys
+
+    # Populate /dev
+    /sbin/mdev -s
+
+    # Enable the localhost interface
+    ifconfig lo up
+    EOF
+
+It needs to be executable.
+
+    chmod +x etc/init.d/rcS
+
+A compressed disk image of this filesystem which can be read by `qemu` can be
+made using the `cpio` program.
+
+    find . | cpio -o --format=newc | gzip > ../../rootfs.img.gz
+
+I use my system qemu package, but it is not hard to build.
+
+    qemu-system-arm -M versatilepb -m 128M -kernel ./linux-3.2/arch/arm/boot/zImage -initrd ./rootfs.img.gz -append "root=/dev/ram rdinit=/sbin/init"
+
+
+
+Almost all the information from this and [my previous
+post][arm-unknown-linux-gnueabi] can by found in [this nice tutorial][briolidz]
+by Kamel Messaoudi, which also includes debugging user programs. I'm posting my
+notes as I go through them again and which hope to use a reference points for
+future posts.
+
+
+[busybox]: https://busybox.net/
+[qemu]: http://wiki.qemu.org
+[arm-unknown-linux-gnueabi]: https://tarnbarford.net/journal/arm-unknown-linux-gnueabi
+[briolidz]: https://briolidz.wordpress.com/2012/02/07/building-embedded-arm-systems-with-crosstool-ng/
