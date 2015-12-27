@@ -1,6 +1,6 @@
-In this post I build a GNU cross-compiler toolchain using
-[crosstool-ng][crosstool-ng] in order to compile code from my x86_64 GNU/Linux
-system to an ARM GNU/Linux system.
+*Building a GNU cross-compiler toolchain using [crosstool-ng][crosstool-ng] in
+order to compile code from an x86_64 GNU/Linux system to an ARM GNU/Linux
+system.*
 
 Building cross-compiler tools chains [is][1] [complicated][2] and in some cases
 using a prebuilt one might be preferable, for example Ubuntu has a [package][3]
