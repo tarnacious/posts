@@ -11,6 +11,7 @@ require it.
 First specify the crosstools-ng version and some build directories. The final
 toolchain is build to `~/x-tools` by default.
 
+    #!/bin/bash
     CROSSTOOL_VERSION=1.22.0
     BASEDIR=~/arm-tool-chain
     CROSS_TOOL_HOME=$BASDIR/crosstool/source/
@@ -19,6 +20,7 @@ toolchain is build to `~/x-tools` by default.
 
 Make the directories used to build the cross-compiler.
 
+    #!/bin/bash
     mkdir -p $CROSS_TOOL_HOME
     mkdir -p $CROSS_TOOL_PREFIX
     mkdir -p $TOOLCHAIN_HOME
@@ -28,10 +30,10 @@ in a sane build environment. I have found that I sometimes need apply a minor
 patch to get the entire toolchain to build, so far these have not been too
 difficult to work out or find a patch for.
 
+    #!/bin/bash
     cd $CROSS_TOOL_HOME
     wget http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-$CROSSTOOL_VERSION.tar.bz2
     tar xjf crosstool-ng-$CROSSTOOL_VERSION.tar.bz2
-
 
     # The package signed with Bryan Hundven's gpg key, this can be verified by
     # downloading the key are verifying the signature.
@@ -55,6 +57,7 @@ sample. In other cases `crosstool-ng` has a Linux kernel like `menuconfig`
 command to browse and update settings.
 
 
+    #!/bin/bash
     cd $TOOLCHAIN_HOME
     ct-ng arm-unknown-linux-gnueabi
 
@@ -68,6 +71,7 @@ command to browse and update settings.
 If all works out well the tools and libraries should have been build to
 `~/x-tools/arm-unknown-linux-gnueabi/`.
 
+    #!/bin/bash
     $ ls -1a ~/x-tools/arm-unknown-linux-gnueabi/bin/
     .
     ..
@@ -107,10 +111,12 @@ If all works out well the tools and libraries should have been build to
 
 We should add this to our path if we want to use them:
 
+    #!/bin/bash
     PATH=$PATH:~/x-tools/arm-unknown-linux-gnueabi/
 
 The `-v` option will tell us a little about the toolchain:
 
+    #!/bin/bash
     $ arm-unknown-linux-gnueabi-gcc -v
     Using built-in specs.
     COLLECT_GCC=arm-unknown-linux-gnueabi-gcc
@@ -141,6 +147,7 @@ The `-v` option will tell us a little about the toolchain:
 
 We can also try using it to build something simple:
 
+    #!/bin/bash
     $ cd /tmp
     $ cat > ./etc/init.d/rcS << EOF
     #include <stdio.h>
@@ -154,16 +161,19 @@ We can also try using it to build something simple:
 
 Obviously we can't run it on the host as it is compiled for an ARM system:
 
+    #!/bin/bash
     $ ./hello
     bash: ./hello: cannot execute binary file: Exec format error
 
 We can get a bit of information about the binary using the `file` command:
 
+    #!/bin/bash
     $ file hello
     hello: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.3, for GNU/Linux 4.3.0, not stripped
 
 We can get a lot more information using the `readelf` (some of the output remove for verbosity):
 
+    #!/bin/bash
     $ arm-unknown-linux-gnueabi-readelf -a hello
     ELF Header:
       Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00
@@ -213,6 +223,7 @@ Amongst the information here we can see the it links to the
 built with the cross-compiler and will need to be present in the `/lib`
 directory on the target system.
 
+    #!/bin/bash
     $ ls -1a ~/x-tools/arm-unknown-linux-gnueabi/arm-unknown-linux-gnueabi/sysroot/lib
     .
     ..
