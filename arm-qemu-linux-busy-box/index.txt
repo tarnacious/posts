@@ -4,7 +4,7 @@ in QEMU.*
 Almost all the information from this and [my previous
 post][arm-unknown-linux-gnueabi] can by found in [this nice tutorial][briolidz]
 by Kamel Messaoudi, which also includes debugging user programs. I'm posting my
-notes as I go through them again and which hope to use a reference points for
+notes as I go through them again and which hope to use as reference points for
 future posts.
 
 A Linux kernel the can be emulated by [qemu][qemu] can built using the
