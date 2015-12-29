@@ -21,7 +21,7 @@ just created some symlinks with the names it was expecting. This worked well.
     $ bin/bin/rustc --version
     rustc 1.5.0-dev
 
-[Cargo] can also be build from source. I don't think cargo needs to be
+[Cargo] can also be build from source. I don't think Cargo needs to be
 cross-compiled as it supports compiling for different targets and I don't
 actually want to run Cargo on the target machine.
 
@@ -43,7 +43,7 @@ target. In my case:
     linker = "arm-unknown-linux-gnueabi-gcc-5.2.0"
     EOF
 
-Now cargo can be used to build a binary for an ARM target.
+Now Cargo can be used to build a binary for an ARM target.
 
     #!/bin/bash
     $ cargo new --bin hello-rust
