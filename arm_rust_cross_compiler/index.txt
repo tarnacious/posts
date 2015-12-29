@@ -1,4 +1,4 @@
-I found a [guide][guide] for cross-compiling rust which basically involves
+I found a [guide][guide] for cross-compiling [Rust][rustlang] which basically involves
 configuring it with a `--target` option. The target needs to include the
 cross-compile target and the host target.
 
@@ -21,7 +21,7 @@ just created some symlinks with the names it was expecting. This worked well.
     $ bin/bin/rustc --version
     rustc 1.5.0-dev
 
-[Cargo] can also be build from source. I don't think Cargo needs to be
+[Cargo] can also be built from source. I don't think Cargo needs to be
 cross-compiled as it supports compiling for different targets and I don't
 actually want to run Cargo on the target machine.
 
@@ -34,7 +34,7 @@ actually want to run Cargo on the target machine.
     $ make
     $ make install
 
-To cross-compile with Cargo a linker needs to be specified for the target. In my case:
+To cross-compile with Cargo, a linker needs to be specified for the target. In my case:
 
     #!/bin/bash
     $ cat > ~/.cargo/config << EOF
@@ -42,7 +42,7 @@ To cross-compile with Cargo a linker needs to be specified for the target. In my
     linker = "arm-unknown-linux-gnueabi-gcc-5.2.0"
     EOF
 
-Now Cargo can be used to create a new project build a binary for an ARM target.
+Now Cargo can be used to create a new project and build a binary for an ARM target.
 
     #!/bin/bash
     $ cargo new --bin hello-rust
@@ -53,25 +53,25 @@ Now Cargo can be used to create a new project build a binary for an ARM target.
     ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter
     /lib/ld-linux.so.3, for GNU/Linux 4.3.0, not stripped
 
-I was pretty confident at this point, until I tried to run it in [my emulator][emulator]
-and program immediatly terminated with the message "Illegal instruction". So
-far [my cross-compiler toolchain][cross] and emulator had worked well, why was
-now generating illegal instructions?
+I was pretty confident at this point, until I tried to run it in [my
+emulator][emulator] and the program immediately terminated with the message
+"Illegal instruction". So far, [my cross-compiler toolchain][cross] and
+emulator had worked well. Why is now generating illegal instructions?
 
 I eventually found that I wasn't specifying a CPU type and `qemu` was using the
 default ARM926 processor on the Versatile board. This can be fixed by adding
 `--cpu arm1176` (which is the CPU on the first generation Raspberry Pi which I
-am trying to emulate). However now the Kernel doesn't boot as it was built for
+am trying to emulate). However, now the Kernel doesn't boot as it was built for
 an ARM926 processor as specified by `versatile_defconfig`.
 
 The Linux ARM Versatile config restricts the possible CPU targets to CPUs that
-can actually fit in the board. Fortunatly I found [this patch][patch] which removes
+can actually fit in the board. Fortunately I found [this patch][patch] which removes
 this restriction. Now `make ARCH=arm versatile_defconfig && make ARCH=arm
 menuconfig` allows the `System Type —> Support ARM V6 processor` option to be
 selected.
 
-Finally after rebuilding the Kernel and adding the rust built `hello` binary to
-the filesystem the program can run in the emulator.
+Finally, after rebuilding the Kernel and adding the Rust built `hello` binary to
+the filesystem, the program can run in the emulator.
 
     #!/bin/bash
     qemu-system-arm -M versatilepb -cpu arm1176 -m 128M -kernel zImage -initrd ./rootfs.img.gz -append "root=/dev/ram rdinit=/sbin/init"
@@ -87,3 +87,4 @@ the filesystem the program can run in the emulator.
 [rust]: https://www.rust-lang.org/ 
 [guide]: https://github.com/japaric/ruststrap/blob/master/1-how-to-cross-compile.md
 [ccpi]: http://www.cnx-software.com/2011/10/18/raspberry-pi-emulator-in-ubuntu-with-qemu/
+[rustlang]: https://www.rust-lang.org/
