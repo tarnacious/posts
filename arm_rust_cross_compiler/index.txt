@@ -1,0 +1,82 @@
+I found a [guide][guide] for cross-compiling rust which basically involves
+configuring it with a `--target` option. The target needs to include the
+cross-compile target and the host target.
+
+    $ wget https://static.rust-lang.org/dist/rustc-1.5.0-src.tar.gz
+    $ tar xf rustc-1.5.0-src.tar.gz 
+    $ ./configure --target=arm-unknown-linux-gnueabi,x86_64-unknown-linux-gnu --prefix "$(PWD)"/../bin
+    $ make -j$(nproc) install
+
+This didn't work with my target `arm-unknown-linux-gneabi` as at some point in
+the build it started trying to use `arm-linux-gneabi-gcc` and
+`arm-linux-gneabi-ar`, which didn't work as they are called
+`arm-unknown-linux-gneabi-gcc` and `arm-unknown-linux-gneabi-gcc`. I guess this
+is a problem with the build script, but I couldn't easily work out a fix, so I
+just created some symlinks with the names it was expecting. This worked well.
+
+    $ export LD_LIBRARY_PATH=~/projects/arm-rust-cross-compiler/bin/lib/
+    $ export PATH=$PATH:~/projects/arm-rust-cross-compiler/bin/bin/
+    $ bin/bin/rustc --version
+    rustc 1.5.0-dev
+
+[Cargo] can also be build from source. I don't think cargo needs to be
+cross-compiled as it supports compiling for different targets and I don't
+actually want to run Cargo on the target machine.
+
+    $ git clone https://github.com/rust-lang/cargo
+    $ cd cargo
+    $ git submodule update --init
+    $ python -B src/etc/install-deps.py
+    $ ./configure --local-rust-root="$PWD"/../bin --prefix "$(PWD)"/../bin
+    $ make
+    $ make install
+
+To cross-compile the linker Cargo will use needs to be specified for each
+target. In my case:
+
+    $ cat > ~/.cargo/config << EOF
+    [target.arm-unknown-linux-gnueabi]
+    linker = "arm-unknown-linux-gnueabi-gcc-5.2.0"
+    EOF
+
+Now cargo can be used to build a binary for an ARM target.
+
+    $ cargo new --bin hello-rust
+    $ cd hello
+    $ cargo build --target=arm-unknown-linux-gnueabi
+    $ file target/arm-unknown-linux-gnueabi/debug/hello-rust
+    target/arm-unknown-linux-gnueabi/debug/hello: ELF 32-bit LSB shared object,
+    ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter
+    /lib/ld-linux.so.3, for GNU/Linux 4.3.0, not stripped
+
+I was pretty confident at this point, until I tried to run it in [my emulator]
+and program immediatly terminated with the message "Illegal instruction". So
+far [my cross-compiler toolchain][cross] and emulator had worked well, why was
+now generating illegal instructions?
+
+I eventually found that I wasn't specifying a CPU type and `qemu` was using the
+default ARM926 processor on the Versatile board. This can be fixed by adding
+`--cpu arm1176` (which is the CPU on the first generation Raspberry Pi which I
+am trying to emulate). However now the Kernel doesn't boot as it was built for
+an ARM926 processor as specified by `versatile_defconfig`.
+
+The Linux ARM Versatile config restricts the possible CPU targets to CPUs that
+can actually fit in the board. Fortunatly I found [this patch] which removes
+this restriction. Now `make ARCH=arm versatile_defconfig && make ARCH=arm
+menuconfig` allows the `System Type —> Support ARM V6 processor` option to be
+selected.
+
+Finally after rebuilding the Kernel and adding the rust built `hello` binary to
+the filesystem the program can run in the emulator.
+
+    qemu-system-arm -M versatilepb -cpu arm1176 -m 128M -kernel zImage -initrd ./rootfs.img.gz -append "root=/dev/ram rdinit=/sbin/init"
+
+![hello rust screenshot][hello-rust]
+
+[hello-rust]: /static/journal/arm_rust_cross_compiler/static/hello-rust.png
+[patch]: /static/journal/arm_rust_cross_compiler/static/versatile.patch
+[emulator]: https://tarnbarford.net/journal/arm-qemu-linux-busybo://tarnbarford.net/journal/arm-qemu-linux-busybox
+[cargo]: https://github.com/rust-lang/carg://github.com/rust-lang/cargo 
+[rust]: https://www.rust-lang.org/ 
+[guide]: https://github.com/japaric/ruststrap/blob/master/1-how-to-cross-compile.md
+[ccpi]: http://www.cnx-software.com/2011/10/18/raspberry-pi-emulator-in-ubuntu-with-qemu/
