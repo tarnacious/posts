@@ -3,8 +3,8 @@ order to compile code from an x86_64 GNU/Linux system to an ARM GNU/Linux
 system.*
 
 Building cross-compiler toolchains [is][1] [complicated][2] and in some cases
-using a prebuilt one might be preferable, for example Ubuntu has a [package][3]
-for an `arm-unkown-linux-gnueabi` toolchain. However crosstool-ng makes
+using a prebuilt one might be preferable. For example, Ubuntu has a [package][3]
+for an `arm-unkown-linux-gnueabi` toolchain. However, crosstool-ng makes
 compiling toolchains quite straight forward and makes customization possible if
 required.
 
@@ -25,10 +25,10 @@ Make the directories used to build the cross-compiler.
     mkdir -p $CROSS_TOOL_PREFIX
     mkdir -p $TOOLCHAIN_HOME
 
-Downloading, verifing and building `crosstools-ng` should be no problems in
-sane build environment. I have found that I sometimes need apply a minor patch
-to get the entire toolchain to build, so far these have not been too difficult
-to work out or find a patch for.
+Downloading, verifying and building `crosstools-ng` should be no problem in
+sane build environment. I have found that I sometimes need to apply a minor
+patch to get the entire toolchain to build. So far these have not been too
+difficult to work out or find a patch for.
 
     #!/bin/bash
     cd $CROSS_TOOL_HOME
@@ -52,7 +52,7 @@ to work out or find a patch for.
     make install
     PATH="${PATH}:$CROSS_TOOL_PREFIX/bin"
 
-In this case configuring the toolchain is a simple as selecting a predefined
+In this case configuring the toolchain is as simple as selecting a predefined
 sample. In other cases `crosstool-ng` has a Linux kernel like `menuconfig`
 command to browse and update settings.
 
@@ -61,14 +61,14 @@ command to browse and update settings.
     cd $TOOLCHAIN_HOME
     ct-ng arm-unknown-linux-gnueabi
 
-    # If you want to furthur configure the build, I didn't make any changes here,
+    # If you want to further configure the build, I didn't make any changes here,
     # but if your target has hardware floating point support for example you might
     # want to enable it here.
     #   ct-ng menuconfig
 
     ct-ng build
 
-If all works out well the tools and libraries should have been build to
+If all works out well, the tools and libraries should have been built to
 `~/x-tools/arm-unknown-linux-gnueabi/`.
 
     #!/bin/bash
@@ -171,7 +171,7 @@ We can get a bit of information about the binary using the `file` command:
     $ file hello
     hello: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.3, for GNU/Linux 4.3.0, not stripped
 
-We can get a lot more information using the `readelf` (some of the output remove for verbosity):
+We can get a lot more information using the `readelf` (some of the output removed for verbosity):
 
     #!/bin/bash
     $ arm-unknown-linux-gnueabi-readelf -a hello
@@ -218,7 +218,7 @@ We can get a lot more information using the `readelf` (some of the output remove
 
     ..
 
-Amongst the information here we can see the it links to the
+Amongst the information here we can see that it links to the
 `/lib/ld-linux.so.3` and `libc.so.6` and shared libraries. These libraries were
 built with the cross-compiler and will need to be present in the `/lib`
 directory on the target system.
