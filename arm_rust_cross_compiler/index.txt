@@ -54,7 +54,7 @@ Now Cargo can be used to build a binary for an ARM target.
     ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter
     /lib/ld-linux.so.3, for GNU/Linux 4.3.0, not stripped
 
-I was pretty confident at this point, until I tried to run it in [my emulator]
+I was pretty confident at this point, until I tried to run it in [my emulator][emulator]
 and program immediatly terminated with the message "Illegal instruction". So
 far [my cross-compiler toolchain][cross] and emulator had worked well, why was
 now generating illegal instructions?
@@ -81,7 +81,8 @@ the filesystem the program can run in the emulator.
 
 [hello-rust]: /static/journal/arm_rust_cross_compiler/static/hello-rust.png
 [patch]: /static/journal/arm_rust_cross_compiler/static/versatile.patch
-[emulator]: https://tarnbarford.net/journal/arm-qemu-linux-busybo://tarnbarford.net/journal/arm-qemu-linux-busybox
+[cross]: https://tarnbarford.net/journal/arm-unknown-linux-gnueabi
+[emulator]: https://tarnbarford.net/journal/arm-qemu-linux-busybox
 [cargo]: https://github.com/rust-lang/carg://github.com/rust-lang/cargo 
 [rust]: https://www.rust-lang.org/ 
 [guide]: https://github.com/japaric/ruststrap/blob/master/1-how-to-cross-compile.md
