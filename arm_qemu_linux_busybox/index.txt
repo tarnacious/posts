@@ -92,7 +92,7 @@ made using the `cpio` program.
 I use my system qemu package, but it is not hard to build.
 
     #!/bin/bash
-    qemu-system-arm -M versatilepb -m 128M -kernel ./linux-3.2/arch/arm/boot/zImage -initrd ./rootfs.img.gz -append "root=/dev/ram rdinit=/sbin/init"
+    qemu-system-arm -M versatilepb -m 128M -kernel ./zImage -initrd ./rootfs.img.gz -append "root=/dev/ram rdinit=/sbin/init"
 
 
 ![qemu screenshot][screenshot]
