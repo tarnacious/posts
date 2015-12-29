@@ -1,13 +1,13 @@
-*Cross compiling a minimal Linux sytem for the ARM architecure and emulating it
+*Cross compiling a minimal Linux sytem for the ARM architecture and emulating it
 in QEMU.*
 
 Almost all the information from this and [my previous
-post][arm-unknown-linux-gnueabi] can by found in [this nice tutorial][briolidz]
+post][arm-unknown-linux-gnueabi] can be found in [this nice tutorial][briolidz]
 by Kamel Messaoudi, which also includes debugging user programs. I'm posting my
-notes as I go through them again and which hope to use as reference points for
+notes as I go through them again and which will use as reference points for
 future posts.
 
-A Linux kernel that can be emulated by [QEMU][qemu] can built using the
+A Linux kernel that can be emulated by [QEMU][qemu] can be built using the
 `versatile_defconfig` and a [working cross-compiler][arm-unknown-linux-gnueabi].
 
     #!/bin/bash
@@ -22,14 +22,14 @@ A Linux kernel that can be emulated by [QEMU][qemu] can built using the
 
     cd linux-4.3.3
     make ARCH=arm versatile_defconfig
-    # to furthur configure the build
+    # to further configure the build
     #make ARCH=arm menuconfig
     make ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi- all
 
     # this builds a kernal image to `./arch/arm/boot/zImage` 
     cp linux-4.3.3/arch/arm/boot/zImage .
 
-[Busybox][busybox] is a single binary combining many unix utilies including a
+[Busybox][busybox] is a single binary combining many Unix utilities including a
 shell.
 
 
@@ -45,23 +45,23 @@ shell.
     make ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi- defconfig
     make ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi- install
 
-This builds a miniumal filesystem in `./_install`. Some additional directories
+This builds a minimal filesystem in `./_install`. Some additional directories
 are required. 
 
     #!/bin/bash
     cd _install
     mkdir -p lib proc sys dev etc etc/init.d
 
-Some shared libraries are required by the busy box binary, the exact libraries
+Some shared libraries are required by the BusyBox binary. The exact libraries
 can be found using the `arm-unknown-linux-gnueabi-readelf` program. I'm just
-going to copy all the libaries from [my toolchain][arm-unknown-linux-gnueabi]
+going to copy all the libraries from [my toolchain][arm-unknown-linux-gnueabi]
 to the target.
 
     #!/bin/bash
     cp ~/x-tools/arm-unknown-linux-gnueabi/arm-unknown-linux-gnueabi/sysroot/lib/* lib
 
 Next we add an init script at `/etc/init.d/rcS` which will be executed by the
-busybox init script.
+BusyBox init script.
 
     #!/bin/bash
     cat > ./etc/init.d/rcS << EOF
