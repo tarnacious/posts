@@ -34,8 +34,7 @@ actually want to run Cargo on the target machine.
     $ make
     $ make install
 
-To cross-compile the linker Cargo will use needs to be specified for each
-target. In my case:
+To cross-compile with Cargo a linker needs to be specified for the target. In my case:
 
     #!/bin/bash
     $ cat > ~/.cargo/config << EOF
@@ -43,7 +42,7 @@ target. In my case:
     linker = "arm-unknown-linux-gnueabi-gcc-5.2.0"
     EOF
 
-Now Cargo can be used to build a binary for an ARM target.
+Now Cargo can be used to create a new project build a binary for an ARM target.
 
     #!/bin/bash
     $ cargo new --bin hello-rust
@@ -84,6 +83,7 @@ the filesystem the program can run in the emulator.
 [cross]: https://tarnbarford.net/journal/arm-unknown-linux-gnueabi
 [emulator]: https://tarnbarford.net/journal/arm-qemu-linux-busybox
 [cargo]: https://github.com/rust-lang/carg://github.com/rust-lang/cargo 
+[linker]: https://github.com/rust-lang/rust/issues/9328
 [rust]: https://www.rust-lang.org/ 
 [guide]: https://github.com/japaric/ruststrap/blob/master/1-how-to-cross-compile.md
 [ccpi]: http://www.cnx-software.com/2011/10/18/raspberry-pi-emulator-in-ubuntu-with-qemu/
