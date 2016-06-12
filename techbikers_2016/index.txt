@@ -43,6 +43,8 @@ different for me as I [had to take a break from cycling this year][13] and I'm
 leaving my much trusted Koga Miyata at home and riding my fixed gear bike ([hey
 8bar-bikes, it would be great if you could donate too][14]!). It should be fun.
 
+<img style="float: right; margin-left: 20px" src="/static/journal/techbikers_2016/static/wbr.png"> 
+
 This year we are targeting €25,000. My personal goal is €750 and every donation
 no matter how large or small will help reach this goal. To the companies I work
 with, a percentage of this is small relative to the value of our relationships
@@ -50,10 +52,12 @@ and I will thank you in a follow up post. To friends and family who donate, I
 will thank you in person or if that's not possible by phone. For my Australian
 friends an extra hug when I'm back later this year!
 
+<!--
 <div style="height: 100px">
 <img style="float: left; margin-right: 20px; hight: 100px" src="/static/journal/techbikers_2016/static/techbikers.png">
-<img style="float: right; margin-left: 20px" src="/static/journal/techbikers_2016/static/wbr.png">
 </div>
+-->
+
 
 
 [1]: http://www.roomtoread.org/
