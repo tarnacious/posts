@@ -4,6 +4,7 @@ on donations, so I hope to explain why the ride is important to me, that the
 charity is not only a good cause but also effective, and hopefully convince you
 to [donate][16].*
 
+![techbikers][teckbikers]
 
 As most of you will know, I am passionate about tech and bikes. So when the
 Techbikers initiative started in London in 2012, this was a natural fit. The
@@ -11,13 +12,15 @@ idea was to organize a ride from London to Paris every year and have
 participants raise money for charity. The ride successfully raised over
 £170,000 for [Room to Read][1] over the first 3 years.
 
+![angeber][angeber]
+
 In 2013, a group of German participants from the inaugural ride decided to
 bring the idea to Berlin. Techbikers Germany's first ride was from Prague to
 Berlin. I joined the group a week before the ride and later [wrote about
 it][4]. It's been a pleasure to ride together in 2014 from Copenhagen to Berlin
 and in 2015 from Hamburg to Berlin. 
 
-![angeber][angeber]
+![wbr][wbr]
 
 Since the 2014 ride, we have been raising money for [World Bicycle Relief][3],
 a charity whose work nicely aligns with our common interest, cycling.  World
@@ -66,4 +69,6 @@ friends an extra hug when I'm back later this year!
 [15]: http://berlinerfahrradschau.de/en/
 [16]: https://altruja.de/tarn-barford
 [angeber]: /static/journal/techbikers_2016/static/angeber.png
+[techbikers]: /static/journal/techbikers_2016/static/techbikers.png
+[wbr]: /static/journal/techbikers_2016/static/wbr.png
 
