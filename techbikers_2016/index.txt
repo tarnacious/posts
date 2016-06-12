@@ -4,7 +4,7 @@ on donations, so I hope to explain why the ride is important to me, that the
 charity is not only a good cause but also effective, and hopefully convince you
 to [donate][16].*
 
-<img style="float: left; margin-right: 20px" src="/static/journal/techbikers_2016/static/techbikers.png">
+<img style="float: left; margin-right: 20px" src="/static/journal/techbikers_2016/static/angeber.png">
 
 As most of you will know, I am passionate about tech and bikes. So when the
 Techbikers initiative started in London in 2012, this was a natural fit. The
@@ -19,8 +19,6 @@ it][4]. It's been a pleasure to ride together in 2014 from Copenhagen to Berlin
 and in 2015 from Hamburg to Berlin. 
 
 
-<img style="float: right; margin-left: 20px" src="/static/journal/techbikers_2016/static/wbr.png">
-
 Since the 2014 ride, we have been raising money for [World Bicycle Relief][3],
 a charity whose work nicely aligns with our common interest, cycling.  World
 Bicycle Relief [designs and manufactures rugged bicycle parts engineered
@@ -33,7 +31,6 @@ are: they distribute a high quality bike [for €134 raised][11]. [64% of their
 income come from individual contributions][12], so rides such as this one are
 important to them. And they are passionate about what they do!
 
-<img style="float: left; margin-right: 20px" src="/static/journal/techbikers_2016/static/angeber.png">
 
 Cycling is my primary form of transport, even though I live in a city with a
 world class public transport system. It's also pretty flat which helps, but
@@ -52,6 +49,10 @@ with, a percentage of this is small relative to the value of our relationships
 and I will thank you in a follow up post. To friends and family who donate, I
 will thank you in person or if that's not possible by phone. For my Australian
 friends an extra hug when I'm back later this year!
+
+
+<img style="float: left; margin-right: 20px" src="/static/journal/techbikers_2016/static/techbikers.png">
+<img style="float: right; margin-left: 20px" src="/static/journal/techbikers_2016/static/wbr.png">
 
 
 <br style="float: none" />
