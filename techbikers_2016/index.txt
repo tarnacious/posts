@@ -1,8 +1,8 @@
-On July 1st, I will join [Teckbikers Germany][2] for a charity bike ride from
+* On July 1st, I will join [Teckbikers Germany][2] for a charity bike ride from
 Poznan to Berlin to raise money for [World Bicycle Relief][3]. The ride relies
 on donations, so I hope to explain why the ride is important to me, that the
 charity is not only a good cause but also effective, and hopefully convince you
-to [donate][16].
+to [donate][16].*
 
 
 As most of you will know, I am passionate about tech and bikes. So when the
@@ -16,6 +16,8 @@ bring the idea to Berlin. Techbikers Germany's first ride was from Prague to
 Berlin. I joined the group a week before the ride and later [wrote about
 it][4]. It's been a pleasure to ride together in 2014 from Copenhagen to Berlin
 and in 2015 from Hamburg to Berlin. 
+
+[angeber]: /static/journal/techbikers_2016/static/angeber.png
 
 Since the 2014 ride, we have been raising money for [World Bicycle Relief][3],
 a charity whose work nicely aligns with our common interest, cycling.  World
@@ -49,7 +51,6 @@ friends an extra hug when I'm back later this year!
 
 ![angeber][angeber]
 
-[angeber]: /static/journal/techbikers_2016/static/angeber.png
 
 [1]: http://www.roomtoread.org/
 [2]: http://www.techbikers.de/ 
