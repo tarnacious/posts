@@ -33,7 +33,7 @@ are: they distribute a high quality bike [for €134 raised][11]. [64% of their
 income come from individual contributions][12], so rides such as this one are
 important to them. And they are passionate about what they do!
 
-<img style="float: left; margin-left: 20px" src="/static/journal/techbikers_2016/static/angeber.png">
+<img style="float: left; margin-right: 20px" src="/static/journal/techbikers_2016/static/angeber.png">
 
 Cycling is my primary form of transport, even though I live in a city with a
 world class public transport system. It's also pretty flat which helps, but
