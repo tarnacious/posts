@@ -1,43 +1,55 @@
 On July 1st, I will join [Teckbikers Germany][2] for a charity bike ride from
-Poznan to Berlin to raise money for [World Bicycle Relief][3]. The ride relies on donations, so I hope to explain why the ride is important
-to me, that the charity is not only a good cause but also effective, and
-hopefully convince you to donate.
+Poznan to Berlin to raise money for [World Bicycle Relief][3]. The ride relies
+on donations, so I hope to explain why the ride is important to me, that the
+charity is not only a good cause but also effective, and hopefully convince you
+to [donate][16].
 
-As most of you will know, I am passionate about tech and bikes. So when the Techbikers initiative started in London in 2012, this was a natural fit. The idea was to organize a ride from London to Paris every year and have participants raise money for charity. The ride successfully raised over £170,000 for [Room to
-Read][1] over the first 3 years.
 
-In 2013, a group of German participants from the inaugural ride decided to bring the idea to Berlin. Techbikers Germany's first ride was from Prague to Berlin. I joined the group a week before the ride and later
-[wrote about it][4]. It's been a pleasure to ride together in 2014 from Copenhagen to Berlin and in 2015 from Hamburg
-to Berlin. 
+As most of you will know, I am passionate about tech and bikes. So when the
+Techbikers initiative started in London in 2012, this was a natural fit. The
+idea was to organize a ride from London to Paris every year and have
+participants raise money for charity. The ride successfully raised over
+£170,000 for [Room to Read][1] over the first 3 years.
 
-Since the 2014 ride, we have been raising money for [World Bicycle Relief][3], a charity whose work nicely aligns with our common interest, cycling.
-World Bicycle Relief [designs and manufactures rugged
-bicycle parts engineered specifically for rural terrain and load
-requirements][6] and [provides training and tools to assemble and maintain the
-bikes locally][5]. The bikes are mostly distributed to [students][7] and
-[healthcare workers][8], but also [entrepreneurs and family businesses][9]
-[in a number of African countries, but also in Thailand and
-Colombia][10]. I am really impressed by how efficient they are: they
-distribute a high quality bike [for €134 raised][11]. [64% of their income come from individual contributions][12], so rides such as this one are important to them. And they are passionate about what they do!
+In 2013, a group of German participants from the inaugural ride decided to
+bring the idea to Berlin. Techbikers Germany's first ride was from Prague to
+Berlin. I joined the group a week before the ride and later [wrote about
+it][4]. It's been a pleasure to ride together in 2014 from Copenhagen to Berlin
+and in 2015 from Hamburg to Berlin. 
 
-Cycling is my primary form of transport, even though I live in a city with a world
-class public transport system. It's also pretty flat which helps, but
-nevertheless I personally really believe in the power of bicycles. I am happy to
-be supporting a program that gets quality bikes to people for whom this really makes life a lot easier and who could otherwise not afford them.
+Since the 2014 ride, we have been raising money for [World Bicycle Relief][3],
+a charity whose work nicely aligns with our common interest, cycling.  World
+Bicycle Relief [designs and manufactures rugged bicycle parts engineered
+specifically for rural terrain and load requirements][6] and [provides training
+and tools to assemble and maintain the bikes locally][5]. The bikes are mostly
+distributed to [students][7] and [healthcare workers][8], but also
+[entrepreneurs and family businesses][9] [in a number of African countries, but
+also in Thailand and Colombia][10]. I am really impressed by how efficient they
+are: they distribute a high quality bike [for €134 raised][11]. [64% of their
+income come from individual contributions][12], so rides such as this one are
+important to them. And they are passionate about what they do!
+
+Cycling is my primary form of transport, even though I live in a city with a
+world class public transport system. It's also pretty flat which helps, but
+nevertheless I personally really believe in the power of bicycles. I am happy
+to be supporting a program that gets quality bikes to people for whom this
+really makes life a lot easier and who could otherwise not afford them.
 
 This year, 34 of us will cycle 400km from Poznan to Berlin. It will be a little
 different for me as I [had to take a break from cycling this year][13] and I'm
 leaving my much trusted Koga Miyata at home and riding my fixed gear bike ([hey
-8bar-bikes, it would be great if you could donate too][14]!). It should
-be fun.
+8bar-bikes, it would be great if you could donate too][14]!). It should be fun.
 
-This year we are targeting €25,000. My personal goal is €750 and every donation no
-matter how large or small will help reach this goal. To the companies I work
-with, a percentage of this is small relative to the value of our relationships and I will
-thank you in a follow up post. To friends and family who donate, I will thank
-you in person or if that's not possible by phone. For my Australian friends an
-extra hug when I'm back later this year!
+This year we are targeting €25,000. My personal goal is €750 and every donation
+no matter how large or small will help reach this goal. To the companies I work
+with, a percentage of this is small relative to the value of our relationships
+and I will thank you in a follow up post. To friends and family who donate, I
+will thank you in person or if that's not possible by phone. For my Australian
+friends an extra hug when I'm back later this year!
 
+![angeber][angeber]
+
+[angeber]: /static/journal/techbikers_2016/static/angeber.jpg
 
 [1]: http://www.roomtoread.org/
 [2]: http://www.techbikers.de/ 
@@ -54,3 +66,6 @@ extra hug when I'm back later this year!
 [13]: https://twitter.com/tarnacious/status/682567065828474880
 [14]: https://8bar-bikes.com/
 [15]: http://berlinerfahrradschau.de/en/
+[16]: https://altruja.de/tarn-barford
+
+
