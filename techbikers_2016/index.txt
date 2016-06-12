@@ -43,7 +43,7 @@ different for me as I [had to take a break from cycling this year][13] and I'm
 leaving my much trusted Koga Miyata at home and riding my fixed gear bike ([hey
 8bar-bikes, it would be great if you could donate too][14]!). It should be fun.
 
-<img style="float: right; margin-left: 20px" src="/static/journal/techbikers_2016/static/wbr.png"> 
+<img style="float: left; margin-right: 20px" src="/static/journal/techbikers_2016/static/wbr.png"> 
 
 This year we are targeting €25,000. My personal goal is €750 and every donation
 no matter how large or small will help reach this goal. To the companies I work
