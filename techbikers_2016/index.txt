@@ -4,7 +4,7 @@ on donations, so I hope to explain why the ride is important to me, that the
 charity is not only a good cause but also effective, and hopefully convince you
 to [donate][16].*
 
-<img style="float: left; margin-right: 20px" src="/static/journal/techbikers_2016/static/angeber.png">
+<img style="float: left; margin-right: 20px; margin-top: 5px" src="/static/journal/techbikers_2016/static/angeber.png">
 
 As most of you will know, I am passionate about tech and bikes. So when the
 Techbikers initiative started in London in 2012, this was a natural fit. The
