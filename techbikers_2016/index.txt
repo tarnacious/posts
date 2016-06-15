@@ -1,4 +1,4 @@
-*On July 1st, I will join [Teckbikers Germany][2] for a charity bike ride from
+*On July 1st, I will join [Techbikers Germany][2] for a charity bike ride from
 Poznan to Berlin to raise money for [World Bicycle Relief][3]. The ride relies
 on donations, so I hope to explain why the ride is important to me, that the
 charity is not only a good cause but also effective, and hopefully convince you
@@ -7,8 +7,8 @@ to [donate][16].*
 <img style="float: left; margin-right: 20px; margin-top: 5px" src="/static/journal/techbikers_2016/static/angeber.png">
 
 As most of you will know, I am pretty passionate about tech and love cycling,
-[dispite an accident or two][13]. Some of you will have even donated in
-previous years, for which I am eternally greatful, we made it and I am really
+[despite an accident or two][13]. Some of you will have even donated in
+previous years, for which I am eternally grateful, we made it and I am really
 excited to be doing it all again.
 
 The Techbikers initiative started in London in 2012, the idea was to organize a
@@ -32,7 +32,7 @@ distributed to [students][7] and [healthcare workers][8], but also
 [entrepreneurs and family businesses][9] [in a number of African countries, but
 also in Thailand and Colombia][10]. I am really impressed by how efficient they
 are: they distribute a high quality bike [for €134 raised][11]. [64% of their
-income come from individual contributions][12], so rides such as this one are
+income comes from individual contributions][12], so rides such as this one are
 important to them. And they are passionate about what they do!
 
 
@@ -58,9 +58,10 @@ friends an extra hug when I'm back later this year!
 
 [Click here to visit my fundraising page directly][16]
 
-*(The above link is in German, you can visit the Techbikers group page, [here][17],
+*Update 15/6: The link should be in english now.*
+<p style="text-decoration: line-through;"><i>(The above link is in German, you can visit the Techbikers group page, [here][17],
 and change the language in the top right corner then scroll down to find my
-page, don't donate to the other people, they are already mostly ahead of me)*
+page, don't donate to the other people, they are already mostly ahead of me)</i></p>
 
 Thanks
 
@@ -89,7 +90,7 @@ Tarn
 [13]: https://twitter.com/tarnacious/status/682567065828474880
 [14]: https://8bar-bikes.com/
 [15]: http://berlinerfahrradschau.de/en/
-[16]: https://altruja.de/tarn-barford
+[16]: https://altruja.de/tarn-barford?lang=en
 [angeber]: /static/journal/techbikers_2016/static/angeber.png
 [techbikers]: /static/journal/techbikers_2016/static/techbikers.png
 [wbr]: /static/journal/techbikers_2016/static/wbr.png
