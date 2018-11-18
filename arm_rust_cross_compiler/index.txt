@@ -67,7 +67,7 @@ an ARM926 processor as specified by `versatile_defconfig`.
 The Linux ARM Versatile config restricts the possible CPU targets to CPUs that
 can actually fit in the board. Fortunately I found [this patch][patch] which removes
 this restriction. Now `make ARCH=arm versatile_defconfig && make ARCH=arm
-menuconfig` allows the `System Type —> Support ARM V6 processor` option to be
+menuconfig` allows the `System Type -> Support ARM V6 processor` option to be
 selected.
 
 Finally, after rebuilding the Kernel and adding the Rust built `hello` binary to
