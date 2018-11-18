@@ -9,7 +9,7 @@ This morning I decided I would build a game with the [Phaser HTML5 game
 framework] [phaser], [Tiled map editor] [tiled] and [Texture Packer]
 [texturepacker] (trail version) and post it on this blog. I decided the game
 would be about bull fighting as I was trying to animate a bull earlier and
-because I knew Inés wouldn't approve.
+because I knew In&eacute;s wouldn't approve.
 
 <div id="wrapper">
     <div id="game">
