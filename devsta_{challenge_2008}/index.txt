@@ -12,29 +12,29 @@ tire marks?_**
 in mode, and also a mode where the whole desktop is visible. Players can play
 1 or 3 laps time trails."_**
 
-[][2]
+![The game starts with an intro and some jokes in a command window][0]
 
 The game starts with an intro and some jokes in a command window
 
 
-[][4]
+![I used a cruise control window for the start lights][2]
 
 I used a cruise control window for the start lights
 
-[][5]
+![You can watch the devsta video while playing][1]
 
 You can watch the devsta video while playing!
 
-[][8]
+![Finally a trashed desktop and the finish flag toaster.][3]
 
 Finally a trashed desktop and the finish flag toaster.
 
 
-   [2]: http://static.sharpthinking.com.au/devsta2008.tarn.desktopracer.screenshot0.png
+   [0]: https://tarnbarford.net/static/journal/devsta_%7Bchallenge_2008%7D/devsta2008.tarn.desktopracer.screenshot0.small.png
 
-   [4]: http://static.sharpthinking.com.au/devsta2008.tarn.desktopracer.screenshot2.png
+   [1]: https://tarnbarford.net/static/journal/devsta_%7Bchallenge_2008%7D/devsta2008.tarn.desktopracer.screenshot1.small.png
 
-   [6]: http://static.sharpthinking.com.au/devsta2008.tarn.desktopracer.screenshot3.png
+   [2]: https://tarnbarford.net/static/journal/devsta_%7Bchallenge_2008%7D/devsta2008.tarn.desktopracer.screenshot2.small.png
 
-   [8]: http://static.sharpthinking.com.au/devsta2008.tarn.desktopracer.screenshot1.png
+   [3]: https://tarnbarford.net/static/journal/devsta_%7Bchallenge_2008%7D/devsta2008.tarn.desktopracer.screenshot3.small.png
 
