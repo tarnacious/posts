@@ -1,4 +1,4 @@
-[image][1] I'm not in anyway formally associated Microsoft other than
+I'm not in anyway formally associated Microsoft other than
 that I've been primarily using their tools to develop software for the over
 the last few years, so I was a little excited I was invited to Liberation Day
 in Sydney after placing 2nd in DevSta. I thought it would be great to see
@@ -70,4 +70,3 @@ didn't end up seeing him this time.
    [10]: http://strangedevices.wordpress.com/
 
    [11]: http://blog.tatham.oddie.com.au/
-
