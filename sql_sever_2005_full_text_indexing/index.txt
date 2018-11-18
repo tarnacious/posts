@@ -1,4 +1,4 @@
-[image][2]Till now I've always had problems getting SQL Server 2005 Full
+Till now I've always had problems getting SQL Server 2005 Full
 Text Indexing (FTI) to perform well in real world scenarios. Recently I found
 it was because I wasn't implementing it correctly, so I'll post this tip which
 will hopefully help myself and others get it right next time.
