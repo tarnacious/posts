@@ -13,7 +13,7 @@ excited to be doing it all again.
 
 The Techbikers initiative started in London in 2012, the idea was to organize a
 ride from London to Paris every year and have participants raise money for
-charity. The ride successfully raised over £170,000 for [Room to Read][1] over
+charity. The ride successfully raised over &pound;170,000 for [Room to Read][1] over
 the first 3 years.
 
 In 2013, [Lea][lea] and [Jan][jan] who participated in the inaugural ride
@@ -31,7 +31,7 @@ and tools to assemble and maintain the bikes locally][5]. The bikes are mostly
 distributed to [students][7] and [healthcare workers][8], but also
 [entrepreneurs and family businesses][9] [in a number of African countries, but
 also in Thailand and Colombia][10]. I am really impressed by how efficient they
-are: they distribute a high quality bike [for 134 euro raised][11]. [64% of their
+are: they distribute a high quality bike [for &euro;134 raised][11]. [64% of their
 income comes from individual contributions][12], so rides such as this one are
 important to them. And they are passionate about what they do!
 
@@ -49,7 +49,7 @@ leaving my much trusted Koga Miyata at home and riding my fixed gear bike ([hey
 
 <img style="float: left; margin-right: 20px" src="/static/journal/techbikers_2016/static/wbr.png"> 
 
-This year we are targeting 25,000 euro. My personal goal is 750 euro and every donation
+This year we are targeting &euro;25,000. My personal goal is &euro;750 and every donation
 no matter how large or small will help reach this goal. To the companies I work
 with, a percentage of this is small relative to the value of our relationships
 and I will thank you in a follow up post. To friends and family who donate, I
