@@ -1,5 +1,5 @@
-The winners for [DevSta {Challenge 2008}][1] have been announced: [GPS Tag
-wins Microsoft Devsta Challenge][2]. My [Desktop Racer][3] entry came 2nd. I'm
+The winners for [DevSta {Challenge 2008}][6] have been announced: [GPS Tag
+wins Microsoft Devsta Challenge][7]. My [Desktop Racer][3] entry came 2nd. I'm
 naturally disappointed I didn't win, but definitely happy with 2nd. It was
 heaps of fun entering and I'm glad the stress is over ;-)
 
@@ -8,13 +8,10 @@ Sarge][4] and [Michael Minutillo][5] for their GPS Tag Game. Hopefully we'll
 compete again next year.  Enjoy Vegas boys.
 
 
-   [1]: http://devsta.microsoft.com.au/
-
-   [2]: http://www.zdnet.com.au/insight/software/soa/GPS-Tag-wins-Microsoft-Devsta-Challenge/0,139023769,339292785-1s,00.htm
-
-   [3]: /post/2008/10/07/DevSta-7bChallenge-20087d.aspx
-
-   [4]: http://jsarge.wordpress.com/
-
-   [5]: http://wolfbyte-net.blogspot.com/
-
+[1]: http://devsta.microsoft.com.au/
+[2]: http://www.zdnet.com.au/insight/software/soa/GPS-Tag-wins-Microsoft-Devsta-Challenge/0,139023769,339292785-1s,00.htm
+[3]: https://tarnbarford.net/journal/devsta-challenge-2008 
+[4]: http://jsarge.wordpress.com/
+[5]: http://wolfbyte-net.blogspot.com/
+[6]: https://web.archive.org/web/20100130005530/http://devsta.microsoft.com.au:80/about.aspx
+[7]: https://web.archive.org/web/20091130054324/http://devsta.microsoft.com.au:80/winners.aspx 
