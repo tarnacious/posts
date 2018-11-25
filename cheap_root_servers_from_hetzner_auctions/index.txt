@@ -1,9 +1,9 @@
-I rent a couple [Hetzner][hetzner] physical servers that run various services I
-host. You can rent standard and custom configurations but these have an initial
-setup cost and setup time. For impatient hobbyists like myself, Hetzner also
-allows you to rent unused servers from their [server auctions][auction]. These servers
-can be rented with a one month notice period, have no up front costs, and are
-available to use almost immediately. 
+I rent a couple of root servers from [Hetzner][hetzner] that run various
+services I host. You can rent standard and custom configurations but these have
+an initial setup cost and setup time. For impatient hobbyists like myself,
+Hetzner also allows you to rent unused servers from their [server
+auctions][auction]. These servers can be rented with a one month notice period,
+have no up front costs, and are available to use almost immediately. 
 
 I'm currently doing some experimenting we IPv6 bridge setups, for this I've
 found a cheap server from the auctions and am trying to document the process.
