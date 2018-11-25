@@ -16,6 +16,7 @@ Note: when SSHing into the rescue system you may want to disable "strict host
 checking" as the rescue system host key will be different than that of your
 host.
 
+    #!/bin/bash
     tarn@laptop $ ssh -o StrictHostKeyChecking=no <your server address>
 
 It's possible to mount the servers disks yourself and manually install whatever
@@ -24,6 +25,7 @@ interface that leads you through the setup of various distributions and will
 handle partitioning, grub, software RAID, root password, network configuration,
 sshd and install your SSH key.   
 
+    #!/bin/bash
     root@rescue ~ # installimage
 
 I chose Debian 9 and took all the default options except the hostname, which I
@@ -33,12 +35,14 @@ the process anyway. [1][1] [2][2] [3][3] [4][4] [5][5] [6][6] [7][7]
 After installing the image you can reboot from the rescue system and your
 server will boot up. 
 
+    #!/bin/bash
     root@rescue ~ # reboot
 
 The next time you SSH to your IP address you'll be connecting to your own
 server. This time you want strict host checking so when we connect via SSH going
 forward we can be confident we're connecting to our server.
 
+    #!/bin/bash
     tarn@laptop $ ssh <your server address>
     root@demo ~ #
 
