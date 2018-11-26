@@ -1,6 +1,7 @@
 The virtual bridged networking provided by libvirt is the easiest way enable
-networking on virtual machines on KVM. In most cases it should be as simple as
-starting the default network and enabling when defining new virtual machines.
+networking on KVM virtual machines. In most cases it should be as simple as
+starting the default network and specifying the network when defining new
+virtual machines.
 
 The default libvirt network creates a virtual bridge called `virbr0` and it has
 its own IP address `192.168.122.1/24`. When a virtual machine is configured to
