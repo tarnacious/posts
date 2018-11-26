@@ -10,8 +10,8 @@ interface is attached to the virtual bridge and shared with the virtual
 machine.
 
 The virtual bridge network supports DHCP so virtual machines can enable DHCP to
-obtain an IP address on the bridges network. Some iptables rules are added by
-libvirt so requests to address outside the host are correctly routed.
+obtain an IP address on the bridged network. Some iptables rules are added by
+libvirt so packets to addresses outside the host are correctly routed.
 
 The default libvirt network can be started with the `virsh` command.
 
@@ -54,8 +54,8 @@ by default so the `virbr0` has a MAC address.
     4: virbr0-nic: &lt;BROADCAST,MULTICAST&gt; mtu 1500 qdisc pfifo_fast master virbr0 state DOWN group default qlen 1000
         link/ether 52:54:00:95:92:6b brd ff:ff:ff:ff:ff:ff
 
-When passing one network parameter `--network bridge=virbr0` to `virt-install`
-an interface will be included as a PCI device.
+When `--network bridge=virbr0` is passed to `virt-install`, an interface will
+be added as a PCI device.
 
     #!/bin/bash
     root@demo ~ # virsh dumpxml guest-1
@@ -77,15 +77,15 @@ an interface will be included as a PCI device.
     &lt;/domain&gt;
 
 If the virtual machine disk image doesn't configure a network interface, for
-example `/etc/network/interfaces` only contains a loop back configuration like
+example `/etc/network/interfaces` only contains a loopback configuration like
 this:
 
     #!/bin/bash
     auto lo
     iface lo inet loopback
 
-Then when we access the machine via its console we'll find the interface called
-`ens2` is down. 
+Then when we access the machine via its console, we'll find an interface called
+`ens2` that is down. 
 
     #!/bin/bash
     root@guest-1:~# ip addr
