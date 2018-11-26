@@ -1,4 +1,4 @@
-The virtual bridged networking provided by libvirt is the easiest way enable
+The virtual bridged networking provided by libvirt is the easiest to way enable
 networking on KVM virtual machines. In most cases it should be as simple as
 starting the default network and specifying the network when defining new
 virtual machines.
