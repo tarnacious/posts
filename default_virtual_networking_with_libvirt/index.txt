@@ -40,7 +40,7 @@ The configuration of the network looks like this.
       &lt;/ip&gt;
     &lt;/network&gt;
 
-On the host it has create two new interfaces, the `virbr0` interface and a
+On the host it has created two new interfaces, the `virbr0` interface and a
 `virbr0-nic` interface. The later isn't so important, it's added to the bridge
 by default so the `virbr0` has a MAC address.
 
@@ -135,4 +135,5 @@ by appending the following lines.
 Now when after a reboot, the network should be up when it restarts.
 
 The virtual machine can now access the Internet and other virtual machines
-running on the host that are using the same virtual bridge.
+running on the host that are using the same virtual bridge, however it's still
+inaccessible from the Internet.
