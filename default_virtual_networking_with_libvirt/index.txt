@@ -1,6 +1,6 @@
-The default libvirt network creates a virtual bridge call `virbr0`, it has its
-own IP address `192.168.122.1/24`. When a virtual machine is configured to use
-this bridge, a new interface is created called `vbox1`, `vbox2` etc. The
+The default libvirt network creates a virtual bridge call `virbr0` and it has
+its own IP address `192.168.122.1/24`. When a virtual machine is configured to
+use this bridge, a new interface is created called `vbox1`, `vbox2` etc. The
 interface is attached to the virtual bridge and shared with the virtual
 machine.
 
