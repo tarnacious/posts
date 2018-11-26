@@ -49,7 +49,7 @@ by default so the `virbr0` has a MAC address.
     4: virbr0-nic: &lt;BROADCAST,MULTICAST&gt; mtu 1500 qdisc pfifo_fast master virbr0 state DOWN group default qlen 1000
         link/ether 52:54:00:95:92:6b brd ff:ff:ff:ff:ff:ff
 
-When passing one network paramter `--network bridge=virbr0` to `virt-install`
+When passing one network parameter `--network bridge=virbr0` to `virt-install`
 an interface will be included as a PCI device.
 
     #!/bin/bash
@@ -72,14 +72,14 @@ an interface will be included as a PCI device.
     &lt;/domain&gt;
 
 If the virtual machine disk image doesn't configure a network interface, for
-example `/etc/network/interfaces` only contains a loopback configuration like
+example `/etc/network/interfaces` only contains a loop back configuration like
 this:
 
     #!/bin/bash
     auto lo
     iface lo inet loopback
 
-Then when we access the machine via its console we'll find the inferface called
+Then when we access the machine via its console we'll find the interface called
 `ens2` is down. 
 
     #!/bin/bash
