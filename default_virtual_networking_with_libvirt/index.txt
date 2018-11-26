@@ -10,11 +10,13 @@ libvirt so requests to address outside the host are correctly routed.
 
 The default libvirt network can be started with the `virsh` command.
 
+    #!/bin/bash
     root@demo ~ # virsh net-start default
     Network default started
 
 The configuration of the network looks like this.
 
+    #!/bin/bash
     root@demo ~ # virsh net-dumpxml default
     <network>
       <name>default</name>
@@ -37,6 +39,7 @@ On the host it has create two new interfaces, the `virbr0` interface and a
 `virbr0-nic` interface. The later isn't so important, it's added to the bridge
 by default so the `virbr0` has a MAC address.
 
+    #!/bin/bash
     root@demo ~ # ip addr
     ..
     3: virbr0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default qlen 1000
@@ -49,6 +52,7 @@ by default so the `virbr0` has a MAC address.
 When passing one network paramter `--network bridge=virbr0` to `virt-install`
 an interface will be included as a PCI device.
 
+    #!/bin/bash
     root@demo ~ # virsh dumpxml guest-1
     <domain type='kvm' id='1'>
     ..
@@ -71,12 +75,14 @@ If the virtual machine disk image doesn't configure a network interface, for
 example `/etc/network/interfaces` only contains a loopback configuration like
 this:
 
+    #!/bin/bash
     auto lo
     iface lo inet loopback
 
 Then when we access the machine via its console we'll find the inferface called
 `ens2` is down. 
 
+    #!/bin/bash
     root@guest-1:~# ip addr
     ..
     2: ens2: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
@@ -85,16 +91,19 @@ Then when we access the machine via its console we'll find the inferface called
 
 And we can't access the Internet.
 
+    #!/bin/bash
     root@guest-1:~# ping tarnbarford.net
     ping: tarnbarford.net: Temporary failure in name resolution
 
 As the network supports DHCP, we just need to run `dhclient` on the interface
 to obtain an IP address and bring the interface up.
 
+    #!/bin/bash
     root@guest-nonw:~# dhclient
 
 Now the interface is up and we have been allocated an IP address, `192.168.122.14`.
 
+    #!/bin/bash
     root@guest-nonw:~# ip addr
     ..
     2: ens2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
@@ -106,6 +115,7 @@ Now the interface is up and we have been allocated an IP address, `192.168.122.1
 
 Access to the Internet is possible.
 
+    #!/bin/bash
     root@guest-nonw:~# ping -c 1 tarnbarford.net
     PING tarnbarford.net (178.63.44.71) 56(84) bytes of data.
     64 bytes from mail01.tarnbarford.net (178.63.44.71): icmp_seq=1 ttl=59 time=0.401 ms
@@ -113,6 +123,7 @@ Access to the Internet is possible.
 To make this more permanent it can be configured in `/etc/network/interfaces`
 by appending the following lines.
 
+    #!/bin/bash
     auto ens2
     iface ens2 inet dhcp
 
