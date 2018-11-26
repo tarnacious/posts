@@ -42,11 +42,11 @@ by default so the `virbr0` has a MAC address.
     #!/bin/bash
     root@demo ~ # ip addr
     ..
-    3: virbr0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default qlen 1000
+    3: virbr0: &lt;NO-CARRIER,BROADCAST,MULTICAST,UP&gt; mtu 1500 qdisc noqueue state DOWN group default qlen 1000
         link/ether 52:54:00:95:92:6b brd ff:ff:ff:ff:ff:ff
         inet 192.168.122.1/24 brd 192.168.122.255 scope global virbr0
            valid_lft forever preferred_lft forever
-    4: virbr0-nic: <BROADCAST,MULTICAST> mtu 1500 qdisc pfifo_fast master virbr0 state DOWN group default qlen 1000
+    4: virbr0-nic: &lt;BROADCAST,MULTICAST&gt; mtu 1500 qdisc pfifo_fast master virbr0 state DOWN group default qlen 1000
         link/ether 52:54:00:95:92:6b brd ff:ff:ff:ff:ff:ff
 
 When passing one network paramter `--network bridge=virbr0` to `virt-install`
@@ -54,22 +54,22 @@ an interface will be included as a PCI device.
 
     #!/bin/bash
     root@demo ~ # virsh dumpxml guest-1
-    <domain type='kvm' id='1'>
+    &lt;domain type='kvm' id='1'&gt;
     ..
-      <devices>
+      &lt;devices&gt;
         ..
-        <interface type='bridge'>
-          <mac address='52:54:00:8c:7f:94'/>
-          <source bridge='virbr0'/>
-          <target dev='vnet0'/>
-          <model type='virtio'/>
-          <alias name='net0'/>
-          <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/>
-        </interface>
+        &lt;interface type='bridge'&gt;
+          &lt;mac address='52:54:00:8c:7f:94'/&gt;
+          &lt;source bridge='virbr0'/&gt;
+          &lt;target dev='vnet0'/&gt;
+          &lt;model type='virtio'/&gt;
+          &lt;alias name='net0'/&gt;
+          &lt;address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/&gt;
+        &lt;/interface&gt;
         ..
-      </devices>
+      &lt;/devices&gt;
     ..
-    </domain>
+    &lt;/domain&gt;
 
 If the virtual machine disk image doesn't configure a network interface, for
 example `/etc/network/interfaces` only contains a loopback configuration like
@@ -85,7 +85,7 @@ Then when we access the machine via its console we'll find the inferface called
     #!/bin/bash
     root@guest-1:~# ip addr
     ..
-    2: ens2: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    2: ens2: &lt;BROADCAST,MULTICAST&gt; mtu 1500 qdisc noop state DOWN group default qlen 1000
         link/ether 52:54:00:b3:e8:b7 brd ff:ff:ff:ff:ff:ff
     root@guest-nonw:~# ping tarnbarford.net
 
@@ -99,14 +99,14 @@ As the network supports DHCP, we just need to run `dhclient` on the interface
 to obtain an IP address and bring the interface up.
 
     #!/bin/bash
-    root@guest-nonw:~# dhclient
+    root@guest-1:~# dhclient
 
 Now the interface is up and we have been allocated an IP address, `192.168.122.14`.
 
     #!/bin/bash
-    root@guest-nonw:~# ip addr
+    root@guest-1:~# ip addr
     ..
-    2: ens2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    2: ens2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
         link/ether 52:54:00:b3:e8:b7 brd ff:ff:ff:ff:ff:ff
         inet 192.168.122.14/24 brd 192.168.122.255 scope global ens2
            valid_lft forever preferred_lft forever
@@ -116,7 +116,7 @@ Now the interface is up and we have been allocated an IP address, `192.168.122.1
 Access to the Internet is possible.
 
     #!/bin/bash
-    root@guest-nonw:~# ping -c 1 tarnbarford.net
+    root@guest-1:~# ping -c 1 tarnbarford.net
     PING tarnbarford.net (178.63.44.71) 56(84) bytes of data.
     64 bytes from mail01.tarnbarford.net (178.63.44.71): icmp_seq=1 ttl=59 time=0.401 ms
 
