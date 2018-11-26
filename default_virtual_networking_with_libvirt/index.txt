@@ -18,22 +18,22 @@ The configuration of the network looks like this.
 
     #!/bin/bash
     root@demo ~ # virsh net-dumpxml default
-    <network>
-      <name>default</name>
-      <uuid>4690aefc-dfa3-4a0a-bd4c-e4297126a845</uuid>
-      <forward mode='nat'>
-        <nat>
-          <port start='1024' end='65535'/>
-        </nat>
-      </forward>
-      <bridge name='virbr0' stp='on' delay='0'/>
-      <mac address='52:54:00:95:92:6b'/>
-      <ip address='192.168.122.1' netmask='255.255.255.0'>
-        <dhcp>
-          <range start='192.168.122.2' end='192.168.122.133'/>
-        </dhcp>
-      </ip>
-    </network>
+    &lt;network&gt;
+      &lt;name&gt;default&lt;/name&gt;
+      &lt;uuid&gt;4690aefc-dfa3-4a0a-bd4c-e4297126a845&lt;/uuid&gt;
+      &lt;forward mode='nat'&gt;
+        &lt;nat&gt;
+          &lt;port start='1024' end='65535'/&gt;
+        &lt;/nat&gt;
+      &lt;/forward&gt;
+      &lt;bridge name='virbr0' stp='on' delay='0'/&gt;
+      &lt;mac address='52:54:00:95:92:6b'/&gt;
+      &lt;ip address='192.168.122.1' netmask='255.255.255.0'&gt;
+        &lt;dhcp&gt;
+          &lt;range start='192.168.122.2' end='192.168.122.133'/&gt;
+        &lt;/dhcp&gt;
+      &lt;/ip&gt;
+    &lt;/network&gt;
 
 On the host it has create two new interfaces, the `virbr0` interface and a
 `virbr0-nic` interface. The later isn't so important, it's added to the bridge
