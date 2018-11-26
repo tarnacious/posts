@@ -9,9 +9,10 @@ use this bridge, a new interface is created called `vbox1`, `vbox2` etc. The
 interface is attached to the virtual bridge and shared with the virtual
 machine.
 
-The virtual bridge network supports DHCP so virtual machines can enable DHCP to
-obtain an IP address on the bridged network. Some iptables rules are added by
-libvirt so packets to addresses outside the host are correctly routed.
+The virtual bridge network supports DHCP so that virtual machines can enable
+DHCP to obtain an IP address on the bridged network. Some iptables rules are
+added by libvirt so that packets to addresses outside the host are correctly
+routed.
 
 The default libvirt network can be started with the `virsh` command.
 
@@ -19,7 +20,7 @@ The default libvirt network can be started with the `virsh` command.
     root@demo ~ # virsh net-start default
     Network default started
 
-The configuration of the network looks like this.
+The configuration of the network looks like this:
 
     #!/bin/bash
     root@demo ~ # virsh net-dumpxml default
@@ -42,7 +43,7 @@ The configuration of the network looks like this.
 
 On the host it has created two new interfaces, the `virbr0` interface and a
 `virbr0-nic` interface. The later isn't so important, it's added to the bridge
-by default so the `virbr0` has a MAC address.
+by default so that the `virbr0` has a MAC address.
 
     #!/bin/bash
     root@demo ~ # ip addr
@@ -77,8 +78,8 @@ be added as a PCI device.
     &lt;/domain&gt;
 
 If the virtual machine disk image doesn't configure a network interface, for
-example `/etc/network/interfaces` only contains a loopback configuration like
-this:
+example if `/etc/network/interfaces` only contains a loopback configuration
+like this:
 
     #!/bin/bash
     auto lo
@@ -94,7 +95,7 @@ Then when we access the machine via its console, we'll find an interface called
         link/ether 52:54:00:b3:e8:b7 brd ff:ff:ff:ff:ff:ff
     root@guest-nonw:~# ping tarnbarford.net
 
-And we can't access the Internet.
+And we can't access the internet.
 
     #!/bin/bash
     root@guest-1:~# ping tarnbarford.net
@@ -118,22 +119,22 @@ Now the interface is up and we have been allocated an IP address, `192.168.122.1
         inet6 fe80::5054:ff:feb3:e8b7/64 scope link
            valid_lft forever preferred_lft forever
 
-Access to the Internet is possible.
+Access to the internet is possible.
 
     #!/bin/bash
     root@guest-1:~# ping -c 1 tarnbarford.net
     PING tarnbarford.net (178.63.44.71) 56(84) bytes of data.
     64 bytes from mail01.tarnbarford.net (178.63.44.71): icmp_seq=1 ttl=59 time=0.401 ms
 
-To make this more permanent it can be configured in `/etc/network/interfaces`
+To make this more permanent, it can be configured in `/etc/network/interfaces`
 by appending the following lines.
 
     #!/bin/bash
     auto ens2
     iface ens2 inet dhcp
 
-Now when after a reboot, the network should be up when it restarts.
+After a reboot, the network should be up.
 
-The virtual machine can now access the Internet and other virtual machines
-running on the host that are using the same virtual bridge, however it's still
-inaccessible from the Internet.
+The virtual machine can now access the internet as well as other virtual
+machines running on the host that are using the same virtual bridge. However,
+it's still inaccessible from the internet.
