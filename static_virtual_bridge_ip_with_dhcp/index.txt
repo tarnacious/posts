@@ -1,0 +1,172 @@
+It's often desirable to be able to specify the private IP address for virtual
+machines using a virtual network bridge. For example, this can be useful when
+you have additional iptables rules for a specific virtual machines on the host.
+
+With libvirt networks, one way to do this is by configuring the DHCP server to
+allocate IP addresses to virtual machines based on thier MAC address. This
+doesn't require any special configuration in the virtual machine as obtains its
+IP via DHCP.
+
+Configuring this requires the MAC address of the virtual machines network
+interface, when using libvirt this can be found in the virtual machines
+configuration. To do this the `virsh dumpxml` command can be used.
+
+    #!/bin/bash
+    root@demo ~ # virsh dumpxml guest-1
+    &lt;domain type='kvm' id='1'&gt;
+    ..
+      &lt;devices&gt;
+        ..
+        &lt;interface type='bridge'&gt;
+          &lt;mac address='52:54:00:b3:e8:b7'/&gt;
+          &lt;source bridge='virbr0'/&gt;
+          &lt;target dev='vnet0'/&gt;
+          &lt;model type='virtio'/&gt;
+          &lt;alias name='net0'/&gt;
+          &lt;address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/&gt;
+        &lt;/interface&gt;
+        ..
+      &lt;/devices&gt;
+    ..
+    &lt;/domain&gt;
+
+This shows the MAC address of this virtual machines interface is
+`52:54:00:b3:e8:b7`. As this virtual machine had previously obtained an IP
+address from the DHCP server it will appear in the `net-dhcp-leases` for the
+network.
+
+    #!/bin/bash
+    root@demo ~ # virsh net-dhcp-leases  default
+    Expiry Time          MAC address        Protocol  IP address                Hostname        Client ID or DUID
+    -------------------------------------------------------------------------------------------------------------------
+    2018-11-27 12:04:27  52:54:00:b3:e8:b7  ipv4      192.168.122.14/24         guest-1         -
+
+Currently the virtual machine has been allocated `192.168.122.14`. 
+
+Within this `/24` subnetwork there are 254 available IP addresses, the range
+192.168.122.2 to 192.168.122.254 are available to allocate to virtual machines.
+To allow both dynamically allocated and specified IP addresses to be obtained
+by virtual machines the available range for dynamically allocated can be
+limited to some of these IP addresses and rest are can be allocated to specific
+MAC addresses.
+
+To do this the default network need to be modified and the dynamic IP range
+limited. To edit the default network the `virsh net-edit default` is used, this
+will open the configuration in the users default editor.
+
+    #!/bin/bash
+    &lt;network&gt;
+      &lt;name&gt;default&lt;/name&gt;
+      &lt;uuid&gt;4690aefc-dfa3-4a0a-bd4c-e4297126a845&lt;/uuid&gt;
+      &lt;forward mode='nat'&gt;
+        &lt;nat&gt;
+          &lt;port start='1024' end='65535'/&gt;
+        &lt;/nat&gt;
+      &lt;/forward&gt;
+      &lt;bridge name='virbr0' stp='on' delay='0'/&gt;
+      &lt;mac address='52:54:00:95:92:6b'/&gt;
+      &lt;ip address='192.168.122.1' netmask='255.255.255.0'&gt;
+        &lt;dhcp&gt;
+          &lt;range start='192.168.122.2' end='192.168.122.128'/&gt;
+        &lt;/dhcp&gt;
+      &lt;/ip&gt;
+    &lt;/network&gt;
+
+In the above configuration the upper DHCP range has been limited from
+192.168.122.254 to 192.168.122.128. 
+
+The next task is to assign a specific IP outside this range to a specific MAC
+address. This done by adding a host element containing the MAC address found
+ealier, the desired IP address in this example 192.168.122.129 and the name of
+the virtual machine.
+
+    #!/bin/bash
+    &lt;network&gt;
+      &lt;name&gt;default&lt;/name&gt;
+      &lt;uuid&gt;4690aefc-dfa3-4a0a-bd4c-e4297126a845&lt;/uuid&gt;
+      &lt;forward mode='nat'&gt;
+        &lt;nat&gt;
+          &lt;port start='1024' end='65535'/&gt;
+        &lt;/nat&gt;
+      &lt;/forward&gt;
+      &lt;bridge name='virbr0' stp='on' delay='0'/&gt;
+      &lt;mac address='52:54:00:95:92:6b'/&gt;
+      &lt;ip address='192.168.122.1' netmask='255.255.255.0'&gt;
+        &lt;dhcp&gt;
+          &lt;range start='192.168.122.2' end='192.168.122.128'/&gt;
+          &lt;host mac='52:54:00:b3:e8:b7' name='guest-1' ip='192.168.122.129'/&gt;
+        &lt;/dhcp&gt;
+      &lt;/ip&gt;
+    &lt;/network&gt;
+
+Unfortunatly modifying this network configuration has no effect until the
+network is restarted. To do this the netwok is destroyed and started again, in
+virtualization terminology destorying means stopping. It's unfortunatly the
+network needs to be restarted as all virtual machines using the network will
+lose internet connectivity, even after the network is restarted.
+
+    #!/bin/bash
+    root@demo ~ # virsh net-destroy default
+    Network default destroyed
+
+    root@demo ~ # virsh net-start default
+    Network default started
+
+Unfortunatly the virtual machine also needs to be destroyed and restarted for
+the interface to work again.
+
+    root@demo ~ # virsh destroy guest-1
+    Domain guest-1 destroyed
+
+    root@demo ~ # virsh start guest-1
+    Domain guest-1 started
+
+Looking at the leases again, the virtual machine guest-1 has now been allocated
+192.168.122.129.
+
+    root@demo ~ # virsh net-dhcp-leases default
+    Expiry Time          MAC address        Protocol  IP address                Hostname        Client ID or DUID
+    -------------------------------------------------------------------------------------------------------------------
+     2018-11-27 13:49:09  52:54:00:b3:e8:b7  ipv4      192.168.122.129/24        guest-1        -
+
+This worked an not the VM has the IP address we specified, but taking down the
+entire network is a real problem if there are other virtual machines using the
+network. 
+
+It is also possible to make some live configurations to the network. The IP
+assigned to a virtual machine can be changed, this change is immediate, the
+interface in the virual machine doesn't even need to be restarted.
+
+    root@demo ~ # virsh net-update default modify ip-dhcp-host \
+          '<host mac="52:54:00:b3:e8:b7" name="guest-1" ip="192.168.122.130"/>' \
+          --live --config
+    Updated network default persistent config and live state
+
+Host elements can also be deleted. This won't automatically allocate a new IP
+in the virtual machine, but when the interface is restarted it will be
+allocated a new address.
+
+    root@demo ~ # virsh net-update default delete ip-dhcp-host \
+          '<host mac="52:54:00:b3:e8:b7" name="guest-1" ip="192.168.122.130"/>' \
+          --live --config
+    Updated network default persistent config and live state
+
+Host elements can also be added, the interface in the virtual machine will need
+to be restarted to obtain the new IP address.
+
+    root@demo ~ # virsh net-update default add ip-dhcp-host \
+          '<host mac="52:54:00:b3:e8:b7" name="guest-1" ip="192.168.122.131"/>' \
+          --live --config
+    Updated network default persistent config and live state
+
+Modifying the networks with commands is a bit unwieldy but may be preferrable
+than taking down the entire virtaul network. It's also possible to specify IPv6
+addresses that will be allocated to virtual machines, but I intend to use a
+physical bridge network for IPv6 networking, so I'm not going to write about
+it. For more information on that, checkout the [libvirt networking
+documentation][1] or this great [libvirt tutial][2] by [Jamie Nguyen][3].
+
+
+[1]: https://wiki.libvirt.org/page/Networking
+[2]: https://jamielinux.com/docs/libvirt-networking-handbook/appendix/dhcp-host-entries.html
+[3]: https://jamielinux.com
