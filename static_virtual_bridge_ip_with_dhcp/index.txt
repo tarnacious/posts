@@ -4,8 +4,8 @@ you have additional iptables rules for a specific virtual machines on the host.
 
 With libvirt networks, one way to do this is by configuring the DHCP server to
 allocate IP addresses to virtual machines based on thier MAC address. This
-doesn't require any special configuration in the virtual machine as obtains its
-IP via DHCP.
+doesn't require any special configuration in the virtual machine as it obtains
+its IP via DHCP.
 
 Configuring this requires the MAC address of the virtual machines network
 interface, when using libvirt this can be found in the virtual machines
