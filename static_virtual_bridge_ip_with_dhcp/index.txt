@@ -115,6 +115,7 @@ lose internet connectivity, even after the network is restarted.
 Unfortunatly the virtual machine also needs to be destroyed and restarted for
 the interface to work again.
 
+    #!/bin/bash
     root@demo ~ # virsh destroy guest-1
     Domain guest-1 destroyed
 
@@ -124,6 +125,7 @@ the interface to work again.
 Looking at the leases again, the virtual machine guest-1 has now been allocated
 192.168.122.129.
 
+    #!/bin/bash
     root@demo ~ # virsh net-dhcp-leases default
     Expiry Time          MAC address        Protocol  IP address                Hostname        Client ID or DUID
     -------------------------------------------------------------------------------------------------------------------
@@ -137,8 +139,9 @@ It is also possible to make some live configurations to the network. The IP
 assigned to a virtual machine can be changed, this change is immediate, the
 interface in the virual machine doesn't even need to be restarted.
 
+    #!/bin/bash
     root@demo ~ # virsh net-update default modify ip-dhcp-host \
-          '<host mac="52:54:00:b3:e8:b7" name="guest-1" ip="192.168.122.130"/>' \
+          '&lt;host mac="52:54:00:b3:e8:b7" name="guest-1" ip="192.168.122.130"/&gt;' \
           --live --config
     Updated network default persistent config and live state
 
@@ -146,16 +149,18 @@ Host elements can also be deleted. This won't automatically allocate a new IP
 in the virtual machine, but when the interface is restarted it will be
 allocated a new address.
 
+    #!/bin/bash
     root@demo ~ # virsh net-update default delete ip-dhcp-host \
-          '<host mac="52:54:00:b3:e8:b7" name="guest-1" ip="192.168.122.130"/>' \
+          '&lt;host mac="52:54:00:b3:e8:b7" name="guest-1" ip="192.168.122.130"/&gt;' \
           --live --config
     Updated network default persistent config and live state
 
 Host elements can also be added, the interface in the virtual machine will need
 to be restarted to obtain the new IP address.
 
+    #!/bin/bash
     root@demo ~ # virsh net-update default add ip-dhcp-host \
-          '<host mac="52:54:00:b3:e8:b7" name="guest-1" ip="192.168.122.131"/>' \
+          '&lt;host mac="52:54:00:b3:e8:b7" name="guest-1" ip="192.168.122.131"/&gt;' \
           --live --config
     Updated network default persistent config and live state
 
