@@ -1,6 +1,7 @@
-It's often desirable to be able to specify a private IP address for a virtual
-machine using a virtual network bridge. For example, this can be useful when
-you have additional iptables rules for a specific virtual machines on the host.
+It's sometimes desirable to be able to specify a static IP address for a
+virtual machine that is using a virtual network bridge. For example, this can
+be useful when you have additional iptables rules for a specific virtual
+machines on the host.
 
 With libvirt networks, one way to do this is by configuring the DHCP server to
 allocate IP addresses to virtual machines based on their MAC address. This
@@ -9,7 +10,7 @@ its IP via DHCP.
 
 Configuring this requires the MAC address of the virtual machines network
 interface, when using libvirt this can be found in the virtual machines
-configuration. To do this the `virsh dumpxml` command can be used.
+configuration.
 
     #!/bin/bash
     root@demo ~ # virsh dumpxml guest-1
@@ -44,15 +45,15 @@ network.
 Currently the virtual machine has been allocated `192.168.122.14`. 
 
 Within this `/24` subnetwork there are 254 available IP addresses, the range
-192.168.122.2 to 192.168.122.254 are available to allocate to virtual machines.
-To allow both dynamically allocated and specified IP addresses to be obtained
-by virtual machines the available range for dynamically allocated can be
-limited to some of these IP addresses and rest are can be allocated to specific
-MAC addresses.
+192.168.122.2 to 192.168.122.254 is available to allocate to virtual machines.
+
+To allow both dynamically allocated and static IP addresses, the available
+range for dynamically allocated IP addresses can be limited to a subset so that
+the rest are can be allocated to specific MAC addresses.
 
 To do this the default network need to be modified and the dynamic IP range
-limited. To edit the default network the `virsh net-edit default` is used, this
-will open the configuration in the users default editor.
+updated. To edit the default network the `virsh net-edit default` command is
+used, this will open the configuration in the users default editor.
 
     #!/bin/bash
     &lt;network&gt;
@@ -99,11 +100,10 @@ the virtual machine.
       &lt;/ip&gt;
     &lt;/network&gt;
 
-Unfortunately modifying this network configuration has no effect until the
-network is restarted. To do this the network is destroyed and started again, in
-virtualisation terminology destroying means stopping. It's unfortunately the
-network needs to be restarted as all virtual machines using the network will
-lose internet connectivity, even after the network is restarted.
+Modifying this network configuration has no effect until the network is
+restarted. To do this the network is destroyed and started again, in
+virtualisation terminology destroying means stopping. This will cause virtual
+machines using the network to lose network connectivity.
 
     #!/bin/bash
     root@demo ~ # virsh net-destroy default
@@ -112,8 +112,9 @@ lose internet connectivity, even after the network is restarted.
     root@demo ~ # virsh net-start default
     Network default started
 
-Unfortunately the virtual machine also needs to be destroyed and restarted for
-the interface to work again.
+Even after the network is restarted, running virtual machines using the network
+will not be able to use the new network, they need to be destroyed and
+restarted for the interface to work again.
 
     #!/bin/bash
     root@demo ~ # virsh destroy guest-1
@@ -131,12 +132,11 @@ Looking at the leases again, the virtual machine guest-1 has now been allocated
     -------------------------------------------------------------------------------------------------------------------
      2018-11-27 13:49:09  52:54:00:b3:e8:b7  ipv4      192.168.122.129/24        guest-1        -
 
-This worked an not the VM has the IP address we specified, but taking down the
-entire network is a real problem if there are other virtual machines using the
-network. 
+The VM has the IP address we specified, but taking down the entire network is a
+real problem, especially if there are other virtual machines using the network. 
 
-It is also possible to make some live configurations to the network. The IP
-assigned to a virtual machine can be changed, this change is immediate, the
+It is also possible to make some live configurations to the network such as the
+IP address assigned to a virtual machine, this change is immediate, the
 interface in the virtual machine doesn't even need to be restarted.
 
     #!/bin/bash
@@ -146,8 +146,8 @@ interface in the virtual machine doesn't even need to be restarted.
     Updated network default persistent config and live state
 
 Host elements can also be deleted. This won't automatically allocate a new IP
-in the virtual machine, but when the interface is restarted it will be
-allocated a new address.
+in the virtual machine, in fact it will keep using the previously allocated
+one. When the interface is restarted it will be allocated a new address.
 
     #!/bin/bash
     root@demo ~ # virsh net-update default delete ip-dhcp-host \
@@ -168,7 +168,7 @@ Modifying the networks with commands is a bit unwieldy but may be preferable
 than taking down the entire virtual network. It's also possible to specify IPv6
 addresses that will be allocated to virtual machines, but I intend to use a
 physical bridge network for IPv6 networking, so I'm not going to write about
-it. For more information on that, checkout the [libvirt networking
+it. For more information on that, check out the [libvirt networking
 documentation][1] or this great [libvirt tutial][2] by [Jamie Nguyen][3].
 
 
