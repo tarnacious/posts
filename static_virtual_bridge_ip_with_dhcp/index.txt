@@ -3,7 +3,7 @@ machines using a virtual network bridge. For example, this can be useful when
 you have additional iptables rules for a specific virtual machines on the host.
 
 With libvirt networks, one way to do this is by configuring the DHCP server to
-allocate IP addresses to virtual machines based on thier MAC address. This
+allocate IP addresses to virtual machines based on their MAC address. This
 doesn't require any special configuration in the virtual machine as it obtains
 its IP via DHCP.
 
@@ -77,7 +77,7 @@ In the above configuration the upper DHCP range has been limited from
 
 The next task is to assign a specific IP outside this range to a specific MAC
 address. This done by adding a host element containing the MAC address found
-ealier, the desired IP address in this example 192.168.122.129 and the name of
+earlier, the desired IP address in this example 192.168.122.129 and the name of
 the virtual machine.
 
     #!/bin/bash
@@ -99,9 +99,9 @@ the virtual machine.
       &lt;/ip&gt;
     &lt;/network&gt;
 
-Unfortunatly modifying this network configuration has no effect until the
-network is restarted. To do this the netwok is destroyed and started again, in
-virtualization terminology destorying means stopping. It's unfortunatly the
+Unfortunately modifying this network configuration has no effect until the
+network is restarted. To do this the network is destroyed and started again, in
+virtualisation terminology destroying means stopping. It's unfortunately the
 network needs to be restarted as all virtual machines using the network will
 lose internet connectivity, even after the network is restarted.
 
@@ -112,7 +112,7 @@ lose internet connectivity, even after the network is restarted.
     root@demo ~ # virsh net-start default
     Network default started
 
-Unfortunatly the virtual machine also needs to be destroyed and restarted for
+Unfortunately the virtual machine also needs to be destroyed and restarted for
 the interface to work again.
 
     #!/bin/bash
@@ -137,7 +137,7 @@ network.
 
 It is also possible to make some live configurations to the network. The IP
 assigned to a virtual machine can be changed, this change is immediate, the
-interface in the virual machine doesn't even need to be restarted.
+interface in the virtual machine doesn't even need to be restarted.
 
     #!/bin/bash
     root@demo ~ # virsh net-update default modify ip-dhcp-host \
@@ -164,8 +164,8 @@ to be restarted to obtain the new IP address.
           --live --config
     Updated network default persistent config and live state
 
-Modifying the networks with commands is a bit unwieldy but may be preferrable
-than taking down the entire virtaul network. It's also possible to specify IPv6
+Modifying the networks with commands is a bit unwieldy but may be preferable
+than taking down the entire virtual network. It's also possible to specify IPv6
 addresses that will be allocated to virtual machines, but I intend to use a
 physical bridge network for IPv6 networking, so I'm not going to write about
 it. For more information on that, checkout the [libvirt networking
