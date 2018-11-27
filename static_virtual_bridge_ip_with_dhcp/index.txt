@@ -1,5 +1,5 @@
-It's often desirable to be able to specify the private IP address for virtual
-machines using a virtual network bridge. For example, this can be useful when
+It's often desirable to be able to specify a private IP address for a virtual
+machine using a virtual network bridge. For example, this can be useful when
 you have additional iptables rules for a specific virtual machines on the host.
 
 With libvirt networks, one way to do this is by configuring the DHCP server to
