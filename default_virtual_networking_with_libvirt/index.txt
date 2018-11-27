@@ -36,7 +36,7 @@ The configuration of the network looks like this:
       &lt;mac address='52:54:00:95:92:6b'/&gt;
       &lt;ip address='192.168.122.1' netmask='255.255.255.0'&gt;
         &lt;dhcp&gt;
-          &lt;range start='192.168.122.2' end='192.168.122.133'/&gt;
+          &lt;range start='192.168.122.2' end='192.168.122.254'/&gt;
         &lt;/dhcp&gt;
       &lt;/ip&gt;
     &lt;/network&gt;
