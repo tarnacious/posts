@@ -1,0 +1,18 @@
+sudo qemu-nbd --connect=/dev/nbd0 /path/to/image.qcow2
+
+After this, existing disk partitions in the disk image will be mapped to /dev/nbd0p1, /dev/nbd0p2, /dev/nbd0p3, etc.
+
+To check the list of nbd-mapped partitions, use fdisk:
+$ sudo fdisk /dev/nbd0 -l
+
+Finally, choose any one partition (e.g., /dev/nbd0p1) and mount it to a local mount point (e.g., /mnt).
+$ sudo mount /dev/nbd0p1 /mnt
+
+Now you will be able to access and modify the content of the disk image's mounted partition via /mnt mount point.
+
+e2fsck /dev/vdb1
+resize2fs 
+
+Once you are done, unmount it, and disconnect the disk image as follows.
+$ sudo umount /mnt
+$ sudo qemu-nbd --disconnect /dev/nbd0 

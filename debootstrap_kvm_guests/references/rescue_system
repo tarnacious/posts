@@ -1,0 +1,30 @@
+-------------------------------------------------------------------
+
+  Welcome to the Hetzner Rescue System.
+
+  This Rescue System is based on Debian 8.0 (jessie) with a newer
+  kernel. You can install software as in a normal system.
+
+  To install a new operating system from one of our prebuilt
+  images, run 'installimage' and follow the instructions.
+
+  More information at http://wiki.hetzner.de
+
+-------------------------------------------------------------------
+
+Hardware data:
+
+   CPU1: Intel(R) Xeon(R) CPU E3-1246 v3 @ 3.50GHz (Cores 8)
+   Memory:  32044 MB
+   Disk /dev/sda: 2000 GB (=> 1863 GiB) 
+   Disk /dev/sdb: 2000 GB (=> 1863 GiB) 
+   Total capacity 3726 GiB with 2 Disks
+
+Network data:
+   eth0  LINK: yes
+         MAC:  44:8a:5b:d8:85:82
+         IP:   136.243.14.198
+         IPv6: 2a01:4f8:211:2845::2/64
+         RealTek RTL-8169 Gigabit Ethernet driver
+
+root@rescue ~ # 

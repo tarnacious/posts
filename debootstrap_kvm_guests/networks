@@ -1,0 +1,269 @@
+# IPv6 Bridge Setup
+
+I run several virtual machines on physical servers I rent from
+[Hetzner][hetzner]. The virtual machines use a virtual bridge, I only have one
+IPv4 address so I route external ports to specific virtual machines using
+[iptables][iptables] rules. For HTTP/S traffic on ports 80 and 443 I have a
+[HAProxy][haproxy] load balancer which routes requests to the appropriate
+virtual machine. This setup works reasonably well for me.
+
+Recently I decided to look into setting up IPv6 and making use of my /64 IPv6
+block. To do this, I rented out another cheap physical server to experiment and
+documented what I needed to do to get it working and what I learnt along the
+way.
+
+## Setup the host 
+
+## Create a bootable disk image
+
+
+Now we have a disk image we need somewhere to put it so we can use it. The
+emulator runs as the `libvirt-qemu` user that was created when we installed the
+packages. The emulator needs to reand and write to these images so we create a
+directory, change the ownership and set the gid flag so that files created or
+moved there are owned by the `libvirt-qemu` group. 
+
+    root@demo ~ # mkdir -p /var/kvm/images/
+    root@demo ~ # chown root:libvirt-qemu /var/kvm/images
+    root@demo ~ # chmod u+s /var/kvm/images
+
+Finally we copy all the image to the directory we created. It might make sense
+here to keep a copy of the image; we can start the virtual machine from scratch
+or we could create additional VM from it.
+
+    root@demo ~ # cp guest1 /var/kvm/images
+
+Now we have a bootable disk image somewhere that libvirt/qemu can read and
+write we can start a virtual machine.
+
+## Starting a virtual IPv4 network bridge
+
+I'm too cheap to buy additional IPv4 addresses so we can't use a phyical bridge
+for the IPv4 interface, instead we will start a virtual network bridge using
+libvirt, we'll use `virsh`  which is a command line tool for interacting with
+libvirt. Firstly we can look at at all the _defined_ networks.
+
+    root@demo ~ # virsh net-list --all
+     Name                 State      Autostart     Persistent
+    ----------------------------------------------------------
+     default              inactive   no            yes
+
+Here we can see a network called default is defined but is currently inactive.
+We can bring it up with another command.
+
+    root@demo ~ # virsh net-start default
+    Network default started
+
+
+## Starting a virtual machine
+
+Within libvirt, and other virtualization technolgies, virtual machines are
+called domains. We can see if we have any defined domains using the `virsh`
+command.
+
+    root@demo ~ # virsh list --all
+     Id    Name                           State
+    ----------------------------------------------------
+
+Currently it's an empty list, so we need to define our first domain. For this
+we use a helper utility called `virt-install` that generate a domain
+configuration based on some parameters we give it. I won't go into all the
+parameters as they are [desribed in enough detail in the man
+page][virt-install-man].
+
+    root@demo ~ # virt-install \
+                    --name guest-1 \
+                    --ram 4096 \
+                    --disk path=/var/kvm/images/guest1 \
+                    --vcpus 2 \
+                    --os-type linux \
+                    --os-variant debian9 \
+                    --graphics none \
+                    --console pty,target_type=serial \
+                    --noautoconsole \
+                    --network bridge=virbr0 \
+                    --import
+
+    Starting install...
+    Creating domain...    
+    Domain creation completed.
+
+We don't immediatly get a console access to the virtual sever, it boots up and
+start running as we can see by listing all the domains again.
+
+    root@demo ~ # virsh list
+     Id    Name                           State
+    ----------------------------------------------------
+     1     guest-1                        running
+
+Now lets get a console in the virtual machine and see if we can use the
+network. To access the virtual machine via the serial console we can use `virsh
+console`.
+
+    root@demo ~ # virsh console guest-1
+    Connected to domain guest-1
+    Escape character is ^]
+
+This initially show this message, you can escape back to the host at anytime by
+pressing CTRL and ]. Pressing Enter will take you to the machines console, if
+it's still booting you will see the boot messages, once it's finished you'll be
+presented with standard login shell.
+
+    Debian GNU/Linux 9 guest1 ttyS0
+
+    guest1 login: root
+    Password: 
+
+    root@guest1:~# 
+
+We can inspect the network interfaces on the machine.
+
+    root@guest1:~# ip addr
+    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1
+        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+        inet 127.0.0.1/8 scope host lo
+           valid_lft forever preferred_lft forever
+        inet6 ::1/128 scope host 
+           valid_lft forever preferred_lft forever
+    2: ens2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+        link/ether 52:54:00:8c:7f:94 brd ff:ff:ff:ff:ff:ff
+        inet 192.168.122.158/24 brd 192.168.122.255 scope global ens2
+           valid_lft forever preferred_lft forever
+        inet6 fe80::5054:ff:fe8c:7f94/64 scope link
+           valid_lft forever preferred_lft forever
+
+As we can see the ethernet inteface ens2 is up and we have a private IP
+address. This is pretty cool, we can access the Internet!
+
+    root@guest1:~# ping -c 1 tarnbarford.net
+    PING tarnbarford.net (178.63.44.71) 56(84) bytes of data.
+    64 bytes from mail01.tarnbarford.net (178.63.44.71): icmp_seq=1 ttl=59 time=0.464 ms
+
+    --- tarnbarford.net ping statistics ---
+    1 packets transmitted, 1 received, 0% packet loss, time 0ms
+    rtt min/avg/max/mdev = 0.464/0.464/0.464/0.000 ms
+
+This works because our script to build anticipated the ens2 interface and
+configuered it in `/etc/network/interfaces`.
+
+    source /etc/network/interfaces.d/*
+
+    auto lo
+    iface lo inet loopback
+
+    auto ens2
+    iface ens2 inet dhcp
+
+
+
+
+Here we see an interface, but it's down. That because we haven't configured it
+at all.
+
+    root@guest1:~# ping tarnbarford.net
+    ping: tarnbarford.net: Temporary failure in name resolution
+
+It turns out that virtual network libvirt created supports DHCP via
+[dnsmasq][dnsmasq], so bringing the network up only involves configuring it to
+use DHCP, in many cases this would be setup automaticly during installation.
+
+To bring up a DHCP interface immediatly we can run `dhclient` directly giving
+it an interface name as a parameter, in our case it's `ens2`.
+
+    root@guest1:~# dhclient ens2
+
+Again we can look at our interfaces.
+
+    root@guest1:~# ip addr
+    ...
+    2: ens2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+        link/ether 52:54:00:8c:7f:94 brd ff:ff:ff:ff:ff:ff
+        inet 192.168.122.158/24 brd 192.168.122.255 scope global ens2
+           valid_lft forever preferred_lft forever
+        inet6 fe80::5054:ff:fe8c:7f94/64 scope link
+           valid_lft forever preferred_lft forever
+    
+As we can see the network is now up and we have a private IP address. This is
+pretty cool, we can now access the Internet!
+
+    root@guest1:~# ping -c 1 tarnbarford.net
+    PING tarnbarford.net (178.63.44.71) 56(84) bytes of data.
+    64 bytes from mail01.tarnbarford.net (178.63.44.71): icmp_seq=1 ttl=59 time=0.464 ms
+
+    --- tarnbarford.net ping statistics ---
+    1 packets transmitted, 1 received, 0% packet loss, time 0ms
+    rtt min/avg/max/mdev = 0.464/0.464/0.464/0.000 ms
+
+This works but will be lost when the machine reboots, to make it more permanent
+we configured it in `/etc/network/interfaces` which currently looks lke this:
+
+    source /etc/network/interfaces.d/*
+
+    auto lo
+    iface lo inet loopback
+
+    auto ens2
+    iface ens2 inet dhcp
+
+The first line we add just says we want to configure the `ens2` device at boot.
+The `iface ens2` part of the second line says we create an interface on the
+device, the `inet` says it will be IPv4 and the last part `dhcp` says it should
+behave as a DHCP client. 
+
+
+
+
+
+new interface
+
+    auto lo
+    iface lo inet loopback
+
+    auto enp2s0
+    iface enp2s0 inet static
+      address 136.243.14.198
+      netmask 255.255.255.192
+      gateway 136.243.14.193
+     
+    iface enp2s0 inet6 static
+      address 2a01:4f8:211:2845::2
+      netmask 128
+      gateway fe80::1
+
+    auto br0
+    iface br0 inet6 static
+      address 2a01:4f8:211:2845::2
+      netmask 64
+      bridge_stp off
+      bridge_ports none
+      bridge_fd 0
+      bridge_maxwait 0
+    up ip addr add fe80::1/64 dev br0 scope link
+```
+
+Notes:
+
+virtinst brings in 500mb of packages :(
+
+
+guest config
+
+    auto lo
+    iface lo inet loopback
+
+    allow-hotplug ens2
+    iface ens2 inet6 static
+      address 2a01:4f8:211:2845::4:1
+      netmask 112 
+      gateway fe80::1
+
+    allow-hotplug ens3
+    iface ens3 inet dhcp
+
+[qcow2]: https://en.wikipedia.org/wiki/Qcow
+[iptables]: https://wiki.debian.org/iptables
+[hetzner]: https://www.hetzner.com/sb
+[haproxy]: http://www.haproxy.org/
+[virbr0-nic]: https://unix.stackexchange.com/a/444863
+[virt-install-man]: https://manpages.debian.org/testing/virtinst/virt-install.1.en.html
+[dnsmasq]: http://www.thekelleys.org.uk/dnsmasq/doc.html

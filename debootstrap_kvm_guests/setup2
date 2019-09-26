@@ -1,0 +1,55 @@
+More configuration
+
+# Edit sshd config
+/etc/ssh/sshd_config
+
+PasswordAuthentication no
+PermitEmptyPasswords no
+
+# Add a user
+adduser tarn
+..
+
+# Allow root
+usermod -G sudo tarn
+
+# Add ssh key
+mkdir -p /home/tarn/.ssh
+
+cat key > /home/tarn/.ssh/authorized_keys
+
+chown -R tarn:tarn /home/tarn/.ssh
+
+
+
+
+## network
+
+virsh  dumpxml  $VM_NAME | grep 'mac address'
+
+Then edit the network
+
+virsh  net-list
+virsh  net-edit  $NETWORK_NAME    # Probably "default"
+
+Find the <dhcp> section, restrict the dynamic range and add host entries for your VMs
+
+<dhcp>
+  <range start='192.168.122.100' end='192.168.122.254'/>
+  <host mac='52:54:00:6c:3c:01' name='vm1' ip='192.168.122.11'/>
+  <host mac='52:54:00:6c:3c:02' name='vm2' ip='192.168.122.12'/>
+  <host mac='52:54:00:6c:3c:03' name='vm3' ip='192.168.122.12'/>
+</dhcp>
+
+
+virsh  net-destroy  $NETWORK_NAME  
+virsh  net-start    $NETWORK_NAME  
+
+## forward ports to vm
+
+ufw allow proto tcp from any to 178.63.44.71 port 2210
+ufw allow proto tcp from any to 178.63.44.71 port 80
+
+
+
+

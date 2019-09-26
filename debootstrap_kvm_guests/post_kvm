@@ -1,0 +1,43 @@
+There are several tools for running virtual machines in a Linux host system
+including Xen, VirtualBox, KVM and QEMU. In this post I'll be using a common
+combination of three tools:
+
+  * [QEMU][qemu] is an emulator, which can be used independently. 
+  * [KVM][kvm] provides the kernal modules to utilize CPU virtualization extensions.
+  * [libvirt][libvirt] is used to manage the virtual machine on various virtualization technologies including qemu and KVM.
+
+`libvert` includes a command-line tool called `virsh` which can be used to
+define and manage machine, network and storage definitions as well as starting,
+stoping and connecting to thier consoles. 
+
+To run virtual machines efficiently the CPU needs to support hardware
+virtualization. This can be checked on a machine by looking at the CPU flags in
+`/proc/cpuinfo`. For Intel VT technology the flags should include `vmx` for
+AMD-V they should include `svm`. The following command should print either
+`vmx` or `svm` for every CPU in the system that has either flag.
+
+```
+egrep -wo 'vmx|svm' /proc/cpuinfo
+```
+
+All the tools described above are provided Debian packages. These need to be
+installed on the host system.
+
+```
+apt install qemu-kvm libvirt-clients libvirt-daemon-system
+```
+
+After installing these packages the `virsh` command can be used to list running
+machines, the `--all` flag is used in include non-running machines. At this
+point it should print an empty list.
+
+```
+# virsh list --all
+Id    Name                           State
+----------------------------------------------------
+```
+
+[libvirt]: https://libvirt.org/
+[qemu]: https://www.qemu.org/
+[kvm]: https://www.linux-kvm.org/
+[vnc]: https://docs.openstack.org/image-guide/virt-install.html

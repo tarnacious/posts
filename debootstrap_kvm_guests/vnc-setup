@@ -1,0 +1,54 @@
+qemu-img create -f qcow2 /tmp/centos.qcow2 10G
+
+```
+virt-install --virt-type kvm \
+             --name centos \
+             --ram 4096 \
+             --disk /tmp/centos.qcow2,format=qcow2 \
+             --network network=default \
+             --graphics vnc \
+             --noautoconsole \
+             --os-type=linux \
+             --os-variant=centos7.0 \
+             --location=/tmp/CentOS-7-x86_64-Minimal-1804.iso
+```
+
+
+```
+apt-get install libosinfo-bin
+
+osinfo-query os
+```
+
+
+             --graphics vnc,listen=0.0.0.0 \
+
+
+```
+# virsh list
+ Id    Name                           State
+----------------------------------------------------
+ 13    centos                         running
+```
+
+
+```
+# virsh vncdisplay centos
+127.0.0.1:0
+```
+
+
+grubby --update-kernel=ALL --args="console=ttyS0"
+
+Note: Alternatively, you can edit the 
+* /etc/default/grub file
+* add ‘console=ttyS0‘ to the GRUB_CMDLINE_LINUX 
+* grub2-mkconfig -o /boot/grub2/grub.cf
+
+vi /etc/sysconfig/network-scripts/ifcfg-
+
+ONBOOT=yes
+DHCP=yes
+
+
+https://www.serverlab.ca/tutorials/linux/administration-linux/how-to-configure-centos-7-network-settings/

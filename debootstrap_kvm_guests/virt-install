@@ -1,0 +1,25 @@
+virt-install \
+        --name our-app-2 \
+        --ram 4096 \
+        --disk path=/var/vms/our-disk.qcow2 \
+        --vcpus 2 \
+        --os-type linux \
+        --os-variant debian9 \
+        --graphics none \
+        --console pty,target_type=serial \
+        --noautoconsole \
+        --network bridge=virbr0 \
+        --import
+
+virt-install \
+        --name our-app \
+        --ram 4096 \
+        --disk path=/var/vms/our-disk.qcow2 \
+        --vcpus 2 \
+        --os-type linux \
+        --os-variant debian9 \
+        --network bridge=virbr0 \
+        --graphics none \
+        --console pty,target_type=serial \
+        --noautoconsole \
+        --import

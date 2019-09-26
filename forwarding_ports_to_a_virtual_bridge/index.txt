@@ -1,0 +1,68 @@
+iptables-save > /root/working.iptables.rules
+iptables-restore < /root/working.iptables.rules
+
+
+
+Virtual machines connected to a virtual bridged network are not accessable from
+outside the host server. Sometimes this is desirable, virtual machines that
+don't need to be accessed externally are much less exposed when they can't be.
+For vritual machines that do need to accessed externally some way of routing
+traffic to them is required.
+
+This routing can be done on the packet level using the Linux Netfilter kernel
+modules. Netfilter routing is [quite complicated][packet-flow], fortunatly
+fully understanding it is not required to route some packets to a virtual
+machine but a basic understanding is useful. 
+
+Incomming and outgoing packets transition through various states, at each state
+some action is taken which may include modifying the packet, moving it to a
+different state or dropping it. At each state a table of rules is consulted to
+decide what to do, these tables can be configured using the `iptables` program.
+
+Rules added, removed or changed with the iptables program take effect instantly
+but aren't persisted after a reboot. On Debian, to save the current rules the
+`iptables-save` command can be used: 
+
+    iptables-save > /root/working.iptables.rules
+
+
+
+I'll describe, as best I can, some rules that will ensure packets sent to a
+specific port on the host are routed to a port on a virtual machine. In this
+example the host has an interface called `enp2s0`, the virtual bridge is called
+`virbr0` and the subnet is 192.168.112.0/24. Port 3000 on the host will be
+routed to port 3000 on the guest.
+
+There are some rule that relate to the virtual bridge. The following rules
+accept packets from the virtual bridge `virbr0` to the network interface on the
+host `enp2s0` and the loop-back inteface on the host `lo`.
+
+  iptables -A FORWARD -i virbr0 -o enp2s0 -j ACCEPT
+  iptables -A FORWARD -i virbr0 -o lo -j ACCEPT
+
+The next rule allows packets to the virtual bridge where a connection has
+already been established to be accepted.
+
+  iptables -A FORWARD -o virbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+The next rule, as I understand, allows packets from the virtual network appear
+as if they were sent from the host IP as they are leaving the host.
+
+  iptables -t nat -A POSTROUTING -s 192.168.112.0/24 -j MASQUERADE
+
+The next rule allows packages from the virtual bridge to the virtual machines
+IP address `192.168.122.131` to be accepted.
+
+  iptables -I FORWARD -o virbr0 -d  192.168.122.131 -j ACCEPT
+
+The final rule take packets arriving at the host destined for port 3000, to
+instead be sent to the virtual machines IP address 
+
+iptables -t nat -I PREROUTING -p tcp --dport 3000 -j DNAT --to 192.168.122.106:3000
+
+
+
+
+
+
+[packet-flow]: https://en.wikipedia.org/wiki/Iptables#/media/File:Netfilter-packet-flow.svg

@@ -1,0 +1,228 @@
+# debootstap images for 
+
+I wanted to write a post covering preparing the host, creating a virtual
+machine (VM), setting up networking and running it with [KVM][kvm], but it
+turned out to be way more involved than I expected.  
+
+To break things up a bit I'll start by covering installing KVM, creating a disk
+image, running it and connecting to it via its console.  I'll cover the
+networking aspects in a later post.
+
+There are several tools for running virtual machines in a Linux host system
+including Xen, VirtualBox, KVM and QEMU. In this post I'll be using a common
+combination of three tools:
+
+  * [QEMU][qemu] is an emulator, which can be used independently. 
+  * [KVM][kvm] provides the kernal modules to utilize CPU virtualization extensions.
+  * [libvirt][libvirt] is used to manage the virtual machine definitions and can run these
+  definitions on various virtualization technologies including qemu and KVM.
+
+`libvert` includes a command-line tool called `virsh` which can be used to
+define and manage machine definitions as well as starting, stoping and
+connecting to thier consoles. 
+
+## Preparing the host system
+
+To run virtual machines efficiently the CPU needs to support hardware
+virtualization. This can be checked on a machine by looking at the CPU flags in
+`/proc/cpuinfo`. For Intel VT technology the flags should include `vmx` for
+AMD-V they should include `svm`. The following command should print either
+`vmx` or `svm` for every CPU in the system that has either flag.
+
+    # egrep -wo 'vmx|svm' /proc/cpuinfo
+
+All the tools described above are provided by the packages. These need to be
+installed on the host system.
+
+    # apt install qemu-kvm libvirt-clients libvirt-daemon-system
+
+After installing these packages the `virsh` command can be used to list running
+machines, the `--all` flag is used in include non-running machines. At this
+point it should print an empty list.
+
+
+    # virsh list --all
+    Id    Name                           State
+    ----------------------------------------------------
+
+
+To create a virtual machine the `virt-install` tool is used. New machines can
+be created by providing installation media, for this it is generally required
+to connect to the virtual machine's display and input devices to set it up,
+either `virt-viewer` or a VNC client can be used. I'm not going to go into this
+here as I ultimately want to automate this setup.
+
+## Preparing a VM disk image
+
+To create a runnable disk image there are some pretty standard tasks and
+various ways of archieving them. The general steps are listed below.
+
+  * Create a disk image file
+  * Connect the image file as a block device
+  * Partition the image, if desired
+  * Install a filesystem/s
+  * Mount the filesystem/s
+  * Install the base system
+  * Install a bootloader
+  * Set the root user password
+
+Firstly on the host system I'm going to install some tools.
+
+    apt-get install qemu-utils debootstrap 
+
+The `qemu-utils` package provides a tools `qemu-image` to create various type
+of disk images and `qemu-nbd` which allows images to be mounted as network
+block devices. It's possible to create raw image files with the `dd` utility
+and mount them as a loop device with `losetup`, but I'm going to create `qcow2`
+images. `qcow2` is a copy-on-write file format for storing disk images, it can
+grow as data is added and has some snapshotting capabilities but it can't be
+mounted directly and it is slow allocating new space.
+
+The `debootstrap` package is used to install the Debian base system to
+directory in a filesystem. Once installed the directory can be used as Debian
+root file system in a chroot, this is pretty convenient as it allows running
+programs (`update-grub2` and `passwd`) in the image.
+
+The ndb module should be loaded, this should add up to 16 `/dev/nbd*` block
+devices we can use later.
+
+    modprobe nbd max_part=16
+
+The `qemu-image` program can be used to create 10G qcow2 image file.
+
+    qemu-img create -f qcow2 our-disk.qcow2 10G
+
+The image file can by loaded as a network block device with `kvm-nbd`.
+
+    qemu-nbd -c /dev/nbd0 our-disk.qcow2
+
+For this image I will create a 200 megebyte boot partition and use the rest for
+the main partition. This can be done interactively with `fdisk` but for
+scripting `sfdisk` is pretty neat.
+
+sfdisk /dev/nbd0 << EOF
+,200MiB,S
+;
+EOF
+
+This should enable two block devices for each partion, `/dev/sbd0p1` and
+`/dev/sbd0p2`. On these partitions we can create the file systems.
+
+    mkfs.ext4 /dev/nbd0p1
+    mkfs.ext4 /dev/nbd0p2
+
+Now the partitions have filesystems they can be mounted. Here the second
+partition, the larger one, is mounted to a mount point.
+
+    mount /dev/nbd0p2 /mnt
+
+The `debootstrap` program can be used to install a Debian base system a
+directory. Addition packages can be installed with the `--include` flag. It
+runs `dpgk` inside a chroot.
+
+    debootstrap --include=locales-all,vim,sudo stable /mnt
+
+Other image preparation tasks can be run in a chroot, such as setting up a boot
+partition and setting the root user password and adding users.
+
+If a boot partition is used it can be mounted to `/boot` on the target system.
+
+    mount /dev/nbd0p1 /mnt/boot
+
+In this chroot it would be useful to have access to the hosts devices, so
+`/dev/` is mounted with the `--bind` option (why?, what is bind?).
+
+    mount --bind /dev/ /mnt/dev
+
+Enter the chroot and mount a `proc` and `sysfs` file systems as the are
+required (EDIT: by `update-grunt`.)
+
+    chroot /mnt/ /bin/bash
+    mount -t proc none /proc
+    mount -t sysfs none /sys
+
+Install some packages
+
+    apt-get install -y --force-yes linux-image-amd64 grub2
+
+For console access KVM expects machines to use the `ttyS0` device, `grub` can
+be configured to pass a parameter kernel tell it to use this device. To enable
+this update the `/etc/default/grub` and ensure the following setting.
+
+    GRUB_CMDLINE_LINUX_DEFAULT="console=ttyS0"
+    GRUB_TERMINAL=console  
+
+After this we can use the `update-grub` program to setup the boot partition.
+
+    update-grub
+
+And also set a root password 
+
+    passwd
+
+That is all the needs to be done in the chroot for now, so we can umount the
+file systems and exit back to the host.
+
+    umount /proc
+    umount /sys
+    exit
+
+This does a pretty good job, it's configured the disk devices as they are named
+on the host system, however when this is run in a different machine the disk
+devices may have different names. The device names that are used in KVM
+machines can be configured, but by default its `/dev/vba*`, so can update the
+generated grub config to replace the device names.
+
+    sed -i "s|/dev/nbd0p1|/dev/vda1|g" /mnt/boot/grub/grub.cfg
+    sed -i "s|/dev/nbd0p2|/dev/vda2|g" /mnt/boot/grub/grub.cfg
+
+We can also update the `fstab` file.
+
+    cat <<EOF > /mnt/etc/fstab                                   
+    /dev/vda1 /boot               ext4    sync 0       2
+    /dev/vda2 /                   ext4    errors=remount-ro 0       1
+    EOF
+
+The grup core image still needs to be installed to the boot sector on the disk image.
+ 
+    grub-install /dev/nbd0 --root-directory=/mnt --modules="biosdisk part_msdos"
+
+When everything is done all the mounts should be umounted and the image file
+disconnected from the network block device.
+  
+    umount /mnt/dev
+    umount /mnt/boot
+    umount /mnt
+    qemu-nbd -d /dev/nbd0
+
+## The VM
+
+		apt-get install virtinst
+
+
+    virt-install \
+            --name yolo \
+            --ram 4096 \
+            --disk path=/var/kvm/images/our-disk.qcow2 \
+            --vcpus 2 \
+            --os-type linux \
+            --os-variant debian9 \
+            --graphics none \
+            --console pty,target_type=serial \
+            --noautoconsole \
+            --import
+
+
+    
+
+
+
+          --network bridge=virbr0 \
+With 
+
+
+[libvirt]: https://libvirt.org/
+[qemu]: https://www.qemu.org/
+[kvm]: https://www.linux-kvm.org/
+[installmedia]: https://www.server-world.info/en/note?os=Debian_9&p=kvm&f=2
+[vnc]: https://docs.openstack.org/image-guide/virt-install.html

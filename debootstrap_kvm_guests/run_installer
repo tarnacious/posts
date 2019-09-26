@@ -1,0 +1,12 @@
+virt-install \
+        --name load-balancer \
+        --ram 4096 \
+        --disk path=/var/kvm/images/load-balancer.img,size=15 \
+        --vcpus 2 \
+        --os-type linux \
+        --os-variant debian9 \
+        --network bridge=virbr0 \
+        --graphics none \
+        --console pty,target_type=serial \
+        --location 'http://ftp.jaist.ac.jp/pub/Linux/debian/dists/stretch/main/installer-amd64/' \
+        --extra-args 'console=ttyS0,115200n8 serial'

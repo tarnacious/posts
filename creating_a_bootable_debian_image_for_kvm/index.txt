@@ -1,0 +1,168 @@
+To start a virtual machine we first a bootable disk images. Install media can
+be run via `virt-install` and used install a bootable system onto an empty
+image, but I prefer creating the image myself because it's easier to automate.
+
+In this post I'm only going to provide an overview of how it works, note a few
+considerations for KVM/qemu guests and link to a script I use to do it.
+
+The general steps needed to create a bootable Linux image look something like
+this:
+
+  * Create a disk image file
+  * Connect the image file as a block device
+  * Partition the image, if desired
+  * Install a filesystem/s
+  * Mount the filesystem/s
+  * Install the base system
+  * Configure the file system table
+  * Configure a hostname
+  * Configure the network interfaces
+  * Install a bootloader
+  * Set the root user password
+
+The script uses `qemu-img` to create a qcow2 image. The qcow2 disk image format
+is native to qemu which we'll be using to run the image. It uses a
+copy-on-write strategy where the image file only grows as data is added and
+supports snapshots. 
+
+    qemu-img create -f qcow2 demo.qcow2 80G
+
+Raw image files can be accessed as block devices using the Linux loop devices
+`/dev/loop*`, however these do not support qcow2 image files. Instead we use
+network block devices provided as kernel modules in the `qemu-utils` package.
+The nbd module must be enabled before the `/dev/nbd*` devices can be used.
+
+    modprobe nbd
+
+Once the devices are enabled, an image can be connected to a device.
+
+    qemu-nbd -c /dev/nbd0 demo.qcow2
+
+Once the image file is connected to the device it can be partition like any
+normal block device manually using `fdisk` or scripted with `sfdisk`. The
+following sfdisk command create a 200MB boot partition followed by a second
+partition that consumes the remaining space which will be used as the root
+partition.
+
+    sfdisk /dev/nbd0 << EOF
+    ,200MiB,83,*
+    ;
+    EOF
+
+After the disk is partitioned like this, two new devices will appear, one for
+each partition, `/dev/nbd0p1` and `/dev/nbd0p2`, just like with normal block
+devices. As with normal block devices we can create file systems on the
+partitions.
+
+    mkfs.ext4 -q /dev/nbd0p1
+    mkfs.ext4 -q /dev/nbd0p2
+
+The root partition can now be mounted somewhere.
+
+    mount /dev/nbd0p2 /mnt 
+
+The `debootstrap` utility is used to install a Debian base system.
+
+    debootstrap stable /mnt
+
+Now we configure the filesystem table, here we happen to know that our partions
+will appear as `/dev/vda1` and `/dev/vda2` in the emulated environment.
+
+    cat <<EOF > /mnt/etc/fstab
+    /dev/vda1 /boot               ext4    sync 0       2
+    /dev/vda2 /                   ext4    errors=remount-ro 0       1
+    EOF
+
+Configure a hostname
+
+    echo demo > /mnt/etc/hostname
+
+Add a standard `/etc/hosts` file that includes our hostname as an alias for localhost.
+
+    cat <<EOF > $MNT_DIR/etc/hosts
+    127.0.0.1       localhost
+    127.0.1.1       demo 
+
+    ::1     localhost ip6-localhost ip6-loopback
+    ff02::1 ip6-allnodes
+    ff02::2 ip6-allrouters
+    EOF
+
+We can also configure the network interfaces, to do this now we have to know
+what the device will be called when the image is running. Luckily the
+`virt-install` util we will use to define the virtual machine will add the
+first network card in PCI slot 0x02, which means the device will appear as
+`ens2` in the guest. We also know that the host will provide a DHCP the service
+the virtual machine can use to obtain an IPv4 address. Knowing this the
+configuration is relative straight forward; automatically enable the `ens2`
+device and configure an IPv4 interface that uses DHCP.
+
+    cat <<EOF > $MNT_DIR/etc/network/interfaces
+    source /etc/network/interfaces.d/*
+
+    auto lo
+    iface lo inet loopback
+
+    auto ens2
+    iface ens2 inet dhcp
+    EOF
+
+To complete the setup we want to run some commands _in_ the system we've
+created, to do this we use a `chroot`. The `chroot` command starts a shell in a
+system where the file system root is some directory we specify, in this case
+the mount point we've been setting up. A default `chroot` won't have any
+special file systems and we want to mount the boot partition   
+
+
+    mount --bind /dev/ /mnt/dev
+
+
+so before we enter the `chroot` we want to bind `/dev`
+from the host system to `/dev` in the chroot.
+
+
+
+The only important thing to note here is that it adds the argument
+"console=ttyS0" to GRUB_CMDLINE_LINUX in the Grub configuraton and then updates
+grub on the image, this allows us to configure the virtual machines via the
+serial console. It also add some network configuration, but we'll be looking
+into this in more detail in a running virtual machine.
+
+    root@demo ~ # wget https://gist.githubusercontent.com/tarnacious/a8d19a6bc05a196206bb04f0be6826f3/raw/f2d788d7974be9ef8e45b5f6e4251a1b0bda2257/bootstrap_debian_image 
+    root@demo ~ # chmod +x bootstrap_debian_image
+
+If all goes well the script will prompt for a root password and create a
+bootable [qcow2][qcow2] disk image. 
+
+    root@demo ~ # ./bootstrap_debian_image guest1 guest1
+    Creating guest1 
+    ...
+    Enter root password:
+    Enter new UNIX password:
+    Retype new UNIX password:
+    passwd: password updated successfully
+    ...
+    Installation finished. No error reported.
+    SUCCESS!
+    Cleaning up..
+    /dev/nbd0 disconnected
+    Bye
+
+Now we have a disk image we need somewhere to put it so we can use it. The
+emulator runs as the `libvirt-qemu` user that was created when we installed the
+packages. The emulator needs to reand and write to these images so we create a
+directory, change the ownership and set the gid flag so that files created or
+moved there are owned by the `libvirt-qemu` group. 
+
+    root@demo ~ # mkdir -p /var/kvm/images/
+    root@demo ~ # chown root:libvirt-qemu /var/kvm/images
+    root@demo ~ # chmod u+s /var/kvm/images
+
+Finally we copy all the image to the directory we created. It might make sense
+here to keep a copy of the image; we can start the virtual machine from scratch
+or we could create additional VM from it.
+
+    root@demo ~ # cp guest1 /var/kvm/images
+
+Now we have a bootable disk image somewhere that libvirt/qemu can read and
+write we can start a virtual machine.

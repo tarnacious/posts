@@ -1,0 +1,77 @@
+When downloading an ISOs from a mirror we want to make sure the file we
+downloaded has not been corrupted and that it originated from a trusted source.
+
+Typically this is done with a signed checksum that can be downloaded in
+addition to the iso image. The checksum and signature can generally be found in
+the same directory as the ISO. 
+
+The checksum of the downlaoded file is calutated and compared against the
+provided checksum. The checksum is verified by checking it was signed by a key
+obtained and verified seperately.
+
+I'll demonstrate the process of downloading and verifying CentOS ISO despite
+CentOS already already providing [sufficent documentation on verifying CentOS
+downloads][verify].
+
+From the CentOS downloads page there is a link, "How to [verify][sha256sum]
+your iso", this only describes verifying if the checksums match, but there is
+an additonal to [detailed][verify] instructions. On this page we find a link to
+the [CentOS signing keys][keys].
+
+On the [keys][keys] page there are links to several different keys for every
+major version, for downloading ISOs we want the [signing][key] key for the
+version we want download and verify. For each key there is also a `Key
+fingerprint` we can use to verify the key somewhat.
+
+It might seem almost of pointless verifying the fingerprint of a key downloaded
+from the site over HTTPS, because it mostly is. Often, j
+
+
+```
+$ wget http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-7
+$ cat RPM-GPG-KEY-CentOS-7 | gpg --with-fingerprint --import-options import-show --dry-run --import
+pub   rsa4096 2014-06-23 [SC]
+      6341 AB27 53D7 8A78 A7C2  7BB1 24C6 A8A7 F4A8 0EB5
+uid                      CentOS-7 Key (CentOS 7 Official Signing Key) <security@centos.org>                                                                                    
+
+gpg: Total number processed: 1
+```
+
+Check that the key exists  https://www.centos.org/keys/
+
+```
+# curl -s https://www.centos.org/keys/ | grep -C 1 "6341 AB27 53D7 8A78 A7C2  7BB1 24C6 A8A7 F4A8 0EB5"
+        pub  4096R/F4A80EB5 2014-06-23 CentOS-7 Key (CentOS 7 Official Signing Key) &lt;security@centos.org&gt;
+          Key fingerprint = 6341 AB27 53D7 8A78 A7C2  7BB1 24C6 A8A7 F4A8 0EB5
+        </code></pre>
+--
+        <pre><code>pub  4096R/F4A80EB5 2014-06-23 CentOS-7 Key (CentOS 7 Official Signing Key) &lt;security@centos.org&gt;
+          Key fingerprint = 6341 AB27 53D7 8A78 A7C2  7BB1 24C6 A8A7 F4A8 0EB5
+        </code></pre>
+```
+
+
+```
+# gpg --import ./RPM-GPG-KEY-CentOS-7
+gpg: key 24C6A8A7F4A80EB5: public key "CentOS-7 Key (CentOS 7 Official Signing Key) <security@centos.org>" imported
+gpg: Total number processed: 1
+gpg:               imported: 1
+```
+
+```
+wget http://mirror.infonline.de/centos/7.5.1804/isos/x86_64/CentOS-7-x86_64-Minimal-1804.iso
+wget http://mirror.infonline.de/centos/7.5.1804/isos/x86_64/sha256sum.txt.asc
+```
+
+```
+# sha256sum -c sha256sum.txt 2>&1  | grep OK
+CentOS-7-x86_64-Minimal-1804.iso: OK
+```
+
+
+[verify]: https://wiki.centos.org/Download/Verify
+[download]: https://www.centos.org/download/
+[keys]: https://www.centos.org/keys/
+[key]: https://www.centos.org/keys/RPM-GPG-KEY-CentOS-7
+[sha256sum]: https://wiki.centos.org/TipsAndTricks/sha256sum
+[debian-verify]: https://www.debian.org/CD/verify

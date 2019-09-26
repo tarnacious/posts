@@ -1,0 +1,204 @@
+
+
+### Debain KVM documentation
+
+https://wiki.debian.org/KVM
+
+### Getting debian net install running
+
+https://www.server-world.info/en/note?os=Debian_9&p=kvm&f=2
+
+### Access text console
+
+http://www.jaredlog.com/?p=1484
+
+### Static addresses
+
+https://serverfault.com/a/627245
+
+### Setting up a bridge
+
+https://wiki.debian.org/BridgeNetworkConnections
+
+### Using bridge on guest
+
+https://www.ibm.com/support/knowledgecenter/en/linuxonibm/liabp/liabpkvmsecbridge.htm
+
+### Libvert commmand reference
+
+https://libvirt.org/sources/virshcmdref/html/
+
+### Forward ports with ufw
+
+https://www.cyberciti.biz/faq/how-to-configure-ufw-to-forward-port-80443-to-internal-server-hosted-on-lan/
+
+### Forward ports with iptables
+
+https://aboullaite.me/kvm-qemo-forward-ports-with-iptables/
+
+### SSL passthrough
+
+https://stuff-things.net/2016/11/30/haproxy-sni/
+
+### Setup server image with debootstrap
+
+http://diogogomes.com/2012/07/13/debootstrap-kvm-image/index.html
+https://www.packtpub.com/mapt/book/virtualization_and_cloud/9781788294676/1/ch01lvl1sec12/installing-a-custom-os-on-the-image-with-debootstrap
+
+### Apt cacher
+
+apt-get install apt-cacher-ng
+
+### virsh commands
+
+#### Starting/Stopping Guests
+
+virsh start VMGUEST
+virsh shutdown VMGUEST
+virsh destroy VMGUEST
+
+####
+
+
+### Setup (debian stretch)
+
+# install lib-virt deps
+apt install qemu-kvm libvirt-clients libvirt-daemon-system
+
+# add groups to manage vms from another user
+adduser <youruser> libvirt
+adduser <youruser> libvirt-qemu
+
+# make a directs for images
+mkdir -p /mnt/kvm/images
+
+# TODO: setup bridge documentation
+
+# create a virtual machine with net installer.
+# setup, as expected.
+# install grub on main disk
+virt-install \
+        --name load-balancer \
+        --ram 4096 \
+        --disk path=/var/kvm/images/load-balancer.img,size=15 \
+        --vcpus 2 \
+        --os-type linux \
+        --os-variant debian9 \
+        --network bridge=virbr0 \
+        --graphics none \
+        --console pty,target_type=serial \
+        --location 'http://ftp.jaist.ac.jp/pub/Linux/debian/dists/stretch/main/installer-amd64/' \
+        --extra-args 'console=ttyS0,115200n8 serial'
+
+# for me the system reboots here, but doesn't give me a console.
+# machine is running, but we don't have a console.
+# to escape to the host run ^] (ctrl + ])
+
+
+# we can now list the machine
+```
+# virsh list
+Id    Name                           State
+----------------------------------------------------
+1     load-balancer                  running
+...
+
+
+# enable console login, by mounting the disk and setup getty for ttyS0
+virsh shutdown load-balancer
+guestmount -d load-balancer -i /mnt
+ln -s /mnt/lib/systemd/system/getty@.service /mnt/etc/systemd/system/getty.target.wants/getty@ttyS0.service
+umount /mnt
+
+# can not start the server in console mode, add users, install ssh etc.
+virsh start load-balancer --console
+
+### Create an image with debootstrap
+apt-get install debootstrap qemu-utils
+modprobe nbd max_part=16
+
+# create image
+qemu-img create -f qcow2 mail-server.qcow2 20G
+
+# mount as netword block device
+kvm-nbd -c /dev/nbd0 mail-server.qcow2
+
+# partition disk
+sfdisk /dev/nbd0 << EOF
+,4GiB,S
+;
+EOF
+
+# create file systems
+mkswap /dev/nbd0p1
+mkfs.ext4 /dev/nbd0p2
+
+# mount the disk
+mount /dev/nbd0p2 /mnt/
+
+# debootstrap
+debootstrap --include=less,locales-all,vim,sudo,openssh-server stable /mnt
+
+# setup chroot environment to configure system
+mount --bind /dev/ /mnt/dev
+chroot /mnt/ /bin/bash
+mount -t proc none /proc
+mount -t sysfs none /sys
+
+# install grub
+# when asked to select target device for GRUB to install on, do not select any and just continue.
+apt-get install -y --force-yes linux-image-amd64 grub2
+# my server runs raid disks, so maybe this is required?
+apt-get install mdadm
+
+grub-install /dev/nbd0
+update-grub
+
+# set root password
+passwd root
+
+# Allow access to the pseudo Terminal inside the new guest OS (not sure if required)
+echo "pts/0" >> /etc/securetty
+
+# Change the systemd run level to the multi-user level (not sure if required)
+systemctl set-default multi-user.target
+
+# create an fstab
+echo "/dev/sda2 / ext4 defaults,discard 0 0" > /etc/fstab
+
+# umount
+umount /proc/ /sys/
+
+# exit chroot
+exit
+
+# install again?
+grub-install /dev/nbd0 --root-directory=/mnt --modules="biosdisk part_msdos" --force
+
+
+sed -i 's/nbd0p2/sda2/g' /mnt/boot/grub/grub.cfg
+
+umount /mnt/dev
+umount /mnt
+
+qemu-nbd --disconnect /dev/nbd0
+
+
+virt-install \
+        --name hello4 \
+        --ram 4096 \
+        --disk path=/var/kvm/images/hello4.qcow2 \
+        --vcpus 2 \
+        --os-type linux \
+        --os-variant debian9 \
+        --network bridge=virbr0 \
+        --graphics none \
+        --console pty,target_type=serial \
+        --noautoconsole \
+        --import
+
+
+        --extra-args 'console=ttyS0,115200n8 serial' \
+ --force
+
+

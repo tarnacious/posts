@@ -1,0 +1,34 @@
+
+  qemu-img create -f qcow2 image_file 4G
+
+  modprobe nbd max_part=16
+  qemu-nbd -c /dev/nbd0 our-disk.qcow2
+  qemu-nbd -d /dev/nbd0
+
+  qemu-system-x86_64 -enable-kvm -machine type=pc,accel=kvm -cpu host0 -cdrom debian-9.5.0-amd64-netinst.iso -m 2G  -boot order=d -drive file=debian.qcow2,format=qcow2 
+
+virt-install \
+        --name debian \
+        --ram 4096 \
+        --disk path=debian.qcow2 \
+        --vcpus 2 \
+        --os-type linux \
+        --os-variant debian9 \
+        --network bridge=virbr0 
+
+#\
+        --graphics none \
+        --console pty,target_type=serial 
+
+
+\
+
+
+:
+        --extra-args 'console=ttyS0,115200n8 serial'
+
+# other
+
+losetup -f -P disk_image
+fdisk -l disk_image
+mount -o loop,offset=32256 disk_image mountpoint

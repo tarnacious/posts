@@ -1,0 +1,2 @@
+virsh autostart vmName
+virsh autostart debianlenny1

@@ -1,0 +1,63 @@
+bash create.sh owncloud owncloud 0
+
+console:
+
+virsh
+console owncloud
+
+get hwaddress:
+
+arp
+
+add to dhcp with name:
+
+<network>
+  <name>default</name>
+  <uuid>0fedc4d2-a5c0-4bda-a14e-57c2b9021f4b</uuid>
+  <forward mode='nat'/>
+  <bridge name='virbr0' stp='on' delay='0'/>
+  <mac address='52:54:00:a9:3d:90'/>
+  <ip address='192.168.122.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.122.100' end='192.168.122.254'/>
+      <host mac='52:54:00:28:49:ac' name='load-balancer' ip='192.168.122.10'/>
+      <host mac='52:54:00:26:84:f1' name='mail-server' ip='192.168.122.11'/>
+      <host mac='52:54:00:d3:41:40' name='tarnbarford-webserver' ip='192.168.122.12'/>
+      <host mac='52:54:00:04:e3:3f' name='debugproxy-vm' ip='192.168.122.13'/>
+      <host mac='52:54:00:27:25:24' name='bab-website' ip='192.168.122.14'/>
+      <host mac='52:54:00:82:3a:9f' name='owncloud' ip='192.168.122.15'/>
+    </dhcp>
+  </ip>
+</network>
+
+or live?:
+
+https://jamielinux.com/docs/libvirt-networking-handbook/appendix/dhcp-host-entries.html
+
+# reload netowrk
+
+virsh net-destroy default
+virsh net-start default
+
+virsh destroy vm
+virsh start vm
+
+systemctl restart ufw
+
+ouch
+
+# now some setup
+
+virsh console owncloud
+
+adduser tarn
+usermod -a -G sudo tarn
+
+# update ufw config from ansible
+
+# scp ssh key
+
+# prevent password logins
+
+
+

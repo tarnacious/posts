@@ -1,0 +1,50 @@
+```
+root@newtest:~# ls /sys/class/net
+ens2  ens8  lo
+```
+
+ip link set dev <interface> up
+ip link set dev <interface> down
+
+Add and address range and default gateway to an interface.
+ 
+```
+ip -6 route add default via fe80::1 dev ens2
+ip addr add 2a01:4f8:211:2845::2:1/112 dev ens2
+ip link set dev ens2 up
+```
+
+or `/etc/network/interfaces`
+
+```
+iface lo inet loopback
+
+allow-hotplug ens2
+iface ens2 inet6 static
+  address 2a01:4f8:211:2845::4:1
+  netmask 112
+  gateway fe80::1
+
+allow-hotplug ens3
+iface ens3 inet dhcp
+```
+
+
+```
+cat /proc/net/dev
+```
+
+eg
+
+```
+root@newtest:~# cat /proc/net/dev
+Inter-|   Receive                                                |  Transmit
+ face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
+  ens2:  920989      71    0    0    0     0          0         0     7891      80    0    0    0     0       0          0
+  ens8:   42748     507    0    5    0     0          0         0     8371      93    0    0    0     0       0          0
+    lo:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0 
+```
+
+
+ipv6 subnets
+https://www.crucial.com.au/blog/2011/04/15/ipv6-subnet-cheat-sheet-and-ipv6-cheat-sheet-reference/
