@@ -1,5 +1,5 @@
 I was originally trying build an effect that pans and rotates around an infinite world of repeating background images.
-To do this I was using an image the size of the viewing area, of course to panning around will often require drawing parts of several images. 
+To do this I was using an image the size of the viewing area, of course to panning around will often require drawing parts of several images.
 If we are panning along the x and y axis we will need to display, at most, four images.
 
 <div>
@@ -20,18 +20,18 @@ Sorry, you need a browser that supports canvas to play. You should probably upgr
 </div>
 
 Playing around I worked out that with nine tiles I could make sure all the tiles that could be visible were drawn.
-This also made it possible handle the infinite panning in a very similar way as before. 
+This also made it possible handle the infinite panning in a very similar way as before.
 
 Another complication was I wanted the world to rotate around the view, not around the worlds origin.
 I posted about [my struggles with that][transform] earlier.
 
-I got this working and had achieved what I was trying to do, but I wanted to take it a little further. 
+I got this working and had achieved what I was trying to do, but I wanted to take it a little further.
 Rather than just infinite repeating images, I wanted to make an infinite world.
-All I had to do was keep track of where the view was in this infinite world and 
+All I had to do was keep track of where the view was in this infinite world and
 instead of drawing the same image everywhere, I would choose each image to draw by where it was in world.
 
 It was after I got this working that I realised adding the ability to scale the view of this tiled world would be pretty straight forward.
-If the view was zoomed out 100% then the view would be the size of exactly four images or tiles. 
+If the view was zoomed out 100% then the view would be the size of exactly four images or tiles.
 Adding another tile of padding around those four tiles would be enough to ensure all the tiles possible in the view would be drawn.
 
 <div>
@@ -39,25 +39,25 @@ Adding another tile of padding around those four tiles would be enough to ensure
 Sorry, you need a browser that supports canvas to play. You should probably upgrade anyway, you're missing out.
 </canvas>
 </div>
- 
+
 Zooming out 200% would mean the view was the size of nine tiles, adding another tile of padding would again ensure all the tiles in the view would be displayed.
 Clearly there is a pattern here.
 
-Putting all this together and adding some controls and debugging information I came up with this. 
+Putting all this together and adding some controls and debugging information I came up with this.
 Note there is no limit on how far you can zoom or pan, but zooming out far enough will eventually bring any browser to it knees.
 
 <div>
 <canvas id="canvas" width="500" height="500"></canvas>
 </div>
 
-Move <a id="left" href="#">left [h]</a>/<a id="right" href="#">right [l]</a> and <a id="up" href="#">up [k]</a>/<a id="down" href="#">down [j]</a>. 
-Rotate <a id="clockwise" href="#">clockwise [d]</a> and <a id="anti-clockwise" href="#">anti-clockwise [f]</a>. 
+Move <a id="left" href="#">left [h]</a>/<a id="right" href="#">right [l]</a> and <a id="up" href="#">up [k]</a>/<a id="down" href="#">down [j]</a>.
+Rotate <a id="clockwise" href="#">clockwise [d]</a> and <a id="anti-clockwise" href="#">anti-clockwise [f]</a>.
 Zoom <a id="zoom-in" href="#">in [z]</a> and <a id="zoom-out" href="#">out [x]</a>
 
-I have some ideas about what I would like to do with this from here. 
+I have some ideas about what I would like to do with this from here.
 
-* A game of some sort, possibly similar to the [Desktop Racer game][desktopracer] I wrote for DevStar 2008. 
-* Use some free map tiles 
+* A game of some sort, possibly similar to the [Desktop Racer game][desktopracer] I wrote for DevStar 2008.
+* Use some free map tiles
 * An infinite world of images from Flickr
 * Make it 3D
 
