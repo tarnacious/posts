@@ -29,7 +29,7 @@ would be worth writing a post about myself. Below is the Form class script:
     from Microsoft.Scripting import SourceCodeKind
 
     class MetaNote(Form):
-    
+
         def __init__(self):
         self.button = Button()
         self.code = TextBox()
@@ -47,7 +47,7 @@ would be worth writing a post about myself. Below is the Form class script:
         self.button.Click += self.run
 
     def run(self,sender,e):
-    
+
         engine = Python.CreateEngine()
         source = engine.CreateScriptSourceFromString(self.code.Text,SourceCodeKind.Statements)
         scope = engine.CreateScope()
@@ -88,6 +88,6 @@ Then the fun..
    [4]: http://www.secretgeek.net/host_ironpython.asp
 
    [5]: http://www.resolversystems.com/
-  
-   [6]: https://tarnbarford.net/static/journal/executing_ironpython_in__err___ironpython/image.png
+
+   [6]: image.png
 

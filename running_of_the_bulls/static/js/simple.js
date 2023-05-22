@@ -45,13 +45,13 @@ Player.prototype.update = function(cursors, bulls) {
         if (cursors.up.isDown) tank.body.velocity.y = -200;
         if (cursors.down.isDown) tank.body.velocity.y = 200;
         if (jumpButton.isDown) {
-            _.each(bulls, function(bull) { 
+            _.each(bulls, function(bull) {
                 var angle = game.physics.arcade.moveToObject(bull.sprite, _this.sprite.body, 300);
                 tank.animations.frameName = "vega21.png";
                 if (player.health > 0 && bulls.length > 0) {
                     player.score += 10;
                 }});
-        }        
+        }
         if ((Math.abs(tank.body.velocity.x) > 5) || (Math.abs(tank.body.velocity.y) > 5)) {
             tank.animations.play('move', 10, false);
         }
@@ -117,7 +117,7 @@ Bull.prototype.update = function(bulls, player) {
     sprite.rotation = angleBetween(body.velocity, {"x":0, "y":0})
 
     sprite.scale.y = (body.velocity.x > 0) ? -0.5 : 0.5;
-    sprite.scale.x = 0.5;        
+    sprite.scale.x = 0.5;
 
     if (body.velocity.getMagnitude() < 200) {
         body.velocity.x = Math.random() * 200 + 100;
@@ -150,16 +150,16 @@ var t;
 
 function preload () {
     // characters and effects
-    game.load.atlasJSONHash('bull', '/static/journal/running_of_the_bulls/static/assets/bulls.png', '/static/journal/running_of_the_bulls/static/assets/bull.json');
-    game.load.atlasJSONHash('vega', '/static/journal/running_of_the_bulls/static/assets/vega.png', '/static/journal/running_of_the_bulls/static/assets/vega.json');
-    game.load.atlasJSONHash('effects', '/static/journal/running_of_the_bulls/static/assets/effects.png', '/static/journal/running_of_the_bulls/static/assets/effect.json');
+    game.load.atlasJSONHash('bull', 'static/assets/bulls.png', 'static/assets/bull.json');
+    game.load.atlasJSONHash('vega', 'static/assets/vega.png', 'static/assets/vega.json');
+    game.load.atlasJSONHash('effects', 'static/assets/effects.png', 'static/assets/effect.json');
 
     // background
-    game.load.image('earth', '/static/journal/running_of_the_bulls/static/assets/scorched_earth.png');
+    game.load.image('earth', 'static/assets/scorched_earth.png');
 
-    // map 
-    game.load.tilemap('land-tilemap', '/static/journal/running_of_the_bulls/static/assets/land.json', null, Phaser.Tilemap.TILED_JSON);
-    game.load.image('fence', '/static/journal/running_of_the_bulls/static/assets/fence.png');
+    // map
+    game.load.tilemap('land-tilemap', 'static/assets/land.json', null, Phaser.Tilemap.TILED_JSON);
+    game.load.image('fence', 'static/assets/fence.png');
 }
 
 
@@ -168,19 +168,19 @@ function create () {
     // create background
     land = game.add.tileSprite(0, 0, 800, 600, 'earth');
     land.fixedToCamera = true;
-    
+
     // load a map
     map = game.add.tilemap('land-tilemap');
     map.addTilesetImage('fence');
 
-    // everything the isn't empty 
+    // everything the isn't empty
     map.setCollisionByExclusion([0]);
-    
+
     // create a layer
     layer = map.createLayer('Tile Layer 1');
     layer.resizeWorld();
-    
-    // create a player 
+
+    // create a player
     player = new Player(game, layer);
 
     // create inital bull
@@ -190,7 +190,7 @@ function create () {
     game.camera.deadzone = new Phaser.Rectangle(150, 150, 500, 300);
     game.camera.focusOnXY(player.start_x, player.start_y);
 
-    // setup input 
+    // setup input
     cursors = game.input.keyboard.createCursorKeys();
     jumpButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
@@ -207,10 +207,10 @@ function update () {
     timer += 1;
     // add a bull every 1000 points, if we haven't already
     // first bull added in the into.
-    if (player.score % 1000 == 0 && 
+    if (player.score % 1000 == 0 &&
         bulls.length < player.score / 1000 &&
         bulls.length != 0)  {
-        bulls.push(new Bull(game, layer)); 
+        bulls.push(new Bull(game, layer));
     }
 
     if (game_state == "intro") {
@@ -228,7 +228,7 @@ function update () {
         game_state = "first_bull";
         t.text = "Watch out for that bull!";
         timer = 0;
-        bulls.push(new Bull(game, layer)); 
+        bulls.push(new Bull(game, layer));
     }
 
     if (game_state == "first_bull" && timer > 500) {
@@ -260,7 +260,7 @@ function update () {
         t.text = "Your getting it!";
         timer = 0;
     }
-    
+
     if (game_state == "first-2000" && timer > 300) {
         game_state = "playing";
         t.text = "";

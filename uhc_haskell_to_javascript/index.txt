@@ -1,6 +1,6 @@
 If all goes well some JavaScript included on this page should have generated a list of all the primes numbers between 1 and 100 and printed them below.
 
-<script type="text/javascript" src="https://tarnbarford.net/static/journal/uhc_haskell_to_javascript/Main.js"></script>
+<script type="text/javascript" src="Main.js"></script>
 
 To generate these primes I wrote simple Primes module.
 
@@ -43,19 +43,19 @@ It can also be compiled by [UHC][2] which I found interesting because [UHC can c
     [1/2] Compiling Haskell      Primes      (Primes.hs)
     [2/2] Compiling Haskell      Main        (Main.hs)
     $ ls
-    Main.core  Main.hi  Main.hs  Main.html  Main.js  
+    Main.core  Main.hi  Main.hs  Main.html  Main.js
     Main.mjs  Primes.core  Primes.hi  Primes.hs  Primes.mjs
 
 The -tjs sets the target to JavaScript and uhc then generates JavaScript files, some intermediate files and a html page. UHC must be configured then built with the --enable-js flag for the JavaScript backend to work.
 
 The html page references the two generated JavaScript files and quite a few framework/runtime/library JavaScript files. These are all in the source of this page.
 
-The Primes program doesn't interact with the DOM at all, it just dumps a list out where it was called. This makes everything a lot simpler, but is not very useful. 
+The Primes program doesn't interact with the DOM at all, it just dumps a list out where it was called. This makes everything a lot simpler, but is not very useful.
 The [uhc-javascript project][3] implements typed [Foreign function interfaces][4] for browser JavaScript functions, the DOM and also some JavaScript libraries like jQuery and Backbone.
 This makes it possible to write an entire client side application in Haskell, although I'm not sure if it's a good idea.
 
-I also don't know how complete or good UHC is as Haskell compiler. 
-I checked it could compile a simple [Chess][5] program which I have been playing with thought it might be fun to try and get running in the browser for a post. 
+I also don't know how complete or good UHC is as Haskell compiler.
+I checked it could compile a simple [Chess][5] program which I have been playing with thought it might be fun to try and get running in the browser for a post.
 Turns out I'm going to have to level up my Haskell a fair bit to get the UI stuff working.
 
 

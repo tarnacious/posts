@@ -4,7 +4,7 @@ cross-compile target and the host target.
 
     #!/bin/bash
     $ wget https://static.rust-lang.org/dist/rustc-1.5.0-src.tar.gz
-    $ tar xf rustc-1.5.0-src.tar.gz 
+    $ tar xf rustc-1.5.0-src.tar.gz
     $ ./configure --target=arm-unknown-linux-gnueabi,x86_64-unknown-linux-gnu --prefix "$(PWD)"/../bin
     $ make -j$(nproc) install
 
@@ -78,13 +78,13 @@ the filesystem, the program can run in the emulator.
 
 ![hello rust screenshot][hello-rust]
 
-[hello-rust]: /static/journal/arm_rust_cross_compiler/static/hello-rust.png
-[patch]: /static/journal/arm_rust_cross_compiler/static/versatile.patch
-[cross]: https://tarnbarford.net/journal/arm-unknown-linux-gnueabi
-[emulator]: https://tarnbarford.net/journal/arm-qemu-linux-busybox
-[cargo]: https://github.com/rust-lang/carg://github.com/rust-lang/cargo 
+[hello-rust]: static/hello-rust.png
+[patch]: static/versatile.patch
+[cross]: /journal/arm-unknown-linux-gnueabi
+[emulator]: /journal/arm-qemu-linux-busybox
+[cargo]: https://github.com/rust-lang/carg://github.com/rust-lang/cargo
 [linker]: https://github.com/rust-lang/rust/issues/9328
-[rust]: https://www.rust-lang.org/ 
+[rust]: https://www.rust-lang.org/
 [guide]: https://github.com/japaric/ruststrap/blob/master/1-how-to-cross-compile.md
 [ccpi]: http://www.cnx-software.com/2011/10/18/raspberry-pi-emulator-in-ubuntu-with-qemu/
 [rustlang]: https://www.rust-lang.org/

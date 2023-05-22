@@ -1,12 +1,12 @@
 I fucking love the [Manos do Mono manifesto][manifesto]. It has very grand ideals and a philosophy of simplicity which I really dig, it is also excellently illustrated with pictures of cats.
-I've wanted try it since listening to [Jackson Harper][jacksonh] [talking about it on a Herding Code podcast last year][herdingcode]. 
+I've wanted try it since listening to [Jackson Harper][jacksonh] [talking about it on a Herding Code podcast last year][herdingcode].
 
 ![I've also wanted little Lion, Elephants and Giraffes at home][mane]
 
 Installing Mono
 ===============
 
-I'm not sure if I needed to upgrade from version 2.6.7 to use Manos, which is in included with the Linux Mint distribution I use, but I knew I would need a newer version to for some other stuff I want to do. So I built and installed the latest Mono (2.11) from source, which was pretty straight forward. 
+I'm not sure if I needed to upgrade from version 2.6.7 to use Manos, which is in included with the Linux Mint distribution I use, but I knew I would need a newer version to for some other stuff I want to do. So I built and installed the latest Mono (2.11) from source, which was pretty straight forward.
 
     #!/usr/bin/bash
     $ git clone git://github.com/mono/mono.git
@@ -17,7 +17,7 @@ I'm not sure if I needed to upgrade from version 2.6.7 to use Manos, which is in
 Ok, install libtool.
 
     #!/usr/bin/bash
-    $ sudo apt-get install libtool 
+    $ sudo apt-get install libtool
     $ ./autogen.sh --prefix=/usr/local
     ..
     configure: error: msgfmt not found. You need to install the 'gettext' package, or pass --enable-nls=no to configure.
@@ -40,7 +40,7 @@ And make sure the new Mono works, awesome.
             Notifications: epoll
             Architecture:  amd64
             Disabled:      none
-            Misc:          softdebug 
+            Misc:          softdebug
             LLVM:          supported, not enabled.
             GC:            Included Boehm (with typed GC and Parallel Mark)
 
@@ -59,19 +59,19 @@ Getting started
 ===============
 
 Manos has a command line tool like rails to create, build and serve websites.
-    
+
     #!/usr/bin/bash
     $ manos
     manos usage is: manos [command] [options]
 
-      -h, -?, --help             
-          --init, -i             
-          --server, -s           
-          --docs, -d             
-          --build, -b            
+      -h, -?, --help
+          --init, -i
+          --server, -s
+          --docs, -d
+          --build, -b
           --show-environment, --se
-                                 
-          --run, -r=VALUE  
+
+          --run, -r=VALUE
 
 The --init option creates a new application.
 
@@ -82,10 +82,10 @@ The --init option creates a new application.
     ManosChat.cs  StaticContentModule.cs
 
 Which creates a new folder with two files. The initial app is setup to serve static content from a content folder.
- 
+
 We'll replace those files with a ridiculously simple long polling "chat" application which will consist of three files; a C# file, a HTML page and a JavaScript file.
 
-The Manos application has four routes, one for the HTML page, the JavaScript file and routes to post messages and wait for updates. The routing metadata hopefully looks pretty familiar. 
+The Manos application has four routes, one for the HTML page, the JavaScript file and routes to post messages and wait for updates. The routing metadata hopefully looks pretty familiar.
 
 * The Wait method simply adds the request context to a list of waiting requests and leaves the browser requesting it waiting while the server moves on to handling the next request.
 * The Send method pulls the message out of the request context and then loops through all the waiting connections and forwards the message on.
@@ -103,19 +103,19 @@ That is it!
     namespace ManosChat {
 
         public class ManosChat : ManosApp {
-            
-            public List<IManosContext> _waiting; 
-            
+
+            public List<IManosContext> _waiting;
+
             public ManosChat ()
             {
                 _waiting = new List<IManosContext>();
             }
 
             [Post ("/send")]
-            public void Send(IManosContext context) 
+            public void Send(IManosContext context)
             {
                 var message = context.Request.PostData["message"];
-               
+
                 foreach(var listener in _waiting) {
                     try {
                         listener.Response.End(message);
@@ -123,7 +123,7 @@ That is it!
                     }
                 }
                 _waiting.Clear();
-                
+
                 context.Response.End();
             }
 
@@ -136,14 +136,14 @@ That is it!
             [Get("/")]
             public void Home(IManosContext context)
             {
-                var content = File.ReadAllText("index.html");   
+                var content = File.ReadAllText("index.html");
                 context.Response.End(content);
             }
 
             [Get("/app.js")]
             public void Script(IManosContext context)
             {
-                var content = File.ReadAllText("app.js"); 
+                var content = File.ReadAllText("app.js");
                 context.Response.End(content);
             }
 
@@ -187,7 +187,7 @@ And my JavaScript something like this.
                   success: function(data) {
                     showMessage(data);
                     getMessages(); }
-                  }); 
+                  });
             };
 
         var sendMessage = function(message) {
@@ -197,7 +197,7 @@ And my JavaScript something like this.
                   data: 'message=' +  message,
                   success: function(data) {
                     }
-                  }); 
+                  });
         }
 
         $('#send-message').click(function(e) {
@@ -229,14 +229,14 @@ Some Notes
 
 The chat browser windows are "Waiting for localhost" even though the page has fully loaded. This is because we are not responding to the request until we have a message, this is known as long polling. A common way to avoid this is to make the request from inside an iframe. And yes, it is possible for clients to miss messages between requests to wait in this chat application. Also requests timeouts are not handled correctly.
 
-The reason we can access the list of clients without thread synchronization mechanisms is because all our requests a called on the same thread. 
+The reason we can access the list of clients without thread synchronization mechanisms is because all our requests a called on the same thread.
 This is great for this example, but it also means that if you block the handler thread (by making database query or something) then all other requests will have to wait.
-This just means you need to do any time consuming work or IO on another thread. It may be worth noting that request are queued in another thread, so the server isn't blocking while we are handling a request. 
+This just means you need to do any time consuming work or IO on another thread. It may be worth noting that request are queued in another thread, so the server isn't blocking while we are handling a request.
 
 I hope to take this a little further and add Riak storage and maybe fix some of the obvious short failings of this example. Finally, props to Jackson Harper and everyone who has contributed to Manos and Mono, you are all awesome.
 
-[chat]: https://tarnbarford.net/static/journal/manos_long_polling_chat/chat.png
-[mane]: https://tarnbarford.net/static/journal/manos_long_polling_chat/lions-mane.jpeg
+[chat]: chat.png
+[mane]: lions-mane.jpeg
 [manifesto]: http://jacksonh.tumblr.com/post/1159500924/manos-de-mono-the-manifesto
 [riak-fast-track]: http://wiki.basho.com/The-Riak-Fast-Track.html
 [riak]: https://github.com/basho/riak

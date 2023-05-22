@@ -1,9 +1,9 @@
-    <script type="text/javascript" src="https://tarnbarford.net/static/journal/transforms/transform_animation.js"></script>
+    <script type="text/javascript" src="transform_animation.js"></script>
     <script type="text/javascript">
-        window.onload = function() { 
+        window.onload = function() {
 
             // Demo 1
-            var demo1_start = document.getElementById("demo1_start"); 
+            var demo1_start = document.getElementById("demo1_start");
             var demo1 = document.getElementById('demo1').getContext('2d');
             drawStandard([], demo1)
             demo1_start.onclick = function() {
@@ -16,10 +16,10 @@
                             function() { demo1_start.style.display = "block" } );
                 }
                 return false;
-            }            
-            
+            }
+
             // Demo 2
-            var demo2_start = document.getElementById("demo2_start"); 
+            var demo2_start = document.getElementById("demo2_start");
             var demo2 = document.getElementById('demo2').getContext('2d');
             drawStandard([], demo2)
             demo2_start.onclick = function() {
@@ -35,7 +35,7 @@
             }
 
             // Demo 3
-            var demo3_start = document.getElementById("demo3_start"); 
+            var demo3_start = document.getElementById("demo3_start");
             var demo3 = document.getElementById('demo3').getContext('2d');
             drawStandard([], demo3)
             demo3_start.onclick = function() {

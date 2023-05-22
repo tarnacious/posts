@@ -26,7 +26,7 @@ wrap it up in a blog post too.
 I started off by creating a search engine interface. I used an interface from
 the start as I wanted to try mock testing and dependency injection.
 
-
+    #!/usr/bin/csharp
     public interface ITextSearchEngine
     {
         object Setup(string searchText);
@@ -39,6 +39,7 @@ The most simple search engine is just using a string and the methods on
 System.String. It shows how easy it is to implement the ITextSearchEngine
 interface:
 
+    #!/usr/bin/csharp
     public class SimpleTextSearch : ITextSearchEngine
     {
         private string _contents;
@@ -83,6 +84,7 @@ independent of actual data. This is for performance tests where the data will
 effect the results. I intend to verify this by running a tests against
 different data.
 
+    #!/usr/bin/csharp
     public interface ITextDataStore
     {
         string SearchText();
@@ -92,6 +94,7 @@ The ITestHarness interface must be implemented by test classes. The Create(..)
 method allows the test framework to inject ITextSearchEngine and
 ITextDataStore implementations into the test class.
 
+    #!/usr/bin/csharp
     public interface ITestHarness
     {
         void Create(ITextSearchEngine engine, ITextDataStore datastore);
@@ -101,6 +104,7 @@ ITextDataStore implementations into the test class.
 Now we can start implementing some tests before we've even implemented a
 search engine. To do this we start by creating a base test class:
 
+    #!/usr/bin/csharp
     public class TestHarnessBase : ITestHarness
     {
         #region Data Members
@@ -127,6 +131,7 @@ search engine. To do this we start by creating a base test class:
 The test framework will consider public methods with a known return type and
 no parameters as test methods.
 
+    #!/usr/bin/csharp
     public class SearchEngineSearchTests : TestHarnessBase
     {
         #region Test Methods
@@ -266,25 +271,14 @@ world search problems. Regardless, it has been lots of fun just getting the
 tree search functional but I'd be surprised if I've added any value to one of
 the most researched topics in computer science.
 
-   [1]: http://structuremap.sourceforge.net/Default.htm
-
-   [2]: http://en.wikipedia.org/wiki/Boyer_%E2%80%93_Moore_string_search_algorithm
-
-   [3]: http://en.wikipedia.org/wiki/Aho-Corasick_algorithm
-
-   [4]: http://en.wikipedia.org/wiki/Suffix_tree
-
-   [6]: https://tarnbarford.net/static/journal/text_searching/image1.png
- 
-   [8]: https://tarnbarford.net/static/journal/text_searching/image2.png
-
-   [9]: https://tarnbarford.net/static/journal/text_searching/image3.png
-
-   [11]: http://nayyeri.net/blog/how-to-split-a-text-into-words/
-
-   [12]: http://blog.sharpthinking.com.au/post/2008/10/07/DevSta-7bChallenge-20087d.aspx
-
-   [13]: http://static.sharpthinking.com.au/TextSearchPost1/Results/results.html
-
-   [14]: http://static.sharpthinking.com.au/TextSearchPost1/TextSearchProject.zip
-
+[1]: http://structuremap.sourceforge.net/Default.htm
+[2]: http://en.wikipedia.org/wiki/Boyer_%E2%80%93_Moore_string_search_algorithm
+[3]: http://en.wikipedia.org/wiki/Aho-Corasick_algorithm
+[4]: http://en.wikipedia.org/wiki/Suffix_tree
+[6]: image1.png
+[8]: image2.png
+[9]: image3.png
+[11]: http://nayyeri.net/blog/how-to-split-a-text-into-words/
+[12]: /journal/devsta-challenge-2008/
+[13]: http://static.sharpthinking.com.au/TextSearchPost1/Results/results.html
+[14]: http://static.sharpthinking.com.au/TextSearchPost1/TextSearchProject.zip

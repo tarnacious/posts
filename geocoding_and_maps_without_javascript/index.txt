@@ -70,7 +70,7 @@ key][16] and use it to set the GeoCoder.geoCodeKey property.
     from xml.dom import minidom
 
     class GeoCoder():
-        
+
         def __init__(self):
             self.geoCodeUrl = 'http://maps.google.com/maps/geo?q=%(address)s&output=xml&oe=utf8&sensor=false&key=%(key)s'
             self.geoCodeKey = ''
@@ -83,7 +83,7 @@ key][16] and use it to set the GeoCoder.geoCodeKey property.
             return response.read();
 
     class KmlParser():
-        
+
         def GetText(self,node,nodeName):
             return node.getElementsByTagName(nodeName)[0].childNodes[0].data
 
@@ -97,7 +97,7 @@ key][16] and use it to set the GeoCoder.geoCodeKey property.
                         'street':self.GetText(node,'ThoroughfareName'),
                         'postcode':self.GetText(node,'PostalCodeNumber'),
                         'coordinates': self.GetCoordinates(node) }
-        
+
             return address
 
         def Parse(self, xml):
@@ -107,7 +107,7 @@ key][16] and use it to set the GeoCoder.geoCodeKey property.
             for placeNode in dom.getElementsByTagName('Placemark'):
                 results.append(self.ParseAddress(placeNode))
                 dom.unlink()
-        
+
             return results;
 
         def GetAddresses(address):
@@ -136,7 +136,7 @@ key][16] and use it to set the GeoCoder.geoCodeKey property.
             return self.geoCodeUrl % {'key':self.geoCodeKey,'address':urllib2.quote(address)}
 
         def GetKml(self, address):
-         
+
             response = urllib2.urlopen(self.GetUrlKey(address))
             return response.read();
 
@@ -160,10 +160,10 @@ key][16] and use it to set the GeoCoder.geoCodeKey property.
             return address
 
         def Parse(self, xml):
-        
+
             results = []
             dom = minidom.parseString(xml)
-        
+
             for placeNode in dom.getElementsByTagName('Placemark'):
                 results.append(self.ParseAddress(placeNode))
 
@@ -239,7 +239,7 @@ is required.
         if markers:
             marker = [','.join(p) for p in markers]
             params['markers'] = '|'.join(marker)
-    
+
         if not params.has_key('key') : params['key'] = key
             return url + '&'.join(['='.join(p) for p in params.items()])
 
@@ -256,10 +256,10 @@ is required.
                    ['145.1058060','-37.7025570'],
                    ['145.1478460','-37.6744410'],
                    ['145.0858270','-38.0058450']]
-    
+
         markers = [ [e[1],e[0],colours[i]] for i, e in zip(range(len(address)),address)]
         params = { 'size':'256x256', 'maptype':'roadmap', 'sensor':'false','markers': markers }
-        print GetImageUrl(params, markers)  
+        print GetImageUrl(params, markers)
 
 
 Using this script and little more Python hacking I could quickly generate some
@@ -322,13 +322,13 @@ let you know how I go.
 
    [5]: image_thumb.png
 
-   [6]: https://tarnbarford.net/static/journal/geocoding_and_maps_without_javascript/live_nojs.png
+   [6]: live_nojs.png
 
-   [7]: https://tarnbarford.net/static/journal/geocoding_and_maps_without_javascript/live_withjs.png
+   [7]: live_withjs.png
 
-   [8]: https://tarnbarford.net/static/journal/geocoding_and_maps_without_javascript/maps_nojs.png
+   [8]: maps_nojs.png
 
-   [9]: https://tarnbarford.net/static/journal/geocoding_and_maps_without_javascript/maps_nojs.png
+   [9]: maps_nojs.png
 
    [10]: http://www.youtube.com/
 

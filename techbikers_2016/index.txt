@@ -4,7 +4,7 @@ on donations, so I hope to explain why the ride is important to me, that the
 charity is not only a good cause but also effective, and hopefully convince you
 to [donate][16].*
 
-<img style="float: left; margin-right: 20px; margin-top: 5px" src="/static/journal/techbikers_2016/static/angeber.png">
+<img style="float: left; margin-right: 20px; margin-top: 5px" src="static/angeber.png">
 
 As most of you will know, I am pretty passionate about tech and love cycling,
 [despite an accident or two][13]. Some of you will have even donated in
@@ -20,7 +20,7 @@ In 2013, [Lea][lea] and [Jan][jan] who participated in the inaugural ride
 decided to bring the idea to Berlin. Techbikers Germany's first ride was from
 Prague to Berlin. I joined the group a week before that ride and later [wrote
 about it][4]. It's been a pleasure to ride together in 2014 from Copenhagen to
-Berlin and in 2015 from Hamburg to Berlin. 
+Berlin and in 2015 from Hamburg to Berlin.
 
 
 Since the 2014 ride, we have been raising money for [World Bicycle Relief][3],
@@ -47,7 +47,7 @@ different for me as I [had to take a break from cycling this year][13] and I'm
 leaving my much trusted Koga Miyata at home and riding my fixed gear bike ([hey
 8bar-bikes, it would be great if you could donate too][14]!). It should be fun.
 
-<img style="float: left; margin-right: 20px" src="/static/journal/techbikers_2016/static/wbr.png"> 
+<img style="float: left; margin-right: 20px" src="static/wbr.png">
 
 This year we are targeting &euro;25,000. My personal goal is &euro;750 and every donation
 no matter how large or small will help reach this goal. To the companies I work
@@ -59,7 +59,7 @@ friends an extra hug when I'm back later this year!
 [Click here to visit my fundraising page directly][16]
 
 *Update 15/6: The link should be in english now.*
-<p style="text-decoration: line-through;"><i>(The above link is in German, you can visit the Techbikers group page, [here][17],
+<p style="text-decoration: line-through;"><i>(The above link is in German, you can visit the Techbikers group page, <a href="https://altruja.de/new-donation-event-95">here</a>,
 and change the language in the top right corner then scroll down to find my
 page, don't donate to the other people, they are already mostly ahead of me)</i></p>
 
@@ -69,16 +69,14 @@ Tarn
 
 <!--
 <div style="height: 100px">
-<img style="float: left; margin-right: 20px; hight: 100px" src="/static/journal/techbikers_2016/static/techbikers.png">
+<img style="float: left; margin-right: 20px; hight: 100px" src="static/techbikers.png">
 </div>
 -->
 
-
-
 [1]: http://www.roomtoread.org/
-[2]: http://www.techbikers.de/ 
+[2]: http://www.techbikers.de/
 [3]: http://www.worldbicyclerelief.org/
-[4]: https://tarnbarford.net/journal/prague-berlin
+[4]: /journal/prague-berlin
 [5]: http://www.worldbicyclerelief.org/our-work/field-mechanics
 [6]: http://www.worldbicyclerelief.org/the-bike
 [7]: http://www.worldbicyclerelief.org/our-work/education
@@ -91,9 +89,9 @@ Tarn
 [14]: https://8bar-bikes.com/
 [15]: http://berlinerfahrradschau.de/en/
 [16]: https://altruja.de/tarn-barford?lang=en
-[angeber]: /static/journal/techbikers_2016/static/angeber.png
-[techbikers]: /static/journal/techbikers_2016/static/techbikers.png
-[wbr]: /static/journal/techbikers_2016/static/wbr.png
+[angeber]: static/angeber.png
+[techbikers]: static/techbikers.png
+[wbr]: static/wbr.png
 [lea]: http://www.leabauer.com/
 [jan]: https://janbechler.de/
 [17]: https://altruja.de/new-donation-event-95

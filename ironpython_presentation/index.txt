@@ -1,7 +1,7 @@
-Im doing an introduction to IronPython presentation at the Victoria .Net user
-group tomorrow, Ive been attending the user group for about a year and Im
+Im doing an introduction to IronPython presentation at the Victoria .NET user
+group tomorrow, I've been attending the user group for about a year and Im
 pretty excited about presenting. I think python is a fantastic language and
-its great to be able to build software on the .Net framework with it.
+its great to be able to build software on the .NET framework with it.
 
 ## The Slides
 
@@ -27,9 +27,8 @@ course, [XKCD][4].
 Basic information about the language and its background. Would have liked to
 have added [meta programming][6] or at least .. to the paradigms.
 
-
-I think its a fantastic language so Ill mention its expressive, fun,
-productive or whatever adjectives Ive got in my head at the time.
+I think its a fantastic language so I'll mention its expressive, fun,
+productive or whatever adjectives I've got in my head at the time.
 
 ![][7]
 
@@ -39,14 +38,14 @@ I really want to demonstrate that Python is real language, being used by real
 people, to write real code.
 
 
-I probably should also have mentioned [Google App Engine][8] here which Ive
+I probably should also have mentioned [Google App Engine][8] here which I've
 been tinkering with a bit recently and think is pretty cool.
 
 ![][9]
 
 #### IronPython
 
-The Python language on .Net. Most of the demo is doing cool stuff in .Net with
+The Python language on .NET. Most of the demo is doing cool stuff in .NET with
 the Python language. I think it goes further than this and allows developers
 to use their own paradigms and patterns to do .NET development.
 
@@ -92,12 +91,12 @@ it might be worth warning people.
 ## The Demo
 
 The demo is a series of scripts run into the IronPython Interactive Console.
-Ive uploaded the very small collection of scripts for this demo [here][23].
+I've uploaded the very small collection of scripts for this demo [here][23].
 
 #### IronPython and the CLR
 
 Create a string, show how its methods can be reflected. Import the CLR and
-show how the .Net String methods are now available.
+show how the .NET String methods are now available.
 
     #!/use/bin/python
     # Introduction to IronPython and the CLR
@@ -127,12 +126,12 @@ show how the .Net String methods are now available.
 
 [Screen Shot][24]
 
-#### Using a .Net Classes
+#### Using a .NET Classes
 
-Create a [WebClient][25] object from the .Net framework to download an RSS
+Create a [WebClient][25] object from the .NET framework to download an RSS
 feed. Use an xml2py module written by [Harry Pierson][26] to deserialise the
 RSS feed into an object graph. Then send the dates and titles to the [Speech
-Synthesizer][27]. Ive seen this done before in an IronPython presentation, and
+Synthesizer][27]. I've seen this done before in an IronPython presentation, and
 just thought it was to much fun to leave out.
 
 
@@ -176,7 +175,7 @@ just thought it was to much fun to leave out.
 
 I really dont want to do this in the presentation. I did spend a fair amount
 of time playing round with asynchronous SQL queries for use in a WPF
-application, but it seemed too complicated for the demo so Ive left it out. I
+application, but it seemed too complicated for the demo so I've left it out. I
 use
 
 
@@ -204,7 +203,7 @@ use
 #### WPF, Data Binding and Exec
 
 I think there is some pretty cool stuff in this demo. Although it takes a lot
-more to write real applications it does open new ways to develop and test .Net
+more to write real applications it does open new ways to develop and test .NET
 applications.
 
 
@@ -284,7 +283,7 @@ SDK][36]
 [IronPython In Action][39] Python and everything .NET with TDD and MVC
 practices.
 
-[IronPython Cookbook][40] Online collection of IronPython .Net scripts.
+[IronPython Cookbook][40] Online collection of IronPython .NET scripts.
 
 [IronPython Urls][41], MSDN,
 
@@ -303,29 +302,29 @@ I hope it goes well and everyone takes something out of it, I look forward to
 hearing what you thought.
 
 
-   [1]: https://tarnbarford.net/static/journal/ironpython_presentation/introduction.png
+   [1]: introduction.png
 
-   [2]: https://tarnbarford.net/static/journal/ironpython_presentation/why-python.png
+   [2]: why-python.png
 
-   [3]: http://blog.sharpthinking.com.au/post/2008/12/28/A-taste-of-Python.aspx
+   [3]: /journal/a-taste-of-python/
 
    [4]: http://xkcd.com/353/
 
-   [5]: https://tarnbarford.net/static/journal/ironpython_presentation/python.png
+   [5]: python.png
 
    [6]: http://www.python.org/doc/essays/metaclasses/
 
-   [7]: https://tarnbarford.net/static/journal/ironpython_presentation/who-uses_it.png
+   [7]: who-uses_it.png
 
    [8]: http://code.google.com/appengine/
 
-   [9]: https://tarnbarford.net/static/journal/ironpython_presentation/iron-python.png
+   [9]: iron-python.png
 
-   [10]: https://tarnbarford.net/static/journal/ironpython_presentation/code-comparision.png
+   [10]: code-comparision.png
 
    [11]: http://www.manning.com/foord/
 
-   [12]: https://tarnbarford.net/static/journal/ironpython_presentation/dynamic-language-runtime.png
+   [12]: dynamic-language-runtime.png
 
    [13]: http://dlr.codeplex.com/
 
@@ -341,15 +340,15 @@ hearing what you thought.
 
    [19]: http://www.codeplex.com/IronScheme
 
-   [20]: https://tarnbarford.net/static/journal/ironpython_presentation/dynamic-typing.png
+   [20]: dynamic-typing.png
 
    [21]: http://en.wikipedia.org/wiki/Duck_typing
 
-   [22]: https://tarnbarford.net/static/journal/ironpython_presentation/interactive-interpreter.png
+   [22]: interactive-interpreter.png
 
    [23]: http://static.sharpthinking.com.au/2009/iron_python_presentation/demo.zip
 
-   [24]: http://static.sharpthinking.com.au/2009/iron_python_presentation/python-and-the-clr.png
+   [24]: python-and-the-clr.png
 
    [25]: http://msdn.microsoft.com/en-us/library/system.net.webclient.aspx
 
@@ -357,13 +356,13 @@ hearing what you thought.
 
    [27]: http://msdn.microsoft.com/en-us/library/system.speech.synthesis.speechsynthesizer.aspx
 
-   [28]: http://static.sharpthinking.com.au/2009/iron_python_presentation/webclient-xml2py-speech.png
+   [28]: webclient-xml2py-speech.png
 
-   [29]: http://static.sharpthinking.com.au/2009/iron_python_presentation/execute-statements-databinding.png
+   [29]: execute-statements-databinding.png
 
-   [30]: https://tarnbarford.net/static/journal/ironpython_presentation/testing-in-python.png
+   [30]: testing-in-python.png
 
-   [31]: https://tarnbarford.net/static/journal/ironpython_presentation/tools-sdks.png
+   [31]: tools-sdks.png
 
    [32]: www.codeplex.com/IronPythonStudio
 
@@ -375,7 +374,7 @@ hearing what you thought.
 
    [36]: www.codeplex.com/sdlsdk
 
-   [37]: https://tarnbarford.net/static/journal/ironpython_presentation/resources.png
+   [37]: resources.png
 
    [38]: http://www.diveintopython.org/
 
@@ -387,5 +386,5 @@ hearing what you thought.
 
    [42]: http://www.voidspace.org.uk/ironpython/index.shtml
 
-   [43]: https://tarnbarford.net/static/journal/ironpython_presentation/thanks.png
+   [43]: thanks.png
 

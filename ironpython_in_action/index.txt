@@ -1,4 +1,4 @@
-<img src="https://tarnbarford.net/static/journal/ironpython_in_action/image.png" class="right" />
+<img src="image.png" class="right" />
 
 While twittering (or [tweeting][1]) about an [IronPython presentation][2] I
 was doing, [@voidspace][3] messaged me asking if I might mention his book. I'd
@@ -71,7 +71,7 @@ frames the language, the technology and author well.
 
    [8]: http://ironpython-urls.blogspot.com/2009/04/executing-ironpython-in-err-ironpython.html
 
-   [9]: https://tarnbarford.net/static/journal/ironpython_in_action/image.png
+   [9]: image.png
 
    [10]: http://www.ironpythoninaction.com/
 

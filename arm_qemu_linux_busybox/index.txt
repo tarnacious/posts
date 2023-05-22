@@ -16,7 +16,7 @@ A Linux kernel that can be emulated by [QEMU][qemu] can be built using the
 
     gpg --recv 6092693E
     unxz linux-4.3.3.tar.xz
-    gpg --verify linux-4.3.3.tar.sign 
+    gpg --verify linux-4.3.3.tar.sign
 
     tar xf linux-4.3.3.tar
 
@@ -26,7 +26,7 @@ A Linux kernel that can be emulated by [QEMU][qemu] can be built using the
     #make ARCH=arm menuconfig
     make ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi- all
 
-    # this builds a kernal image to `./arch/arm/boot/zImage` 
+    # this builds a kernal image to `./arch/arm/boot/zImage`
     cp linux-4.3.3/arch/arm/boot/zImage .
 
 [Busybox][busybox] is a single binary combining many Unix utilities including a
@@ -38,7 +38,7 @@ shell.
     wget https://busybox.net/downloads/busybox-1.24.1.tar.bz2.sign
 
     gpg --recv ACC9965B
-    gpg --verify busybox-1.24.1.tar.bz2.sign 
+    gpg --verify busybox-1.24.1.tar.bz2.sign
 
     tar xf busybox-1.24.1.tar.bz2
     cd xf busybox-1.24.1
@@ -46,7 +46,7 @@ shell.
     make ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi- install
 
 This builds a minimal filesystem in `./_install`. Some additional directories
-are required. 
+are required.
 
     #!/bin/bash
     cd _install
@@ -99,6 +99,6 @@ I use my system qemu package, but it is not hard to build.
 
 [busybox]: https://busybox.net/
 [qemu]: http://wiki.qemu.org
-[arm-unknown-linux-gnueabi]: https://tarnbarford.net/journal/arm-unknown-linux-gnueabi
-[screenshot]: /static/journal/arm_qemu_linux_busybox/static/arm-qemu-busybox.png
+[arm-unknown-linux-gnueabi]: /journal/arm-unknown-linux-gnueabi
+[screenshot]: static/arm-qemu-busybox.png
 [briolidz]: https://briolidz.wordpress.com/2012/02/07/building-embedded-arm-systems-with-crosstool-ng/

@@ -30,9 +30,9 @@ You can watch the devsta video while playing!
 Finally a trashed desktop and the finish flag toaster.
 
 
-[0]: https://tarnbarford.net/static/journal/devsta_%7Bchallenge_2008%7D/devsta2008.tarn.desktopracer.screenshot0.png
-[1]: https://tarnbarford.net/static/journal/devsta_%7Bchallenge_2008%7D/devsta2008.tarn.desktopracer.screenshot1.png
-[2]: https://tarnbarford.net/static/journal/devsta_%7Bchallenge_2008%7D/devsta2008.tarn.desktopracer.screenshot2.png
-[3]: https://tarnbarford.net/static/journal/devsta_%7Bchallenge_2008%7D/devsta2008.tarn.desktopracer.screenshot3.png
+[0]: devsta2008.tarn.desktopracer.screenshot0.png
+[1]: devsta2008.tarn.desktopracer.screenshot1.png
+[2]: devsta2008.tarn.desktopracer.screenshot2.png
+[3]: devsta2008.tarn.desktopracer.screenshot3.png
 [4]: https://web.archive.org/web/20100130005530/http://devsta.microsoft.com.au:80/about.aspx
-[5]: https://web.archive.org/web/20091130054324/http://devsta.microsoft.com.au:80/winners.aspx 
+[5]: https://web.archive.org/web/20091130054324/http://devsta.microsoft.com.au:80/winners.aspx

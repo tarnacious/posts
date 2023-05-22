@@ -1,13 +1,13 @@
-<script src="https://tarnbarford.net/static/journal/rxjs_merge/jquery-1.10.2.min.js" type="text/javascript"></script>
-<script src="https://tarnbarford.net/static/journal/rxjs_merge/rx.js" type="text/javascript"></script>
-<script src="https://tarnbarford.net/static/journal/rxjs_merge/rx.aggregates.js" type="text/javascript"></script>
-<script src="https://tarnbarford.net/static/journal/rxjs_merge/rx.jQuery.js" type="text/javascript"></script>
-<script src="https://tarnbarford.net/static/journal/rxjs_merge/rx.joins.js" type="text/javascript"></script>
+<script src="jquery-1.10.2.min.js" type="text/javascript"></script>
+<script src="rx.js" type="text/javascript"></script>
+<script src="rx.aggregates.js" type="text/javascript"></script>
+<script src="rx.jQuery.js" type="text/javascript"></script>
+<script src="rx.joins.js" type="text/javascript"></script>
 
 <script>
     $(function () {
 
-        // Setup observables 
+        // Setup observables
         var button1 = $("#button1").toObservable("click").Select(function() {
             return "Button 1" });
 

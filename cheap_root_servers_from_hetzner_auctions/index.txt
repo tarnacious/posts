@@ -3,7 +3,7 @@ services I host. You can rent standard and custom configurations but these have
 an initial setup cost and setup time. For impatient hobbyists like myself,
 Hetzner also allows you to rent unused servers from their [server
 auctions][auction]. These servers can be rented with a one month notice period,
-have no up front costs, and are available to use almost immediately. 
+have no up front costs, and are available to use almost immediately.
 
 I'm experimenting with IPv6 bridge setups, for this I've found a cheap server
 from the auctions and am trying to document the process.
@@ -12,7 +12,7 @@ When you order a root server from [Hetzner][hetzner] you will be given an IPv4
 address and an IPv6 subnet for the server. When you SSH to the IP address you
 will reach the Hetzner [rescue system][rescue], a shell environment where you
 can format, mount and install an operating system on the disks connected to
-your server. 
+your server.
 
 Note: when SSHing into the rescue system you may want to disable "strict host
 checking" as the rescue system host key will be different than that of your
@@ -36,7 +36,7 @@ changed to demo. This isn't very interesting, but I took some screen shots of
 the process anyway. [1][1] [2][2] [3][3] [4][4] [5][5] [6][6] [7][7]
 
 After installing the image you can reboot from the rescue system and your
-server will boot up. 
+server will boot up.
 
     #!/bin/bash
     root@rescue ~ # reboot
@@ -49,7 +49,7 @@ going forward you can be confident you're connecting to your server.
     tarn@laptop $ ssh [server IP address]
     root@demo ~ #
 
-If all goes well you should have an ssh shell on your new physical server! 
+If all goes well you should have an ssh shell on your new physical server!
 
 If you ever find yourself in a situation where you can't SSH into your own
 server because the network is misconfigured or the server doesn't boot, you can
@@ -65,10 +65,10 @@ an hour to get setup.
 [auction]: https://www.hetzner.com/sb
 [rescue]: https://wiki.hetzner.de/index.php/Installimage/en
 
-[1]: http://tarnbarford.net/static/journal/cheap_root_servers_from_hetzner_auctions/install_image1.png
-[2]: http://tarnbarford.net/static/journal/cheap_root_servers_from_hetzner_auctions/install_image2.png
-[3]: http://tarnbarford.net/static/journal/cheap_root_servers_from_hetzner_auctions/install_image3.png
-[4]: http://tarnbarford.net/static/journal/cheap_root_servers_from_hetzner_auctions/install_image4.png
-[5]: http://tarnbarford.net/static/journal/cheap_root_servers_from_hetzner_auctions/install_image5.png
-[6]: http://tarnbarford.net/static/journal/cheap_root_servers_from_hetzner_auctions/install_image6.png
-[7]: http://tarnbarford.net/static/journal/cheap_root_servers_from_hetzner_auctions/install_image7.png
+[1]: install_image1.png
+[2]: install_image2.png
+[3]: install_image3.png
+[4]: install_image4.png
+[5]: install_image5.png
+[6]: install_image6.png
+[7]: install_image7.png

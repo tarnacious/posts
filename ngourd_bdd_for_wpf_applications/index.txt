@@ -308,9 +308,9 @@ Ive upload the project from this post [here][8].
 
    [5]: http://cukes.info/ (http://cukes.info/)
 
-   [6]: https://tarnbarford.net/static/journal/ngourd_bdd_for_wpf_applications/calc.png
+   [6]: calc.png
 
-   [7]: https://tarnbarford.net/static/journal/ngourd_bdd_for_wpf_applications/screenshot.png
+   [7]: screenshot.png
 
    [8]: http://static.sharpthinking.com.au/2009/ngourd-calculator/DLRCalculator.zip
 

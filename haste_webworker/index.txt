@@ -58,13 +58,13 @@ the worker and write them to an element on the page.
     message worker f = on_message worker $ mkCallback f
 
     handle_message :: Elem -> JSString -> IO ()
-    handle_message el s = setProp el "innerHTML" s' 
+    handle_message el s = setProp el "innerHTML" s'
         where Just s' = fromJSString s
 
     main = do
         Just el <- elemById "output"
         worker <- make_worker (toJSString "worker.js")
-        message worker (\s -> handle_message el s) 
+        message worker (\s -> handle_message el s)
         send_message worker $ toJSString "Hello worker!"
 
 Worker scripts run in an environment where an `onmessage` event can be bound
@@ -97,7 +97,7 @@ prefix to every message it receives and sends the message back.
     message :: (JSString -> IO ()) -> IO ()
     message f = on_message $ mkCallback f
 
-    response :: JSString ->  JSString 
+    response :: JSString ->  JSString
     response s = toJSString $ "Worker recieved, " ++ s'
         where Just s' = fromJSString s
 
@@ -111,13 +111,13 @@ stages and doesn't receive any messages.
 I still don't know Haskell well enough to really know what I'm doing, but
 hopefully Haste will encourage me to engage with more Haskell code.
 
-I've pushed all the [code for this post to Github] [github].
+I've pushed all the [code for this post to Github][github].
 
-[haste-lang]: http://haste-lang.org/ 
+[haste-lang]: http://haste-lang.org/
 [ffi-docs]: https://github.com/valderman/haste-compiler/blob/master/doc/js-externals.txt
 [chess]: http://www.haskell.org/haskellwiki/Learning_Haskell_with_Chess
-[uhc]: https://tarnbarford.net/journal/uhc-haskell-to-javascript
+[uhc]: /journal/uhc-haskell-to-javascript
 [webworker]: http://en.wikipedia.org/wiki/Web_worker
-[swipe]: https://tarnbarford.net/journal/swipe
+[swipe]: /journal/swipe
 [ffi]: http://en.wikipedia.org/wiki/Foreign_function_interface
 [github]: https://github.com/tarnacious/haste-websockets

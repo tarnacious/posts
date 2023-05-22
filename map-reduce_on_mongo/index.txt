@@ -76,10 +76,10 @@ get eval'd and run on the server. Here is the map function.
 
     #!/usr/bin/javascript
     function wordMap() {
-        
+
         // try find words in document text
         var words = this.text.match(/\w+/g);
-        
+
         if (words === null) {
             return;
         }
@@ -274,7 +274,7 @@ isn't much point on this tiny low-spec'd netbook.
 
    [2]: http://ayende.com/Blog/archive/2010/03/14/map-reduce-ndash-a-visual-explanation.aspx
 
-   [3]: https://tarnbarford.net/static/journal/map-reduce_on_mongo/map-reduce-example.png
+   [3]: map-reduce-example.png
 
    [4]: http://www.mozilla.org/rhino/
 

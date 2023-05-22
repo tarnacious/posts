@@ -1,13 +1,13 @@
-<script src="https://tarnbarford.net/static/journal/rxjs_zip/jquery-1.10.2.min.js" type="text/javascript"></script>
-<script src="https://tarnbarford.net/static/journal/rxjs_zip/rx.js" type="text/javascript"></script>
-<script src="https://tarnbarford.net/static/journal/rxjs_zip/rx.aggregates.js" type="text/javascript"></script>
-<script src="https://tarnbarford.net/static/journal/rxjs_zip/rx.jQuery.js" type="text/javascript"></script>
-<script src="https://tarnbarford.net/static/journal/rxjs_zip/rx.joins.js" type="text/javascript"></script>
+<script src="jquery-1.10.2.min.js" type="text/javascript"></script>
+<script src="rx.js" type="text/javascript"></script>
+<script src="rx.aggregates.js" type="text/javascript"></script>
+<script src="rx.jQuery.js" type="text/javascript"></script>
+<script src="rx.joins.js" type="text/javascript"></script>
 
 <script>
     $(function () {
 
-        // Setup observables 
+        // Setup observables
         var button1 = $("#button1").toObservable("click").Select(function() {
             return "Button 1" });
 
@@ -18,7 +18,7 @@
         var compose = button1.Merge(button2)
 
 
-        var compose = compose.Skip(1).Zip(compose, function (result1, result2) { 
+        var compose = compose.Skip(1).Zip(compose, function (result1, result2) {
             return result1 + " previously " + result2; });
 
         // Subscribe to, and handle event

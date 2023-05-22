@@ -6,7 +6,7 @@ For the last year or so I've used Linux exclusively for my personal computing wh
 
 - I used the mouse to copy text from the terminal buffer. This constantly depressed me.
 
-- I never worked out how to run a console shell inside Vim. This resulted in using my windows manger to switch between Vim and console windows. It made copying and pasting between the two more difficult as I had to use the system clipboard. 
+- I never worked out how to run a console shell inside Vim. This resulted in using my windows manger to switch between Vim and console windows. It made copying and pasting between the two more difficult as I had to use the system clipboard.
 
 - I sometimes had couple of windows running processes like web servers on a separate desktop.
 
@@ -26,7 +26,7 @@ There are many more use-cases for Screen but just these functions alone have res
 
    [1]: http://twitter.com/rioter
 
-   [2]: https://tarnbarford.net/static/journal/oh_screen_where_have_you_been%3F/screen.png 
+   [2]: screen.png
 
    [3]: http://www.gnu.org/software/screen/
 

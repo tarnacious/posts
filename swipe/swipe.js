@@ -4390,7 +4390,7 @@ var Kd = function Ld(b) {
 }(), Rb = function(a) {
   return Math.floor.b ? Math.floor.b((Math.random.h ? Math.random.h() : Math.random.call(null)) * a) : Math.floor.call(null, (Math.random.h ? Math.random.h() : Math.random.call(null)) * a)
 };
-var kb = new T(null, "dup", "dup"), Md = new T(null, "default", "default"), $ = new T(null, "recur", "recur"), Nd = new T(null, "finally-block", "finally-block"), Od = new T(null, "catch-block", "catch-block"), Pd = new T(null, "y", "y"), Qd = new T(null, "x", "x"), hb = new T(null, "flush-on-newline", "flush-on-newline"), Rd = new T(null, "catch-exception", "catch-exception"), Sd = new T(null, "continue-block", "continue-block"), Td = new T(null, "prev", "prev"), Ud = new T(null, "type", "type"), 
+var kb = new T(null, "dup", "dup"), Md = new T(null, "default", "default"), $ = new T(null, "recur", "recur"), Nd = new T(null, "finally-block", "finally-block"), Od = new T(null, "catch-block", "catch-block"), Pd = new T(null, "y", "y"), Qd = new T(null, "x", "x"), hb = new T(null, "flush-on-newline", "flush-on-newline"), Rd = new T(null, "catch-exception", "catch-exception"), Sd = new T(null, "continue-block", "continue-block"), Td = new T(null, "prev", "prev"), Ud = new T(null, "type", "type"),
 w = new T(null, "else", "else"), ib = new T(null, "readably", "readably"), Fd = new T(null, "validator", "validator"), jb = new T(null, "meta", "meta"), Vd = new T(null, "letter", "letter"), Wd = new T(null, "priority", "priority");
 var Xd, Yd, Zd, $d;
 function ae() {
@@ -6099,7 +6099,7 @@ function gg() {
     return jf(c)
   });
   return W([d, c], !0)
-}("/static/journal/swipe/swipe-worker.js"), ig = S.d(hg, 0, null), jg = S.d(hg, 1, null);
+}("swipe-worker.js"), ig = S.d(hg, 0, null), jg = S.d(hg, 1, null);
 (function(a, b) {
   var c = Vf.b(1);
   Df(function() {
@@ -6158,7 +6158,7 @@ function gg() {
           c[8] = e;
           return kf(c, 2, l)
         }
-        return 2 === d ? (d = c[2], e = (e = ue("swipe-loading")) && e.parentNode ? e.parentNode.removeChild(e) : null, c[9] = e, c[10] = d, c[2] = null, c[1] = 3, $) : 3 === d ? (c[1] = 5, $) : 4 === d ? (d = c[2], of(c, d)) : 5 === d ? (d = Ee(), e = De(), l = gg(), c[11] = d, c[12] = e, kf(c, 8, l)) : 6 === d ? (c[2] = null, c[1] = 7, $) : 7 === d ? (d = c[2], c[2] = d, c[1] = 4, $) : 8 === d ? (d = c[2], lf(c, 9, a, d)) : 9 === d ? (c[13] = c[2], kf(c, 10, b)) : 10 === d ? (d = G(c[2]), d = ue("swipe-results").innerHTML = 
+        return 2 === d ? (d = c[2], e = (e = ue("swipe-loading")) && e.parentNode ? e.parentNode.removeChild(e) : null, c[9] = e, c[10] = d, c[2] = null, c[1] = 3, $) : 3 === d ? (c[1] = 5, $) : 4 === d ? (d = c[2], of(c, d)) : 5 === d ? (d = Ee(), e = De(), l = gg(), c[11] = d, c[12] = e, kf(c, 8, l)) : 6 === d ? (c[2] = null, c[1] = 7, $) : 7 === d ? (d = c[2], c[2] = d, c[1] = 4, $) : 8 === d ? (d = c[2], lf(c, 9, a, d)) : 9 === d ? (c[13] = c[2], kf(c, 10, b)) : 10 === d ? (d = G(c[2]), d = ue("swipe-results").innerHTML =
         Ae(d), e = Sf(), c[14] = d, kf(c, 11, e)) : 11 === d ? (c[15] = c[2], c[2] = null, c[1] = 3, $) : null
       })
     }(), e = function() {

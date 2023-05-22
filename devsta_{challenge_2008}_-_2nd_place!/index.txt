@@ -10,8 +10,8 @@ compete again next year.  Enjoy Vegas boys.
 
 [1]: http://devsta.microsoft.com.au/
 [2]: http://www.zdnet.com.au/insight/software/soa/GPS-Tag-wins-Microsoft-Devsta-Challenge/0,139023769,339292785-1s,00.htm
-[3]: https://tarnbarford.net/journal/devsta-challenge-2008 
+[3]: /journal/devsta-challenge-2008
 [4]: http://jsarge.wordpress.com/
 [5]: http://wolfbyte-net.blogspot.com/
 [6]: https://web.archive.org/web/20100130005530/http://devsta.microsoft.com.au:80/about.aspx
-[7]: https://web.archive.org/web/20091130054324/http://devsta.microsoft.com.au:80/winners.aspx 
+[7]: https://web.archive.org/web/20091130054324/http://devsta.microsoft.com.au:80/winners.aspx

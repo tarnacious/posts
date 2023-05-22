@@ -26,6 +26,6 @@ See ya there.
 
    [1]: http://www.deveve.net/
 
-   [2]: https://tarnbarford.net/static/journal/devevenings_presentation_-_ioc/2010_3_Devevenings_Presentation.pptx   
+   [2]: 2010_3_Devevenings_Presentation.pptx
 
-   [3]: https://tarnbarford.net/static/journal/devevenings_presentation_-_ioc/2010_3_Guestbook.zip   
+   [3]: 2010_3_Guestbook.zip

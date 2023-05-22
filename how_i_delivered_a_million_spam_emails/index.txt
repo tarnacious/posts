@@ -46,7 +46,7 @@ I turned back to my computer to see a message from Michal, we share a physical
 server which we run virtual machines on using KVM. "Hey", this cannot have been
 unrelated so I beat him to the punch, "my server was spamming :'(".  He'd
 received an abuse email from our hosting provider.
-    
+
     15:41:48 piwoni: hey
     15:41:54 tarnacious: yes?
     15:42:05 tarnacious: my server was spamming :'(
@@ -146,7 +146,7 @@ Probably worth looking around, surely someone has solved the problem.
 After a quick search I found a script, [pflogsumm.pl][13], that seemed to
 summarise the type of information I was looking for. I'm not sure how accurate
 it is or what these numbers mean, but it is very clear that my little mail
-server had been quite busy. 
+server had been quite busy.
 
 
     Grand Totals
@@ -182,40 +182,40 @@ between May 7 and May 9.
     -----------------------
         date          received  delivered   deferred    bounced     rejected
         --------------------------------------------------------------------
-        Apr 19 2015        21         21          0          0         12 
-        Apr 20 2015        35         35          0          0         30 
-        Apr 21 2015        32         32          0          0         14 
-        Apr 22 2015        30         30          0          0         44 
-        Apr 23 2015        34         34          0          0          8 
-        Apr 24 2015        28         28          0          0         13 
-        Apr 25 2015        22         22          0          0         10 
-        Apr 26 2015       110       2030          0       2039          9 
-        Apr 27 2015        61         60          0          0         18 
-        Apr 28 2015     67547     193033        565k     52301         15 
-        Apr 29 2015       149      11711     453347      10425         21 
-        Apr 30 2015    136912     460833       1244k     90682         17 
-        May  1 2015     11679     194702       4523k     26787         15 
-        May  2 2015       113      10189       3798k      2113         10 
-        May  3 2015        69       7538       3601k       850          9 
-        May  4 2015        44       5902       3344k      6094         10 
-        May  5 2015       109      19998       3064k        64         14 
-        May  6 2015        63       7587     187980          0          9 
-        May  7 2015        52         54         43          0         18 
-        May  8 2015        65         64         21          0         17 
-        May  9 2015        50         50         21          0         27 
-        May 10 2015     35576      74756     335577      22229         14 
-        May 11 2015     48658     125790        668k     68149         22 
-        May 12 2015     88920     203938       3024k    115446         26 
-        May 13 2015        73       5227       3056k     11819         13 
-        May 14 2015        76       3157       2885k      6634         13 
-        May 15 2015    102763     253975       2876k     33070         12 
-        May 16 2015        48         48          0          3         30 
-        May 17 2015        65         65          0          3         16 
+        Apr 19 2015        21         21          0          0         12
+        Apr 20 2015        35         35          0          0         30
+        Apr 21 2015        32         32          0          0         14
+        Apr 22 2015        30         30          0          0         44
+        Apr 23 2015        34         34          0          0          8
+        Apr 24 2015        28         28          0          0         13
+        Apr 25 2015        22         22          0          0         10
+        Apr 26 2015       110       2030          0       2039          9
+        Apr 27 2015        61         60          0          0         18
+        Apr 28 2015     67547     193033        565k     52301         15
+        Apr 29 2015       149      11711     453347      10425         21
+        Apr 30 2015    136912     460833       1244k     90682         17
+        May  1 2015     11679     194702       4523k     26787         15
+        May  2 2015       113      10189       3798k      2113         10
+        May  3 2015        69       7538       3601k       850          9
+        May  4 2015        44       5902       3344k      6094         10
+        May  5 2015       109      19998       3064k        64         14
+        May  6 2015        63       7587     187980          0          9
+        May  7 2015        52         54         43          0         18
+        May  8 2015        65         64         21          0         17
+        May  9 2015        50         50         21          0         27
+        May 10 2015     35576      74756     335577      22229         14
+        May 11 2015     48658     125790        668k     68149         22
+        May 12 2015     88920     203938       3024k    115446         26
+        May 13 2015        73       5227       3056k     11819         13
+        May 14 2015        76       3157       2885k      6634         13
+        May 15 2015    102763     253975       2876k     33070         12
+        May 16 2015        48         48          0          3         30
+        May 17 2015        65         65          0          3         16
 
 The top domains is pretty uninteresting, except that I can clearly see why
 GMail decided to start blocking emails from me.
 
-    Host/Domain Summary: Message Delivery 
+    Host/Domain Summary: Message Delivery
     --------------------------------------
      sent cnt  bytes   defers   avg dly max dly host/domain
      -------- -------  -------  ------- ------- -----------
@@ -239,7 +239,7 @@ GMail decided to start blocking emails from me.
        9005    29039k       0     6.8 h   17.3 h  sina.com
 
 These are the top two recipients, the next ten are genuine and then a huge list
-of addresses used three or less times. 
+of addresses used three or less times.
 
     Recipients by message count
     ---------------------------
@@ -288,7 +288,7 @@ to at least document it. I decided against building it now as it appeared the
 server itself wasn't compromised, I didn't have the time and I would probably
 have to deal with my host name being on email blacklists even if I changed IP
 address. So I decided to see if I could harden this server and get myself off
-the blacklists. 
+the blacklists.
 
 I immediately added [`smtpd_sender_restrictions`][2] to only allow mail to be
 sent by specified users. Although I will probably create users with `
@@ -333,8 +333,8 @@ To send [DomainKeys Identified Mail (DKIM)][4] you need to create a key-pair,
 publish the public key as a domain record and add a header each email with a
 signature of the contents. There is a Debian package for [`OpenDKIM`][19] that
 includes a daemon that can sign mails and is [easy to integrate][6] with
-Postfix. Below is an example of a DKIM signed message I sent to myself.  
-    
+Postfix. Below is an example of a DKIM signed message I sent to myself.
+
     DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=tarnbarford.net;
         s=mail; t=1432809266;
         bh=YocFhtTgjr2exNi9eb3SUWb8spcRxFH1Tqh/0OcRcfA=;
@@ -397,7 +397,7 @@ This can be verified this by converting it back into a familiar looking public
 key and saving it as `key.pub`.
 
     $ openssl rsa  -pubin -inform DER < key.derwriting RSA key | tee key.pub
-    writing RSA key 
+    writing RSA key
     -----BEGIN PUBLIC KEY-----
     MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC0LNf8wdRCk2eXt1+EAIAdDSfq
     4aLMR/a6hCdPzJdAZ5OB1Z2LvOJlUGtx81MAttOG2lztjMmdrEq4mmGe0LUXOmOT
@@ -406,7 +406,7 @@ key and saving it as `key.pub`.
     -----END PUBLIC KEY-----
 
 The modulus and exponent of this public key can also be checked and should be
-rejected if it isn't long enough. 
+rejected if it isn't long enough.
 
     $ openssl rsa -noout -text -pubin < key.pub
     Modulus (1024 bit):
@@ -436,7 +436,7 @@ headers are separated with a `Carriage Return` and `Line Feed`.
 Now `openssl` can again be used, this time to verify the key, the signature and
 the headers.
 
-    $ openssl dgst -sha256 -verify key.der -keyform DER -signature signature headers 
+    $ openssl dgst -sha256 -verify key.der -keyform DER -signature signature headers
     Verified OK
 
 Great, it verifies as expected. There is obviously more detail in the
@@ -447,16 +447,16 @@ A [Domain-based Message Authentication, Reporting and Conformance (DMARC)][5]
 policy is simply another DNS record that allows a domain to specify what action
 other mail servers should take with mail purportedly from this domain based on
 the combined results of SPF and DKIM checks (allow, reject, hold, etc). It also
-provides an email address for participating mail servers to send reports. 
+provides an email address for participating mail servers to send reports.
 
-    $ dig +short -t txt _dmarc.tarnbarford.net                                                         
+    $ dig +short -t txt _dmarc.tarnbarford.net
     "v=DMARC1\;p=reject\;pct=100\;rua=mailto:postmaster@tarnbarford.net"
 
 My DMARC policy says to reject 100% of mails that fail either SPF or DKIM
 checks and mail conformance information to `postmaster@tarnbarford.net`. I now
 get digest DMARC reports from participating mail servers, here is what Google
-sent me. 
-    
+sent me.
+
     <?xml version="1.0" encoding="UTF-8" ?>
     <feedback>
       <report_metadata>
@@ -533,7 +533,7 @@ this post when this happens (or doesn't).
 
 *Update June 19, 2014: I never actually re-sent that request to Google to unblock me, but today it seems I am able to send mail to GMail accounts again. Thanks GMail!*
 
-[0]: https://tarnbarford.net/journal/pair-programming
+[0]: /journal/pair-programming
 [1]: https://support.google.com/mail/answer/81126?hl=en
 [2]: http://www.postfix.org/postconf.5.html#smtpd_sender_restrictions
 [3]: http://en.wikipedia.org/wiki/Sender_Policy_Framework
@@ -555,6 +555,6 @@ this post when this happens (or doesn't).
 [19]: http://www.opendkim.org/
 [20]: http://www.rackaid.com/blog/gmail-blacklist-removal/
 [21]: https://support.google.com/mail/contact/msgdelivery
-[22]: https://launchpad.net/dkimpy 
+[22]: https://launchpad.net/dkimpy
 [23]: http://en.wikipedia.org/wiki/X.690#DER_encoding
 [24]: http://dkim.org/#sign

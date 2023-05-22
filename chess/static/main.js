@@ -102,7 +102,7 @@ var handle_message = function(event) {
 
 var cfg = {
   draggable: true,
-  pieceTheme: '/static/journal/chess/static/chessboardjs/img/chesspieces/wikipedia/{piece}.png',
+  pieceTheme: 'static/chessboardjs/img/chesspieces/wikipedia/{piece}.png',
   position: fen,
   onDragStart: onDragStart,
   onDrop: onDrop,
@@ -110,5 +110,5 @@ var cfg = {
 };
 
 board = new ChessBoard('board', cfg);
-var worker = new Worker('/static/journal/chess/chess-at-nite.js');
+var worker = new Worker('chess-at-nite.js');
 worker.onmessage = handle_message;

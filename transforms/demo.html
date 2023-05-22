@@ -3,12 +3,12 @@
 <head>
 	<meta charset="UTF-8">
 	<title></title>
-    <script type="text/javascript" src="https://tarnbarford.net/static/journal/transforms/transform_animation.js"></script>
+    <script type="text/javascript" src="transform_animation.js"></script>
     <script type="text/javascript">
-        window.onload = function() { 
+        window.onload = function() {
 
             // Demo 1
-            var demo1_start = document.getElementById("demo1_start"); 
+            var demo1_start = document.getElementById("demo1_start");
             var demo1 = document.getElementById('demo1').getContext('2d');
             drawStandard([], demo1)
             demo1_start.onclick = function() {
@@ -21,10 +21,10 @@
                             function() { demo1_start.style.display = "block" } );
                 }
                 return false;
-            }            
-            
+            }
+
             // Demo 2
-            var demo2_start = document.getElementById("demo2_start"); 
+            var demo2_start = document.getElementById("demo2_start");
             var demo2 = document.getElementById('demo2').getContext('2d');
             drawStandard([], demo2)
             demo2_start.onclick = function() {
@@ -40,7 +40,7 @@
             }
 
             // Demo 3
-            var demo3_start = document.getElementById("demo3_start"); 
+            var demo3_start = document.getElementById("demo3_start");
             var demo3 = document.getElementById('demo3').getContext('2d');
             drawStandard([], demo3)
             demo3_start.onclick = function() {
@@ -61,17 +61,17 @@
 <body>
     <h1>Transforms</h1>
     <p>I've been playing with the transforms on canvas and have had to brush up how transforms work.
-    It's really just matrices math; eigenvalues, dot products, triple products etc. 
+    It's really just matrices math; eigenvalues, dot products, triple products etc.
     I <em>should</em> know this stuff pretty well as it was extensively covered in my Engineering undergrad studies and
     I've previously played with them to do 2d and 3d computer graphics.</p>
-    <p>When I have choice between understanding the math and just typing a few lines few lines and seeing  
+    <p>When I have choice between understanding the math and just typing a few lines few lines and seeing
     the effect, I often just do the latter. I know, I really need to get past that.</p>
     <p>I seemed to be able to get transforms to do what I <em>wanted</em> them to do, but until I got them right
-    I was finding they often didn't do what I expected they would.</p>    
+    I was finding they often didn't do what I expected they would.</p>
     <p>So I decided I would explore it a bit using the transforms themselves, but I'm not sure if I've cleared up my understand.
     I probably should have just studied the math and written an asteroids game.</p>
-    <h2>Rotate on axis then centre</h2> 
-    <p>The example transform I looked at was rotating an square drawn from (0,0) to (50,50) about its centre, then 
+    <h2>Rotate on axis then centre</h2>
+    <p>The example transform I looked at was rotating an square drawn from (0,0) to (50,50) about its centre, then
     moving it to (50,50).</p>
     <p>This is basically a series of transforms, where the order is important. If this makes perfect sense you can
     probably just check out the animations and hopefully leave a comment explaining what is going on more clearly than I have.</p>
@@ -92,7 +92,7 @@
         <strong>Yo, this demo requires canvas. Best viewed with a browser that supports it.</strong>
     </canvas>
     <p><a id="demo2_start" href="#">Click to start animation</a></p>
-    <p>The previous animations illustrate what was bothering me, but they are not exactly what I wanted to show in the first place. 
+    <p>The previous animations illustrate what was bothering me, but they are not exactly what I wanted to show in the first place.
        The transforms apply to the canvas and the square is drawn at (0,0) after the transforms are applied.
        </p>
     <p>To show that we need to invert everything and more the axises instead.</p>
@@ -105,7 +105,7 @@
     but the only way I could animate that nicely is if I asked for the transforms in reverse order.
     Perhaps that is the way to think about it.
     </p>
-    
+
     <p>Anyway I suck, hopefully a commenter can explain this more clearly than I have. Until then I hope this helps you grok how transforms work, but the real lesson here is know ye' math. Stay at school kids.</p>
 </body>
 </html>

@@ -19,10 +19,10 @@ focuses on simplicity, useful features, and enabling the creation of fun,
 dynamic games.
 
 <object data="data:application/x-silverlight," type="application/x-silverlight-2" width="500" height="300">
-  <param name="source" value="https://tarnbarford.net/static/journal/python_and_farseer:_2d_physics_in_silverlight/physics.xap"/>
+  <param name="source" value="physics.xap"/>
   <param name="background" value="white" />
   <param name="windowless" value="true" />
-  Unable to Microsoft Silverlight application. 
+  Unable to Microsoft Silverlight application.
   <a href="http://go.microsoft.com/fwlink/?LinkID=124807" style="text-decoration: none;">
   Get Microsoft Silverlight
   </a>
@@ -59,7 +59,7 @@ Chiron.
     <Deployment xmlns="http://schemas.microsoft.com/client/2007/deployment"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 RuntimeVersion="2.0.31005.0"
-                EntryPointAssembly="Microsoft.Scripting.Silverlight" 
+                EntryPointAssembly="Microsoft.Scripting.Silverlight"
                 EntryPointType="Microsoft.Scripting.Silverlight.DynamicApplication">
       <Deployment.Parts>
         <AssemblyPart Source="Microsoft.Scripting.Silverlight.dll" />
@@ -159,6 +159,6 @@ environment. Happy hacking..
 
    [11]: http://www.red-gate.com/products/reflector/
 
-   [12]: https://tarnbarford.net/static/journal/python_and_farseer:_2d_physics_in_silverlight/physics.xap
+   [12]: physics.xap
 
-   [13]: https://tarnbarford.net/static/journal/python_and_farseer:_2d_physics_in_silverlight/image_thumb.png
+   [13]: image_thumb.png

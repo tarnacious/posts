@@ -100,7 +100,7 @@ applied to each. I wanted to find a more elegant solution. I used an object
 orientated solution; the Rule class itself is abstract and is inherited by
 ProductRule, ClassificationRule and BrandRule.
 
-
+    #!/usr/bin/csharp
     public abstract class Rule
     {
         public int SiteId { get; set; }
@@ -112,6 +112,7 @@ ProductRule, ClassificationRule and BrandRule.
 The only thing implemented by the specific rule classes is how to bind the
 Value to a property on the Product class.
 
+    #!/usr/bin/csharp
     public class ClassificationRule : Rule
     {
         public override bool Compare(Product product)
@@ -133,12 +134,13 @@ Value to a property on the Product class.
 I could have implemented this in a more functional way, but it does seem like
 a clean solution given I am using C#.
 
-### **Testing the Bits and Pieces **
+### Testing the Bits and Pieces
 
 Testing the extension methods is easy with such simple domain objects. For
 most of the extension methods I only wrote a couple of small tests like this:
 
 
+    #!/usr/bin/csharp
     [TestMethod]
     public void FromSite_ReturnsSiteRule()
     {
@@ -157,6 +159,7 @@ I used LINQ constructs rather than the trusty delegates I use everywhere else
 for the extension methods. I like it, its clear and easy to read. And this is
 my point, its changed the language dramatically.
 
+    #!/usr/bin/csharp
     public static IEnumerable<Rule> FromSite(this IEnumerable<Rule> rules, int SiteId)
     {
         return from rule in rules
@@ -179,6 +182,7 @@ classification rules and brand rules individually, I don't want to write tests
 for them individually either.
 
 
+    #!/usr/bin/csharp
     public class GenericSiteRulesTests<T>
         where T : Rule
     {
@@ -208,6 +212,7 @@ because the test classes we want to run are actually classes that inherit from
 the generic test class.
 
 
+    #!/usr/bin/csharp
     [TestClass]
     public class ClassificationSiteRulesTests
         : GenericSiteRulesTests<ClassificationRule>
@@ -244,6 +249,7 @@ NUnit GUI has running all the tests.
 Ok, so its not really "clear and easy to read", but it is very compact and
 concise.
 
+    #!/usr/bin/csharp
     public class RuleLogic
     {
         public static bool ProcessRules(Product product,  IEnumerable<Rule> rules, int siteId)
@@ -288,7 +294,7 @@ rules engine. Oh, and the sub 1 second product searching..
 
    [1]: http://herdingcode.com/?p=45
 
-   [2]: https://tarnbarford.net/static/journal/functional_programming/nunit_gui.png
+   [2]: nunit_gui.png
 
-   [4]: https://tarnbarford.net/static/journal/functional_programming/coverage.png
+   [4]: coverage.png
 

@@ -23,7 +23,7 @@ There is no doubt I have a way to go before getting anywhere near the productivi
 This rant is no more.
 
 [zedshaw]: https://twitter.com/#!/zedshaw
-[screen1]: https://tarnbarford.net/journal/oh-screen-where-have-you-been
+[screen1]: /journal/oh-screen-where-have-you-been
 [peepcode]: http://peepcode.com/products/play-by-play-zed-shaw
 [mongrel2]: http://mongrel2.org/
 [codersatwork]: http://www.codersatwork.com/
@@ -31,7 +31,7 @@ This rant is no more.
 [video]: http://vimeo.com/2723800
 [rproject]: http://www.r-project.org/
 [fossil]: http://fossil-scm.org/index.html/doc/trunk/www/index.wiki
-[rockandroll]: https://tarnbarford.net/journal/the-mouse-is-dead--long-live-the-keyboard
+[rockandroll]: /journal/the-mouse-is-dead--long-live-the-keyboard
 [screen]: http://www.gnu.org/s/screen/
 [lpthw]: http://learnpythonthehardway.org/
 [vimperator]: http://vimperator.org/vimperator

@@ -35,5 +35,5 @@ and some error handling events as you would expect in most XMLHttpRequest
 wrappers.
 
 
-   [1]: https://tarnbarford.net/static/journal/dynamically_inserting_dynamic_scripts/DynamicScriptDemo1.zip
+   [1]:DynamicScriptDemo1.zip
 

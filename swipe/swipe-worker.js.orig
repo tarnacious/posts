@@ -5767,7 +5767,7 @@ function xg(a) {
   wg.push(b);
   a && Jf(b, "complete", a);
   Jf(b, "ready", na(yg, b));
-  b.send("/static/journal/swipe/training.txt", void 0, void 0, void 0)
+  b.send("training.txt", void 0, void 0, void 0)
 }
 function yg(a) {
   a.dc();
@@ -6086,7 +6086,7 @@ function Kg(a) {
           a[1] = 2;
           return v.l
         }
-        return 8 === e ? (s = a[13], e = ec(s), a[1] = e ? 11 : 12, v.l) : 9 === e ? (a[2] = null, a[1] = 10, v.l) : 10 === e ? (e = a[2], a[2] = e, a[1] = 6, v.l) : 11 === e ? (s = a[13], e = Db(s), s = Eb(s), f = T(e), a[7] = f, a[8] = 0, a[9] = e, a[10] = s, a[2] = null, a[1] = 2, v.l) : 12 === e ? (s = a[13], e = J(s), s = Tb.c(e, 0, null), e = Tb.c(e, 1, null), s = [v.bc, s], s = X.a ? X.a(s, !0) : X.call(null, s, !0), a[16] = e, me(a, 14, c, s)) : 13 === e ? (e = a[2], a[2] = e, a[1] = 10, 
+        return 8 === e ? (s = a[13], e = ec(s), a[1] = e ? 11 : 12, v.l) : 9 === e ? (a[2] = null, a[1] = 10, v.l) : 10 === e ? (e = a[2], a[2] = e, a[1] = 6, v.l) : 11 === e ? (s = a[13], e = Db(s), s = Eb(s), f = T(e), a[7] = f, a[8] = 0, a[9] = e, a[10] = s, a[2] = null, a[1] = 2, v.l) : 12 === e ? (s = a[13], e = J(s), s = Tb.c(e, 0, null), e = Tb.c(e, 1, null), s = [v.bc, s], s = X.a ? X.a(s, !0) : X.call(null, s, !0), a[16] = e, me(a, 14, c, s)) : 13 === e ? (e = a[2], a[2] = e, a[1] = 10,
         v.l) : 14 === e ? (s = a[13], e = a[16], f = a[2], h = Ig(d, e), e = M(s), a[7] = 0, a[8] = 0, a[9] = null, a[10] = e, a[17] = h, a[18] = f, a[2] = null, a[1] = 2, v.l) : 15 === e ? (e = a[2], ne(a, e)) : null
       })
     }(), h = function() {
@@ -6243,7 +6243,7 @@ function Mg(a) {
           c[7] = d;
           return le(c, 3, e)
         }
-        return 3 === d ? (d = c[2], c[8] = d, me(c, 4, a, "Downloaded Data")) : 4 === d ? (d = c[2], e = Re(), c[9] = d, le(c, 5, e)) : 5 === d ? (c[10] = c[2], me(c, 6, a, "Building tree")) : 6 === d ? (d = c[2], e = Re(), c[11] = d, le(c, 7, e)) : 7 === d ? (d = c[8], e = c[12], e = c[2], d = Kg(d), c[13] = e, c[12] = d, le(c, 8, d)) : 8 === d ? (d = c[2], c[14] = d, c[2] = null, c[1] = 9, v.l) : 9 === d ? (d = c[14], e = J(d), d = K(d), e = Kb.a(v.bc, e), c[15] = d, c[1] = e ? 11 : 12, v.l) : 
+        return 3 === d ? (d = c[2], c[8] = d, me(c, 4, a, "Downloaded Data")) : 4 === d ? (d = c[2], e = Re(), c[9] = d, le(c, 5, e)) : 5 === d ? (c[10] = c[2], me(c, 6, a, "Building tree")) : 6 === d ? (d = c[2], e = Re(), c[11] = d, le(c, 7, e)) : 7 === d ? (d = c[8], e = c[12], e = c[2], d = Kg(d), c[13] = e, c[12] = d, le(c, 8, d)) : 8 === d ? (d = c[2], c[14] = d, c[2] = null, c[1] = 9, v.l) : 9 === d ? (d = c[14], e = J(d), d = K(d), e = Kb.a(v.bc, e), c[15] = d, c[1] = e ? 11 : 12, v.l) :
         10 === d ? (d = c[2], ne(c, d)) : 11 === d ? (d = c[15], d = J(d), d = [z("Building tree "), z(d), z("%")].join(""), me(c, 14, a, d)) : 12 === d ? (c[2] = null, c[1] = 13, v.l) : 13 === d ? (c[16] = c[2], me(c, 16, a, "Built-tree")) : 14 === d ? (e = c[12], c[17] = c[2], le(c, 15, e)) : 15 === d ? (d = c[2], c[14] = d, c[2] = null, c[1] = 9, v.l) : 16 === d ? (d = c[15], e = c[2], d = J(d), c[18] = e, me(c, 17, b, d)) : 17 === d ? (d = c[2], c[2] = d, c[1] = 10, v.l) : null
       })
     }(), e = function() {

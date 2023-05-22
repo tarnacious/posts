@@ -6,9 +6,9 @@ Sorry, you need a browser that supports canvas to play. You should probably upgr
 
 Update: You don't need coins, you can press [f] to start. Apparently I should have made that more clear.
 
-Sorry no sounds, shields or extra weapons, 
-there are already [other][mcinnes] [good][kev3d] asteroid games for the HTML5 canvas. 
-I wrote this to try [CoffeeScript][coffeescript], which has been quite fun. 
+Sorry no sounds, shields or extra weapons,
+there are already [other][mcinnes] [good][kev3d] asteroid games for the HTML5 canvas.
+I wrote this to try [CoffeeScript][coffeescript], which has been quite fun.
 I posted the [source as a gist][source].
 
 I have some ideas about how I could make it multiplayer which I might consider trying,
