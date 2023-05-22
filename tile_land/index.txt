@@ -63,8 +63,8 @@ I have some ideas about what I would like to do with this from here.
 
 If you have some ideas let me know or grab the [source][tileland] and start hacking. I also published the [not-so-pretty source][diagrams] for the diagrams in this post.
 
-<script type="text/javascript" src="https://tarnbarford.net/static/journal/tile_land/tile-land.js"></script>
-<script type="text/javascript" src="https://tarnbarford.net/static/journal/tile_land/diagrams.js"></script>
+<script type="text/javascript" src="tile-land.js"></script>
+<script type="text/javascript" src="diagrams.js"></script>
 
 [diagrams]: https://gist.github.com/1032754
 [tileland]: https://gist.github.com/1032752
