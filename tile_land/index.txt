@@ -68,5 +68,5 @@ If you have some ideas let me know or grab the [source][tileland] and start hack
 
 [diagrams]: https://gist.github.com/1032754
 [tileland]: https://gist.github.com/1032752
-[desktopracer]: http://static.sharpthinking.com.au/DesktopRacer/DesktopRacer.htm
+[desktopracer]: https://tarnbarford.net/journal/devsta-challenge-2008
 [transform]: https://tarnbarford.net/journal/transforms
