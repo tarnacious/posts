@@ -1,0 +1,100 @@
+[
+  {
+    "slug": "transforms",
+    "name": "Alex",
+    "website": "http://alexanderdickson.com",
+    "timestamp": "2016-03-09T11:54:33.333786",
+    "text": "You might find this fun! Something I knocked up a few years ago.\r\n\r\nhttps://rawgit.com/alexanderdickson/Transformation-Matrix/master/index.html"
+  },
+  {
+    "slug": "python-silverlight",
+    "name": "Antonio Florido",
+    "website": "",
+    "timestamp": "2011-10-18T22:14:24",
+    "text": "Hi, this is a super nice approach to silverlight using python.\r\nI got this error when i run it \r\n\r\nUnhandled Error in Silverlight 2 Application Code: 2104 Category: InitializeError Message: 2104 Error.\r\n\r\nBy the way, have you try to develop ironpython with vstudio2008 and silverlight?\r\n\r\n\r\nRegards!"
+  },
+  {
+    "slug": "old-school-for-fun",
+    "name": "Bekim Bacaj",
+    "website": "",
+    "timestamp": "2011-05-01T11:59:47",
+    "text": "Well, you should try it on IE9 or 10 or any other older version for that matter.\r\nThe sequence finishes in less than 3 seconds and CPU load is lower tan 13% here.\r\n\r\nYou must be using some netsacape breed again after 15 years..."
+  },
+  {
+    "slug": "old-school-for-fun",
+    "name": "Tarn Barford",
+    "website": "http://tarnbarford.net",
+    "timestamp": "2011-04-24T06:59:43",
+    "text": "Yeah, it is not exactly an efficient algorithm, nor language for implementing it, nor implementation of it.\r\n\r\nIt is a little surprising to me that I could get a 28Mhz 80386 to do faster 15 years ago than I can on a web page today.\r\n\r\n"
+  },
+  {
+    "slug": "old-school-for-fun",
+    "name": "OJ",
+    "website": "http://buffered.io/",
+    "timestamp": "2011-04-24T06:25:44",
+    "text": "Boy does she make my browser crawl ;)"
+  },
+  {
+    "slug": "chess",
+    "name": "gultekinmg",
+    "website": "",
+    "timestamp": "2014-07-17T23:59:48.275047",
+    "text": "Opening book file (book) is missing. <-- how to read book with .cpp\r\n\r\nMAYBE no book, i have beat engine first game, Also with winboard."
+  },
+  {
+    "slug": "manos-long-polling-chat",
+    "name": "José Romaniello",
+    "website": "http://joseoncode.com",
+    "timestamp": "2011-07-22T12:59:58",
+    "text": "Good article!!\r\nI think it should be better if you use the asynchronous overloads for reading the static files, right?"
+  },
+  {
+    "slug": "manos-long-polling-chat",
+    "name": "Tarn Barford",
+    "website": "http://tarnbarford.net",
+    "timestamp": "2011-07-23T03:36:25",
+    "text": "Thanks mate, I see you have some pretty neat posts about doing similar things with and without frameworks.\r\n\r\nYes, reading the file asynchronously that would be better. Here is how it might look.   \r\n\r\n    [Get(\"/\")]\r\n    public void Home(IManosContext context)\r\n    {\r\n        var fs = new filestream(\"index.html\",filemode.open); \r\n        var data = new byte[fs.length];\r\n        fs.beginread(data, 0, (int)fs.length, (result) => { \r\n            var text = system.text.asciiencoding.ascii.getstring(data);\r\n            context.response.end(text);\r\n            fs.close();            \r\n        }, null);\r\n    }\r\n\r\nJust out of interest I tried load testing each implementation with ab, the Apache HTTP server benchmarking tool. I used 10000 request and a concurrency of 300.\r\n \r\n    $ ab -n 10000 -c 300 http://localhost:8080\r\n\r\nWith the blocking file read I got 6329 request / second and with the asynchronous code I got 7800 request / second. So yeah, good call :-)\r\n\r\nP.S. Apologies, my blog was adding and additional http:// in front of URL to you're site. The capital H in Http:// was throwing it. I've updated your URL so it links though right."
+  },
+  {
+    "slug": "pair-programming",
+    "name": "Julian Gamble",
+    "website": "http://juliangamble.com/blog",
+    "timestamp": "2012-04-09T06:08:04",
+    "text": "Top work Tarn!\r\n"
+  },
+  {
+    "slug": "packaging-a-flask-app",
+    "name": "Matt",
+    "website": "",
+    "timestamp": "2015-04-07T16:38:52.783442",
+    "text": "Thanks for the article. I found I had to run:\r\n\r\n    gem install ohai -v 7.4.0 \r\n\r\nIn order to get pleaserun to work correctly."
+  },
+  {
+    "slug": "mapreduce-on-mongo",
+    "name": "Ciges",
+    "website": "http://elgeekdel.ciges.net",
+    "timestamp": "2014-07-17T00:43:35.746335",
+    "text": "Thanks you very much for this clean tutorial.\r\n\r\nI get borrowed from you the diagram to illustrate a presentation I am doing on Map-Reduce over MongoDB.\r\n\r\nRegards and good work!"
+  },
+  {
+    "slug": "oh-screen-where-have-you-been",
+    "name": "Tarn Barford",
+    "website": "http://tarnbarford.net",
+    "timestamp": "2011-01-16T05:44:27",
+    "text": "Julian,\r\n\r\nJust added rss then, [http://tarnbarford.net/rss](http://tarnbarford.net/rss ) I didn't know people used it or subscribed to this blog :)\r\n\r\nThanks for the feedback and good to see you could authenticate and comment ok. "
+  },
+  {
+    "slug": "oh-screen-where-have-you-been",
+    "name": "Julian Gamble",
+    "website": "",
+    "timestamp": "2011-01-14T11:34:02",
+    "text": "Hi Tarn,  \r\n\r\nWhere is the RSS? Google reader doesn't like your article list...\r\n\r\nJG"
+  },
+  {
+    "slug": "asteroids",
+    "name": "Dave",
+    "website": "",
+    "timestamp": "2015-11-03T13:47:46.048632",
+    "text": "A trip down memory lane!"
+  }
+]
