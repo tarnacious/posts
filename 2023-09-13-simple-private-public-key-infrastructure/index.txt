@@ -1,0 +1,84 @@
+In this private Public Key Infrastructure (PKI) a secret key and a self signed
+certificate pair is the Certificate Authority (CA) root. The CA can sign
+certificates containing identity information with its secret key. Anyone can
+verify a certificate was signed by the CA using the CA root certificate.
+
+The `openssl` tool is used for all PKI operations including generating a CA
+certificate pair. Elliptic Curve (EC) keys are being generated and the
+`prime256v1` curve (a.k.a `secp256r1`) has been chosen. The CA certificate is
+valid for 365 days. The `Subject` field contains the identity attributes in the
+certificate, for this CA they're very important and some example values have
+been chosen.
+
+    #!/bin/bash
+    SUBJECT="/C=DE/ST=Berlin/L=Berlin/O=tarnbarford.net/OU=tarnbarford.net/CN=ca"
+
+    openssl ecparam -genkey -name prime256v1 -noout -out ca.key
+    openssl req -new -x509 -sha256 -days 365 -key ca.key -subj $SUBJECT -out ca.crt
+
+A private key [`ca.key`][ca_key] and a public certificate [`ca.crt`][ca_crt]
+are generated.
+
+A certificate pair for an example service `service1` can be generated and then
+signed with the CA created above. This has an intermediate step where a
+certificate signing request (CSR) is created, typically this would be sent to
+the CA who would verify it then return a signed public certificate. For these
+certificates the Common Name (CN) attribute is important, as this is the part
+of the identity that will need to be proven later.
+
+    #!/bin/bash
+    SUBJECT="/C=DE/ST=Berlin/L=Berlin/O=tarnbarford.net/OU=tarnbarford.net/CN=service1"
+
+    openssl ecparam -genkey -name prime256v1 -noout -out service1.key
+    openssl req -new -key service1.key -subj $SUBJECT -out service1.csr
+    openssl x509 -req -days 365 -sha256 -in service1.csr -CA ca.crt -CAkey ca.key -set_serial 1 > service1.crt
+
+A private key [`service1.key`][service1_key] and a public key
+[`service1.crt`][service1_crt] are generated. The CSR certificate
+[`service1.csr`][service1_csr] can be discarded.
+
+The identity information can be extracted from a certificate
+
+    #!/bin/bash
+    $ openssl x509 -noout -subject -in service1.crt
+    subject=C = DE, ST = Berlin, L = Berlin, O = tarnbarford.net, OU = tarnbarford.net, CN = service1
+
+The public key can be verified to have been signed by the CA.
+
+    #!/bin/bash
+    $ openssl verify -verbose -CAfile ca.crt service1.crt
+    service1.crt: OK
+
+The keys generated can also be used for signing and verifying signatures.
+Encrypting data with an EC public key is a lot more involved than with an RSA
+public key and will not be explored here. To use the certificates for verifying
+signatures, the public key needs to be extracted from the certificate which
+also contains an identity and a signature from a CA.
+
+    #!/bin/bash
+    openssl x509 -pubkey -noout -in service1.crt -out service1.pem
+
+The extracted public key is called [`service1.pem`][service1_pem].
+
+The private key can be used to create a signature [`data.sig`][data_sig], then
+the extracted public key used to verify the signature.
+
+    #!/bin/bash
+    $ echo "hello world" > data.txt
+    $ openssl pkeyutl -sign -in data.txt -inkey service1.key -out data.sig
+    $ openssl pkeyutl -verify -pubin -inkey service1.pem -sigfile data.sig -in data.txt
+    Signature Verified Successfully
+
+What's probably more useful than signing data and verifying certificates are
+signed by a CA is how to use the PKI to secure connections with TLS. This is
+covered in a follow-up post, [securing sockets with TLS][2].
+
+[1]: https://www.rfc-editor.org/rfc/rfc5280.txt
+[2]: /journal/securing-sockets-with-tls/
+[ca_key]: /journal/simple-private-public-key-infrastructure/static/ca.key
+[ca_crt]: /journal/simple-private-public-key-infrastructure/static/ca.crt
+[service1_key]: /journal/simple-private-public-key-infrastructure/static/service1.key
+[service1_crt]: /journal/simple-private-public-key-infrastructure/static/service1.crt
+[service1_csr]: /journal/simple-private-public-key-infrastructure/static/service1.csr
+[service1_pem]: /journal/simple-private-public-key-infrastructure/static/service1.pem
+[data_sig]: /journal/simple-private-public-key-infrastructure/static/data.sig
