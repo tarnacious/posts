@@ -1,0 +1,8 @@
+A Linux one-liner to run a command when a file in a directory tree is created,
+modified or deleted. Uses `inotifywait` from the `inotify-tools` package.
+
+    #!/bin/bash
+    while inotifywait  -e modify,create,delete -r .; do echo "file changed"; done
+
+This is easy but annoying to look up. When I asked an LLM, it omitted the
+recursive flag (`-r`) unless I explicitly asked for it.
