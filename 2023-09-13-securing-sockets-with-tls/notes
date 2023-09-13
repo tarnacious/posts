@@ -1,0 +1,29 @@
+
+To confirm the server is only accepting certificates signed by the CA, a
+certificate signed by a different CA can be generated.
+
+    #!/bin/bash
+    SUBJECT="/C=DE/ST=Berlin/L=Berlin/O=tarnbarford.net/OU=tarnbarford.net/CN=rando_ca"
+    openssl ecparam -genkey -name prime256v1 -noout -out rando_ca.key
+    openssl req -new -x509 -sha256 -days 365 -key rando_ca.key -subj $SUBJECT -out rando_ca.crt
+
+    SUBJECT="/C=DE/ST=Berlin/L=Berlin/O=tarnbarford.net/OU=tarnbarford.net/CN=rando"
+    openssl ecparam -genkey -name prime256v1 -noout -out rando.key
+    openssl req -new -key rando.key -subj $SUBJECT -out rando.csr
+    openssl x509 -req -days 365 -sha256 -in rando.csr -CA rando_ca.crt -CAkey rando_ca.key -set_serial 1 -out rando.crt
+
+The generates several certificates, the ones needed for this test are
+['rando_ca.crt'][rando_ca_crt], [`rando.crt`][rando_crt] and
+[`rando.key`][rando_key].
+
+Attempting to use these certificates returns not response.
+
+    #!/bin/bash
+    $ echo "hello" | ncat --ssl --ssl-verify --ssl-servername service1 --ssl-trustfile rando_ca.crt --ssl-cert rando.crt  --ssl-key rando.key  localhost 5000
+
+The `stunnel` logs explain why the connection was not rejected.
+
+[rando_ca_crt]: static/rando_ca.crt
+[rando_crt]: static/rando.crt
+[rando_key]: static/rando.key
+[openssl_man]: https://www.openssl.org/docs/man1.0.2/man1/s_client.html

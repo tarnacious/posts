@@ -1,0 +1,4 @@
+2023.09.13 15:13:24 LOG5[0]: Service [service1] accepted connection from 127.0.0.1:59374
+2023.09.13 15:13:24 LOG3[0]: SSL_accept: ssl/record/ssl3_record.c:354: error:0A00010B:SSL routines::wrong version number
+2023.09.13 15:13:24 LOG5[0]: Connection reset: 0 byte(s) sent to TLS, 0 byte(s) sent to socket
+

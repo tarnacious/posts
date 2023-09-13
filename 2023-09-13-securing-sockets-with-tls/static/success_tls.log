@@ -1,0 +1,5 @@
+2023.09.13 15:24:04 LOG5[2]: Service [service1] accepted connection from 127.0.0.1:35690
+2023.09.13 15:24:04 LOG3[2]: s_connect: connect ::1:7000: Connection refused (111)
+2023.09.13 15:24:04 LOG5[2]: s_connect: connected 127.0.0.1:7000
+2023.09.13 15:24:04 LOG5[2]: Service [service1] connected remote server from 127.0.0.1:42080
+2023.09.13 15:24:05 LOG5[2]: Connection closed: 6 byte(s) sent to TLS, 6 byte(s) sent to socket
