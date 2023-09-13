@@ -123,12 +123,12 @@ While I have found the testing value of browser automation is good,
 I feel that mocking out the entire web framework (like gaeunit for appengine)
 or testing at HTTP level could achieve the same thing more easily and run quicker.
 
-[StandardBuild]: https://s3.amazonaws.com/static.tarnacious.net/selenium_on_windows/BuildProcess.png
-[PipelineBuild]: https://s3.amazonaws.com/static.tarnacious.net/selenium_on_windows/BuildProcessPipeline.png
-[SeleniumIDE]: https://s3.amazonaws.com/static.tarnacious.net/selenium_on_windows/SeleniumIDE.png
-[SeleniumIDE_Export]: https://s3.amazonaws.com/static.tarnacious.net/selenium_on_windows/SeleniumIDE_Export.png
-[nssm]: https://s3.amazonaws.com/static.tarnacious.net/selenium_on_windows/nssm.png
-[testcode]: https://s3.amazonaws.com/static.tarnacious.net/selenium_on_windows/generatedtest.png
+[StandardBuild]: BuildProcess.png
+[PipelineBuild]: BuildProcessPipeline.png
+[SeleniumIDE]: SeleniumIDE.png
+[SeleniumIDE_Export]: SeleniumIDE_Export.png
+[nssm]: nssm.png
+[testcode]: generatedtest.png
 [teamcity]: http://www.jetbrains.com/teamcity/
 [nunit]: http://www.nunit.org/
 [nunitconsole]: http://www.nunit.org/index.php?p=nunit-console&r=2.4
