@@ -1,8 +1,9 @@
-Building upon a [simple private Public Key Infrastructure][pki] (PKI), this post
-demonstrates how to secure TCP sockets using TLS through trivial examples that
-can be run locally on a loopback device.
+Using a [simple private Public Key Infrastructure][pki] (PKI), plain TCP
+sockets can be secured with TLS. This can be demonstrated with trivial examples
+that run locally on a loopback device.
 
-Firstly a simple TCP socket server that echos what is sent to it using `socat`.
+A simple echo TCP socket server that listens on port 7000 can be created with
+`socat`.
 
     #!/bin/bash
     $ socat PIPE TCP-LISTEN:7000,fork
@@ -15,11 +16,10 @@ When data is sent to the socket, it will echo it back. The `ncat` tool from
     hello
 
 The socket listening on port 7000 won't actually be secured, sorry, instead a
-new socket listening on port 6000 will provide a TLS tunnel to it. The
-`stunnel` program will be used to create the TLS tunnel.
+new socket listening on port 6000 will provide a secure TLS tunnel/proxy.
 
-To configure `stunnel` a local configuration file called
-[`stunnel.conf`][stunnel_conf] is created with the following section.
+The tunnel is created with `stunnel`. It's configured with local file called
+[`stunnel.conf`][stunnel_conf] which contains a section for the tunnel.
 
     #!/bin/bash
     [service1]
@@ -30,13 +30,13 @@ To configure `stunnel` a local configuration file called
     key = service1.key
     verify = 0
 
-In this section a tunnel called `service1` is created that listens on port 6000
-and creates a tunnel to port 7000. The CA and `service1` certificates were
-created by our PKI. The `verify` option is set to 0 meaning that peer (client)
-certificates will not be required or verified.
+A tunnel called `service1` is configured that listens on port 6000 and creates
+a tunnel to port 7000. The CA and `service1` certificates were created by the
+PKI. The `verify` option is set to 0 meaning that peer (client) certificates
+will not be required or verified.
 
-The tunnel can be started with a custom configuration by running `stunnel` with
-the path to the configuration file as the first parameter.
+The tunnel is started by running `stunnel` with the path to the configuration
+file.
 
     #!/bin/bash
     $ stunnel service1.conf
@@ -48,7 +48,7 @@ Trying to connect port 6000 like before won't work.
     Ncat: Connection reset by peer.
 
 The server is expecting the client to start a TLS negotiation. Instead, we're
-sending the string "hello", so the server disconnects us. The error
+sending the the characters "hello", so the server disconnects us. The error
 [logged][not_ssl] by `stunnel` is "SSL routines::wrong version number" which
 isn't particularly helpful.
 
@@ -58,17 +58,18 @@ Fortunately `ncat` supports TLS/SSL and it be used with the `--ssl` option.
     $ echo "hello" | ncat --ssl localhost 6000
     hello
 
-Now we get a response through an encrypted TLS tunnel.
+A response is now returned through an encrypted TLS connection.
 
-If this connection was made over an insecure network we couldn't be sure the
-server we're connecting to really is `service1`. With TLS we can verify the
-certificates are signed by a known CA and belong to `service1`.
+If this connection was made over an insecure network, there is no certainty
+that the server being connected to is really `service1`. With TLS, certificates
+used by 'service1' can be verified to have been signed by a specific CA and
+belonging to service1.
 
 To do this with `netcat` the `--ssl-verify` option tells `ncat` to check the
-server certificate. The certificate should be signed by the CA so `ca.crt`
-needs to be specified with the `--ssl-trustfile` option. The name in the
-certificate will also be validated, so `service1` needs to provided with the
-`--ssl-servername` as the expected name.
+server certificate. The certificate should be signed by a specific CA, so
+`ca.crt` needs to be specified with the `--ssl-trustfile` option. The name in
+the certificate will also be validated, so `service1` needs to specified with
+the `--ssl-servername` option.
 
     #!/bin/bash
     $ echo "hello" | ncat --ssl --ssl-verify --ssl-servername service1 --ssl-trustfile ca_public_key.pem  localhost 6000
@@ -80,19 +81,19 @@ Expecting a different server name should result in a certificate error.
     echo "hello" | ncat --ssl --ssl-verify --ssl-servername service2 --ssl-trustfile ca_public_key.pem  localhost 6000
     Ncat: Certificate verification error. QUITTING.
 
-A really useful when debugging TLS connections is the `openssl` test client,
-[`s_client`][s_client].
+A really useful tool when debugging TLS connections is [`s_client`][s_client]
+the `openssl` test client.
 
     #!/bin/bash
     openssl s_client -servername service1 -connect localhost:6000 -CAfile ca.crt
 
-This will attempt to negotiate a connection and [output][s_client_log] a lot of
-data about the certificate, the alorithms used, the validation results and
-more.
+This will attempt to negotiate a connection and [output][s_client_log] a heaps
+of useful information about the certificate, the signatures, the alorithms
+used, the validation results and more.
 
-TLS also supports a "peer authentication" mode in which the server also checks
-the client certificates. Servers, or tunnels, can be configured to only allow
-clients with certificates signed by a specific CA to connect to the service.
+TLS also supports a "peer authentication" mode in which the server checks the
+client certificates. Servers, or tunnels, can be configured to only allow
+clients with certificates signed by a specific CA to connect.
 
 A secure tunnel configuration that uses strict peer authentication can be
 added to the [`stunnel.conf`][stunnel_conf] file.
@@ -106,9 +107,9 @@ added to the [`stunnel.conf`][stunnel_conf] file.
     key = service1.key
     verify = 2
 
-This tunnel is configuration is previous one except it'll listen on a different
-port (5000) and `verify` is set to 2, meaning it will require client
-certificates and it validate they are signed by the CA.
+This tunnel is configuration is similar to the previous one except it'll listen
+on a different port (5000) and `verify` is set to 2, meaning it will require
+client certificates and will validate they are signed by the CA ([`ca.crt`][ca_crt])
 
 If we restart the `stunnel` process with the updated configuration and try to
 connect as before to port 5000, we get a different result.
@@ -130,20 +131,21 @@ pair will be called `client1`.
 
     openssl ecparam -genkey -name prime256v1 -noout -out client1.key
     openssl req -new -key client1.key -subj $SUBJECT -out client1.csr
-    openssl x509 -req -days 365 -sha256 -in client1.csr -CA ca.crt -CAkey ca.key -set_serial 1 > client1.crt
+    openssl x509 -req -days 365 -sha256 -in client1.csr -CA ca.crt -CAkey ca.key -set_serial 1 -out client1.crt
 
 The will generate a private key [`client1.key`][client1_key] and a public key
 [`client1.crt`][client1_crt].
 
-To configure `ncat` to use the client certificates when connecting to the
-service two more options are used, `--ssl-key` for the private key and
-`--ssl-cert` for the public key.
+To configure `ncat` to use the client certificates,
+[`client1.key`][client1_key] is provided with the  `--ssl-key` option and
+[`client1.crt`][client1_crt] is provided with the `--ssl-cert` option.
 
     #!/bin/bash
     $ echo "hello" | ncat --ssl --ssl-verify --ssl-servername service1 --ssl-trustfile ca.crt --ssl-cert client1.crt --ssl-key client1.key  localhost 5000
     hello
 
-It now returns a response, but only if a certificates signed by the CA.
+A response is now returned, but only if the client and server certificates are
+signed by the CA.
 
 [pki]: /journal/simple-private-public-key-infrastructure/
 [stunnel_conf]: static/stunnel.conf
@@ -152,5 +154,6 @@ It now returns a response, but only if a certificates signed by the CA.
 [not_ssl]: static/not_ssl.log
 [success_tls]: static/success_tls.log
 [no_peer_certificate]: static/no_peer_certificate.log
+[ca_crt]: static/ca.crt
 [client1_key]: static/client1.key
 [client1_crt]: static/client1.crt
