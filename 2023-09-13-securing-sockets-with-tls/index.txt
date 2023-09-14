@@ -30,10 +30,10 @@ The tunnel is created with `stunnel`. It's configured with local file called
     key = service1.key
     verify = 0
 
-A tunnel called `service1` is configured that listens on port 6000 and creates
-a tunnel to port 7000. The CA and `service1` certificates were created by the
-PKI. The `verify` option is set to 0 meaning that peer (client) certificates
-will not be required or verified.
+The tunnel is called `service1`, it listens on port 6000 and creates a tunnel
+to port 7000. The CA and `service1` certificates were created by the PKI. The
+`verify` option is set to 0 meaning that peer (client) certificates will not be
+required or verified.
 
 The tunnel is started by running `stunnel` with the path to the configuration
 file.
