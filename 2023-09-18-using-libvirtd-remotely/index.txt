@@ -1,0 +1,96 @@
+I have a headless server running [`libvirtd`][libvirt] with a
+[`KVM`][kvm]/[`qemu`][qemu] backend and I wanted to securely connect to it with
+[`virsh`][virsh] and [`virt-manager`][virt-manager] on my laptop. There are
+[several ways to do this][libvirt_remote], I decided to try [TLS][tls] with a
+[private PKI][private_pki] for transport encryption and peer authentication.
+
+I wrote [a script][libvirt-ca] to generate a Certificate Authority (CA)
+certificate, then generate certificates for the client and the server that are
+both signed by the CA certificate. In my case the server name is
+`hypervisor.tarnbarford.net`.
+
+The server runnning libvirtd needs to be configured to support TLS connections.
+On Debian systems the libvirtd configuration is in
+[`/etc/libvirt/libvirtd.conf`][libvirtd_conf]. The relevant default
+configuration values were good and I didn't make any changes to this file.
+
+    #!/bin/bash
+    listen_tls = 1
+    tls_port = "16514"
+    key_file = "/etc/pki/libvirt/private/serverkey.pem"
+    cert_file = "/etc/pki/libvirt/servercert.pem"
+    ca_file = "/etc/pki/CA/cacert.pem"
+    tls_no_verify_certificate = 0
+
+I needed to [copy the server certificates][copy_server_certificates] into the
+locations specified in the configuration files.
+
+On the server, I needed to [enable access to the port 16514][enable_port_16514]
+through the filewall.
+
+Debian has systemd unit for libvirt socket activation via the TLS port
+[/lib/systemd/system/libvirtd-tls.socket][libvirtd-tls.socket]. This means
+`libvirtd` will start when a connection to port 16514 is made.
+
+For the client I needed to [copy my client certificates][copy_client_certificates] to the locations to [where libvirt expects them][libvirt_x509].
+
+I'm now able to connect to my server with `virsh` on my laptop.
+
+    #!/bin/bash
+    $ virsh -c qemu+tls://hypervisor.tarnbarford.net:16514/system list
+     Id   Name           State
+    ------------------------------
+     1    bacula         running
+     2    loadbalancer   running
+     3    mail-server    running
+     4    tarnbarford    running
+     5    monitoring     running
+     7    bab-website    running
+     8    owncloud       running
+     9    icinga         running
+     10   dns            running
+     11   ns1            running
+
+I can connect to the serial console of the virtual machines, which is pretty
+useful when working with headless servers.
+
+    #!/bin/bash
+    $ virsh -c qemu+tls://hypervisor.tarnbarford.net:16514/system console tarnbarford
+    Connected to domain 'tarnbarford'
+    Escape character is ^] (Ctrl + ])
+
+    tarnbarford login:
+
+And I can connect `virt-manager` to work with `libvirtd` on my server.
+
+<img style="width: 100%" src="virt-manager.png">
+
+What isn't yet working is using `virt-viewer` with [VNC][vnc] or [SPICE][spice]
+to conect to the displays of the virtual machines.
+
+<img style="width: 100%" src="virt-viewer.png">
+
+The VNC and SPICE connections are directly from virtual
+machine emulators, not via `libvirtd` so this needs to be setup separately. I'd
+really like to get this working smoothly, so I expect to post something about
+this soon.
+
+[libvirt-ca]: https://github.com/tarnacious/server-configuration/blob/43c2d99bfabf22078415536da9ed2eb655bee543/scripts/gen-libvirt-certificates
+[qemu]: https://www.qemu.org/
+[kvm]: https://www.linux-kvm.org/page/Main_Page
+[virsh]: https://libvirt.org/manpages/virsh.html#description
+[ssh]: https://www.openssh.com/
+[private_pki]: /journal/simple-private-public-key-infrastructure/
+[tls]: https://en.wikipedia.org/wiki/Transport_Layer_Security
+[virt-manager]: https://virt-manager.org/
+[libvirt_remote]: https://libvirt.org/remote.html
+[libvirt]: https://libvirt.org/
+[libvirtd_conf]: etc/libvirt/libvirtd.conf
+[libvirtd-tls.socket]: lib/systemd/system/libvirtd-tls.socket
+[enable_port_16514]: https://github.com/tarnacious/server-configuration/blob/43c2d99bfabf22078415536da9ed2eb655bee543/roles/hypervisor/tasks/main.yml#L65
+[copy_server_certificates]: https://github.com/tarnacious/server-configuration/blob/43c2d99bfabf22078415536da9ed2eb655bee543/roles/libvirt/server/tls/tasks/main.yml#L10-L29
+[copy_client_certificates]: https://github.com/tarnacious/server-configuration/blob/43c2d99bfabf22078415536da9ed2eb655bee543/roles/libvirt/client/certificates/tasks/main.yml#L10C1-L23
+[libvirt_x509]: https://libvirt.org/kbase/tlscerts.html
+[virt-manager-screenshot]: virt-manager.png
+[spice]: https://www.spice-space.org/
+[vnc]: https://en.wikipedia.org/wiki/Virtual_Network_Computing
