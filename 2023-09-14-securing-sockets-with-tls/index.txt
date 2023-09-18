@@ -47,8 +47,8 @@ Trying to connect port 6000 like before won't work.
     $ echo "hello" | ncat localhost 6000
     Ncat: Connection reset by peer.
 
-The server is expecting the client to start a TLS negotiation. Instead, we're
-sending the the characters "hello", so the server disconnects us. The error
+The server is expecting the client to start a TLS negotiation. Instead, the
+characters "hello" are being sent, so the server disconnects. The error
 [logged][not_ssl] by `stunnel` is "SSL routines::wrong version number" which
 isn't particularly helpful.
 
@@ -111,15 +111,15 @@ This tunnel is configuration is similar to the previous one except it'll listen
 on a different port (5000) and `verify` is set to 2, meaning it will require
 client certificates and will validate they are signed by the CA ([`ca.crt`][ca_crt])
 
-If we restart the `stunnel` process with the updated configuration and try to
-connect as before to port 5000, we get a different result.
+After restarting the `stunnel` process with the updated configuration,
+connecting as before to the new tunnel on port 5000 does not work.
 
     #!/bin/bash
     $ echo "hello" | ncat --ssl --ssl-verify --ssl-servername service1 --ssl-trustfile ca.crt  localhost 5000
 
-This time we get no response, this is because we're not sending a certificate.
-The error [logged][no_peer_certificate] by `stunnel` is "peer did not return a
-certificate".
+This time there is no response, this is because no client certificates are
+being sent. The error [logged][no_peer_certificate] by `stunnel` is "peer did
+not return a certificate".
 
 To connect to this service, a client certificate pair signed by the CA is
 required. The process to generate a certificate pair for the client is the same

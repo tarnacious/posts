@@ -22,8 +22,8 @@ configuration values were good and I didn't make any changes to this file.
     ca_file = "/etc/pki/CA/cacert.pem"
     tls_no_verify_certificate = 0
 
-I needed to [copy the server certificates][copy_server_certificates] into the
-locations specified in the configuration files.
+For `libvirtd` itself, only needed to [copy the server certificates][copy_server_certificates] into the
+locations specified in the configuration files.x and then [restart the service][restart_libvirt].
 
 On the server, I needed to [enable access to the port 16514][enable_port_16514]
 through the filewall.
@@ -94,3 +94,4 @@ this soon.
 [virt-manager-screenshot]: virt-manager.png
 [spice]: https://www.spice-space.org/
 [vnc]: https://en.wikipedia.org/wiki/Virtual_Network_Computing
+[restart_libvirt]: https://github.com/tarnacious/server-configuration/blob/43c2d99bfabf22078415536da9ed2eb655bee543/roles/libvirt/server/tls/handlers/main.yml#L1
