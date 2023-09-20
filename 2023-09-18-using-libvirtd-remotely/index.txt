@@ -22,8 +22,8 @@ configuration values were good and I didn't make any changes to this file.
     ca_file = "/etc/pki/CA/cacert.pem"
     tls_no_verify_certificate = 0
 
-For `libvirtd` itself, only needed to [copy the server certificates][copy_server_certificates] into the
-locations specified in the configuration files.x and then [restart the service][restart_libvirt].
+For `libvirtd` itself, I only needed to [copy the server certificates][copy_server_certificates] into the
+locations specified in the configuration files and then [restart the service][restart_libvirt].
 
 On the server, I needed to [enable access to the port 16514][enable_port_16514]
 through the filewall.
