@@ -1,0 +1,130 @@
+Continuing on this foolish path to [manage some virtual machines on a remote
+host with TLS and peer authentication][using-libvirtd-remotely], here I'm going
+to configure VNC.
+
+The trick here is we're really configuring `qemu` not `libvirtd` as `qemu`
+itself provides the VNC server. On my Debian system the _default_ configuration
+file is [`/etc/libvirt/qemu.conf`][qemu.conf]. By default, TLS for VNC is not
+enabled.
+
+To [listen on all interfaces][vnc_listen], [use TLS][vnc_tls] and [do peer authentication][vnc_tls_x509_verify] the following
+options need to be [set][copy_qemu_conf].
+
+    #!/bin/bash
+    vnc_listen = "0.0.0.0"
+    vnc_tls = 1
+    vnc_tls_x509_verify = 1
+
+The default certificates directories are either the default `qemu` certificate
+directory.
+
+    #!/bin/bash
+    /etc/pki/qemu/ca-cert.pem
+    /etc/pki/qemu/server-cert.pem
+    /etc/pki/qemu/server-key.pem
+
+Or the `qemu` VNC certificate directory.
+
+    #!/bin/bash
+    /etc/pki/libvirt-vnc/ca-cert.pem
+    /etc/pki/libvirt-vnc/server-cert.pem
+    /etc/pki/libvirt-vnc/server-key.pem
+
+I chose to [copy them to the latter][copy_libvirtd_certificates].
+
+VNC ports are allocated by `qemu` starting a port 5900 by default. I'm going to
+assume these are reused when either a domain is destroyed or deleted and
+[allowed the port range 5900:5910 through the firewall][port_range].
+
+I could only find limited [documentation][libvirt_tls] about where
+`virt-manager` or `virt-viewer` expects the certificates to be installed for
+making VNC connections. I ended up using `strace` to see where it was trying to
+read them from.
+
+I was a bit surprised to find they actually expect the client certificates in
+different paths. Here is where `virt-manager` reads certificates.
+
+    #!/bin/bash
+    ~/.pki/CA/cacert.pem
+    ~/.pki/libvirt-vnc/clientcert.pem
+    ~/.pki/libvirt-vnc/private/clientkey.pem
+
+And `virt-viewer` here, which _partially_ overlaps where libvirt reads its
+certificates.
+
+    #!/bin/bash
+    ~/.pki/CA/cacert.pem
+    ~/.pki/libvirt/clie isntcert.pem
+    ~/.pki/libvirt/private/clientkey.pem
+
+After [copying the missing certificates][client_vnc_certificates] we should be
+ready to go.
+
+To create a new virtual machines with a graphical installer, which is what I
+wanted to do, I still need to download the installer ISO disk image on the
+server.
+
+    #!/bin/bash
+    wget https://channels.nixos.org/nixos-23.05/latest-nixos-gnome-x86_64-linux.iso -P /var/kvm/installers/
+
+It's now possible to create a new virtual machine with `virt-manager` and then
+use a graphical installer to install an operating system through a VNC display.
+[1][1] [2][2] [3][3] [4][4] [5][5] [6][6]
+
+I can also script the virtual machine creation with `virt-install` which will
+launch the `virt-viewer` VNC client. A list of possible `--os-variant` values
+can be found run running `virt-install --osinfo list`.
+
+    #!/bin/bash
+    $ virt-install \
+      --connect 'qemu+tls://hypervisor.tarnbarford.net:16514/system' \
+      --name demo \
+      --memory 2048 \
+      --vcpus 2 \
+      --disk size=20 \
+      --cdrom /var/kvm/installers/latest-nixos-gnome-x86_64-linux.iso \
+      --boot cdrom,hd \
+      --os-variant nixos-22.05 \
+      --graphics vnc
+
+    Starting install...
+    Allocating 'demo.qcow2'                                                                                                    | 3.1 MB  00:00:03 ...
+    Creating domain...                                                                                                         |    0 B  00:00:00
+    Running graphical console command: virt-viewer --connect qemu+tls://hypervisor.tarnbarford.net:16514/system --wait demo
+
+Bam! A `virt-viewer` window appears displying the install media boot screen.
+
+<img style="width: 100%" src="images/virt-install.png">
+
+This is pretty great, I can now quickly and easily create new virtual machines
+on the server and immediately connect to their display in input devices using
+VPN client.
+
+I'm still not fully satisfied, when I create virtual machines on my laptop I
+always prefer [SPICE][spice] over VPN. The main reason is that SPICE has a
+feature "Redirect USB device" which works _really well_ for many of my
+workflows that rely on [my USB security key][nitrokey]. The reason I didn't
+setup SPICE initially is that it doesn't support TLS peer authentication (!). I
+have an idea how I could make this work which I'd like to try, but I'll leave
+that for another time.
+
+
+[using-libvirtd-remotely]: /journal/using-libvirtd-remotely
+[qemu.conf]: etc/libvirt/qemu.conf
+[libvirt_tls]: https://wiki.libvirt.org/VNCTLSSetup.html
+[spice]: https://www.spice-space.org/
+[nitrokey]: https://shop.nitrokey.com/shop/product/nkpr2-nitrokey-pro-2-3
+[1]: images/virt-manager-new-vm-1.png
+[2]: images/virt-manager-new-vm-2.png
+[3]: images/virt-manager-new-vm-3.png
+[4]: images/virt-manager-new-vm-4.png
+[5]: images/virt-manager-new-vm-5.png
+[6]: images/virt-manager-new-vm-6.png
+
+[vnc_listen]: https://github.com/tarnacious/server-configuration/blob/ffd8e76b27519332656f2c94082f0c5c494c56d0/roles/libvirt/server/tls/templates/qemu.conf#L72
+[vnc_tls]: https://github.com/tarnacious/server-configuration/blob/ffd8e76b27519332656f2c94082f0c5c494c56d0/roles/libvirt/server/tls/templates/qemu.conf#L93
+[vnc_tls_x509_verify]: https://github.com/tarnacious/server-configuration/blob/ffd8e76b27519332656f2c94082f0c5c494c56d0/roles/libvirt/server/tls/templates/qemu.conf#L126
+[copy_qemu_conf]: https://github.com/tarnacious/server-configuration/blob/ffd8e76b27519332656f2c94082f0c5c494c56d0/roles/libvirt/server/tls/tasks/main.yml#L32-L36
+[copy_libvirtd_certificates]: https://github.com/tarnacious/server-configuration/blob/ffd8e76b27519332656f2c94082f0c5c494c56d0/roles/libvirt/server/tls/tasks/main.yml#L38-L54
+[client_vnc_certificates]: https://github.com/tarnacious/server-configuration/blob/ffd8e76b27519332656f2c94082f0c5c494c56d0/roles/libvirt/client/certificates/tasks/main.yml#L27-L49
+[port_range]: https://github.com/tarnacious/server-configuration/blob/ffd8e76b27519332656f2c94082f0c5c494c56d0/roles/hypervisor/tasks/main.yml#L70-L74
