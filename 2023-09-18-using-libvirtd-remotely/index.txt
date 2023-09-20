@@ -6,8 +6,7 @@ I have a headless server running [`libvirtd`][libvirt] with a
 
 I wrote [a script][libvirt-ca] to generate a Certificate Authority (CA)
 certificate, then generate certificates for the client and the server that are
-both signed by the CA certificate. In my case the server name is
-`hypervisor.tarnbarford.net`.
+both signed by the CA certificate.
 
 The server runnning libvirtd needs to be configured to support TLS connections.
 On Debian systems the libvirtd configuration is in
