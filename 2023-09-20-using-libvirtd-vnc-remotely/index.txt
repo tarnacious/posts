@@ -54,7 +54,7 @@ certificates.
 
     #!/bin/bash
     ~/.pki/CA/cacert.pem
-    ~/.pki/libvirt/clie isntcert.pem
+    ~/.pki/libvirt/clientcert.pem
     ~/.pki/libvirt/private/clientkey.pem
 
 After [copying the missing certificates][client_vnc_certificates] we should be
