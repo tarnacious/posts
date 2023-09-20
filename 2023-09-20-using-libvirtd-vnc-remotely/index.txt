@@ -97,7 +97,7 @@ Bam! A `virt-viewer` window appears displying the install media boot screen.
 <img style="width: 100%" src="images/virt-install.png">
 
 This is pretty great, I can now quickly and easily create new virtual machines
-on the server and immediately connect to their display in input devices using
+on the server and immediately connect to their display and input devices using
 VPN client.
 
 I'm still not fully satisfied, when I create virtual machines on my laptop I
