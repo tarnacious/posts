@@ -1,0 +1,158 @@
+I've been thinking again about using NixOS to build bootable disk images I can
+run on a remote qemu/KVM host. I worked out [how to build bootable `qcow2` disk
+images][build_qcow2_gist] a few years back, which still seems to work, but I
+wanted something that worked with [_flakes_][flakes] which I've since adopted.
+
+I initially found a way using [nixos-generators][nixos-generators] which worked
+pretty well until I wanted to [change the diskSize][disk_size_pr]. This wasn't
+a big issue, but I realised I didn't really need nixos-generators either. I
+created a gist of [the example][build_qcow2_gist2] I describe below.
+
+This is a pretty standard looking `configuration.nix` module that describes an
+example system to build.
+
+    #!/bin/nix
+    { config, lib, pkgs, ... }: {
+      boot.kernelPackages = pkgs.linuxPackages_5_15;
+
+      users.users = {
+        tarn = {
+          isNormalUser = true;
+          extraGroups = [ "wheel" ];
+          password = "";
+        };
+      };
+
+      environment.systemPackages = with pkgs; [
+        python310
+      ];
+
+      system.stateVersion = "23.05";
+    }
+
+The configuration for building `qcow2` disk images image can be separated into
+it's own module called `qcow.nix`. The attribute `system.build.qcow2` is set to use the NixOS
+[`make-disk-image.nix`][make-disk-image] magic.
+
+    #!/bin/nix
+    { config, lib, pkgs, modulesPath, ... }: {
+      imports = [
+        "${toString modulesPath}/profiles/qemu-guest.nix"
+      ];
+
+      fileSystems."/" = {
+        device = "/dev/disk/by-label/nixos";
+        autoResize = true;
+        fsType = "ext4";
+      };
+
+      boot.kernelParams = ["console=ttyS0"];
+      boot.loader.grub.device = lib.mkDefault "/dev/vda";
+
+      system.build.qcow2 = import "${modulesPath}/../lib/make-disk-image.nix" {
+        inherit lib config pkgs;
+        diskSize = 10240;
+        format = "qcow2";
+        partitionTableType = "hybrid";
+      };
+    }
+
+To tie it all together we can create a `flake.nix` file which describes an
+input and uses the modules above to build an output.
+
+    #!/bin/nix
+    {
+      description = "Example Virtual Machine Configuration";
+      inputs =  {
+        nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
+      };
+      outputs = { self, nixpkgs }: {
+        nixosConfigurations = {
+          # configuration for builidng qcow2 images
+          build-qcow2 = nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            modules = [
+              ./configuration.nix
+              ./qcow.nix
+            ];
+          };
+        };
+      };
+    }
+
+To run a flake all the configuration needs to be added to a git repository.
+
+    #!/bin/bash
+    $ git init
+    $ git add .
+
+To build the `qcow2` images `nix build` is used. Here we use our `build_qcow2`
+configuration and the `system.build.qcow2` attribute from earlier which is now
+somehow available.
+
+    #!/bin/bash
+    $ nix build .#nixosConfigurations.build-qcow2.config.system.build.qcow2
+
+This builds a qcow2 disk image in the nix store and creates a local symlink to
+the result.
+
+    #!/bin/bash
+    $ ls -lh result
+    lrwxrwxrwx 1 tarn users  60 Sep 24 20:39 result -> /nix/store/1gqd4qaqzh8yc1vynlzxs09rrhh03xdp-nixos-disk-image
+
+    $ ls -lh result/nixos.qcow
+    -r--r--r-- 1 root root 1.4G Jan  1  1970 nixos.qcow2
+
+To try out the disk image, we'll need to make a local copy and make it writable
+so it can be mounted as a writable disk by `qemu`.
+
+    #!/bin/bash
+    $ cp result/nixos.qcow2 .
+    $ chmod 644 nixos.qcow2
+
+The `virt-install` tool can be used to create a new virtual machine that uses
+the disk image.
+
+    #!/bin/bash
+    $ virt-install \
+         --name example \
+         --ram 1536 \
+         --disk nixos.qcow2 \
+         --os-variant nixos-unstable \
+         --import
+    Starting install...
+    Creating domain...                                                                                                         |    0 B  00:00:00
+    Running graphical console command: virt-viewer --connect qemu:///session --wait example
+
+This will bring up a `virt-viewer` window connected to the virtual machine.
+
+<img style="width: 100%" src="virt-viewer.png">
+
+Closing the window won't stop the virtual machine. It can be stopped (_destroyed_) and
+uninstalled (_undefined_) using the `virsh` command.
+
+    #!/bin/bash
+    $ virsh destroy example
+    Domain 'example' destroyed
+    $ virsh undefine example
+    Domain 'example' has been undefined
+
+
+I still don't have a complete handle on configuring NixOS and it took a bit of
+messing around to get this working. Going forward I also need to think about
+how secrets and storage are managed if these virtual machines are going to do
+anything useful.
+
+
+[build_qcow2_gist]: https://gist.github.com/tarnacious/f9674436fff0efeb4bb6585c79a3b9ff
+[nixos-generators]: https://github.com/nix-community/nixos-generators
+[qemu_flakes]: https://gist.github.com/FlakM/0535b8aa7efec56906c5ab5e32580adf
+[nixos-generators]: https://github.com/nix-community/nixos-generators
+[disk_size_pr]: https://github.com/nix-community/nixos-generators/pull/195
+[]: https://github.com/nix-community/nixos-generators/blob/master/formats/qcow.nix
+[]: https://mattwidmann.net/notes/running-nixos-in-a-vm/
+[flakes]: https://nixos.wiki/wiki/Flakes
+[make-disk-image]: https://github.com/NixOS/nixpkgs/blob/master/nixos/lib/make-disk-image.nix
+[build_qcow2_gist2]: https://gist.github.com/tarnacious/4fa4c449cb6f186b27fb01b2953696cc
+
+
