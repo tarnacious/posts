@@ -93,55 +93,39 @@ somehow available.
     #!/bin/bash
     $ nix build .#nixosConfigurations.build-qcow2.config.system.build.qcow2
 
-This builds a qcow2 disk image in the nix store and creates a local symlink to
-the result.
+This builds a qcow2 disk image in the nix store and creates a `result` symlink
+to the the containing directory in the store. To try out the disk image, we'll
+need a writable copy that can be mounted as a writable disk by `qemu`.
 
     #!/bin/bash
-    $ ls -lh result
-    lrwxrwxrwx 1 tarn users  60 Sep 24 20:39 result -> /nix/store/1gqd4qaqzh8yc1vynlzxs09rrhh03xdp-nixos-disk-image
+    $ cp result/nixos.qcow2 root.qcow2
+    $ chmod 644 root.qcow2
 
-    $ ls -lh result/nixos.qcow
-    -r--r--r-- 1 root root 1.4G Jan  1  1970 nixos.qcow2
-
-To try out the disk image, we'll need to make a local copy and make it writable
-so it can be mounted as a writable disk by `qemu`.
+The image can now be used to boot a qemu virtual machine
 
     #!/bin/bash
-    $ cp result/nixos.qcow2 .
-    $ chmod 644 nixos.qcow2
+    $ qemu-kvm -name nixos \
+               -m 4G \
+               -smp 2  \
+               -drive cache=writeback,file=root.qcow2,id=drive1,if=none,index=1,werror=report \
+               -device virtio-blk-pci,bootindex=1,drive=drive1 \
+               -nographic
+    ...
+    <<< Welcome to NixOS 23.05.20230924.261abe8 (x86_64) - ttyS0 >>>
 
-The `virt-install` tool can be used to create a new virtual machine that uses
-the disk image.
+    Run 'nixos-help' for the NixOS manual.
 
-    #!/bin/bash
-    $ virt-install \
-         --name example \
-         --ram 1536 \
-         --disk nixos.qcow2 \
-         --os-variant nixos-unstable \
-         --import
-    Starting install...
-    Creating domain...                                                                                                         |    0 B  00:00:00
-    Running graphical console command: virt-viewer --connect qemu:///session --wait example
+    nixos login: tarn
+    Password:
 
-This will bring up a `virt-viewer` window connected to the virtual machine.
+    [tarn@nixos:~]$ uname -a
+    Linux nixos 5.15.133 #1-NixOS SMP Sat Sep 23 09:10:03 UTC 2023 x86_64 GNU/Linux
 
-<img style="width: 100%" src="virt-viewer.png">
+    [tarn@nixos:~]$ python --version
+    Python 3.10.12
 
-Closing the window won't stop the virtual machine. It can be stopped (_destroyed_) and
-uninstalled (_undefined_) using the `virsh` command.
-
-    #!/bin/bash
-    $ virsh destroy example
-    Domain 'example' destroyed
-    $ virsh undefine example
-    Domain 'example' has been undefined
-
-
-I still don't have a complete handle on configuring NixOS and it took a bit of
-messing around to get this working. Going forward I also need to think about
-how secrets and storage are managed if these virtual machines are going to do
-anything useful.
+To kill the VM shut it down with the `poweroff` command or use `ctrl + a`
+followed by `x`.
 
 
 [build_qcow2_gist]: https://gist.github.com/tarnacious/f9674436fff0efeb4bb6585c79a3b9ff
