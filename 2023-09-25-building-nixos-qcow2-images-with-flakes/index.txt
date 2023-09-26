@@ -5,8 +5,7 @@ wanted something that worked with [_flakes_][flakes] which I've since adopted.
 
 I initially found a way using [nixos-generators][nixos-generators] which worked
 pretty well until I wanted to [change the diskSize][disk_size_pr]. This wasn't
-a big issue, but I realised I didn't really need nixos-generators either. I
-created a gist of [the example][build_qcow2_gist2] I describe below.
+a big issue, but I realised I didn't really need nixos-generators either.
 
 This is a pretty standard looking `configuration.nix` module that describes an
 example system to build.
