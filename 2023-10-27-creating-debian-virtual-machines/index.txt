@@ -1,6 +1,6 @@
 Creating virtual machines is one of the few things in [my personal computer
 infrastructure][server-configuration] I don't configure directly with Ansible.
-However, I have tried to make the process as fast and simple as possible . For
+However, I have tried to make the process as fast and simple as possible. For
 generic Debian based virtual machines, I base new virtual machines off a [base
 disk image][base-image].
 
@@ -60,8 +60,8 @@ new virtual machine networks can be used.
 
 
 This IP isn't is not directly accessable from over the Internet and I don't
-have a VPN setup with the host, however I do have an `sshd` daemon and I can
-use that as jump-host.
+have a VPN setup with the hypervisor, however I do have an `sshd` daemon on it
+and I can use that as jump-host.
 
     #!/bin/console
     tarn@thinkpad:~# ssh -J hypervisor.tarnbarford.net 192.168.122.66
