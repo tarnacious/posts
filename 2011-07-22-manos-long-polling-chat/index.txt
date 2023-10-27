@@ -1,14 +1,12 @@
 I fucking love the [Manos do Mono manifesto][manifesto]. It has very grand ideals and a philosophy of simplicity which I really dig, it is also excellently illustrated with pictures of cats.
 I've wanted try it since listening to [Jackson Harper][jacksonh] [talking about it on a Herding Code podcast last year][herdingcode].
 
-![I've also wanted little Lion, Elephants and Giraffes at home][mane]
-
 Installing Mono
 ===============
 
 I'm not sure if I needed to upgrade from version 2.6.7 to use Manos, which is in included with the Linux Mint distribution I use, but I knew I would need a newer version to for some other stuff I want to do. So I built and installed the latest Mono (2.11) from source, which was pretty straight forward.
 
-    #!/usr/bin/bash
+    #!/bin/console
     $ git clone git://github.com/mono/mono.git
     $ cd mono
     $ ./autogen.sh --prefix=/usr/local
@@ -16,7 +14,7 @@ I'm not sure if I needed to upgrade from version 2.6.7 to use Manos, which is in
 
 Ok, install libtool.
 
-    #!/usr/bin/bash
+    #!/bin/console
     $ sudo apt-get install libtool
     $ ./autogen.sh --prefix=/usr/local
     ..
@@ -24,14 +22,14 @@ Ok, install libtool.
 
 I think I have gettext, oh well.
 
-    #!/usr/bin/bash
+    #!/bin/console
     $ ./autogen.sh --prefix=/usr/local --enable-nls=no
     $ make
     $ make install
 
 And make sure the new Mono works, awesome.
 
-    #!/usr/bin/bash
+    #!/bin/console
     $ mono --version
     Mono JIT compiler version 2.11 (master/fbff787 Fri Jul 15 17:54:49 EST 2011)
     Copyright (C) 2002-2011 Novell, Inc, Xamarin, Inc and Contributors. www.mono-project.com
@@ -49,7 +47,7 @@ Installing Manos
 
 Manos was easy to build and install from source.
 
-    #!/usr/bin/bash
+    #!/bin/console
     $ git clone https://jacksonh@github.com/jacksonh/manos.git
     $ ./autogen.sh
     $ make
@@ -60,7 +58,7 @@ Getting started
 
 Manos has a command line tool like rails to create, build and serve websites.
 
-    #!/usr/bin/bash
+    #!/bin/console
     $ manos
     manos usage is: manos [command] [options]
 
@@ -75,7 +73,7 @@ Manos has a command line tool like rails to create, build and serve websites.
 
 The --init option creates a new application.
 
-    #!/usr/bin/bash
+    #!/bin/console
     $ manos --init ManosChat
     initing: ManosChat
     $ cd ManosChat/ && ls
