@@ -1,0 +1,3 @@
+https://github.com/Splidejs/splide/archive/refs/tags/v4.1.3.tar.gz
+
+rm -r !(dist)

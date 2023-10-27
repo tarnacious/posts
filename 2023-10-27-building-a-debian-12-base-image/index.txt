@@ -1,0 +1,175 @@
+I need a new Debian-based image to create new virtual machines since the old
+one is now two major versions out of date. I previously created the base
+images using [a script][build-vm] that creates a disk image, mounts it as a
+block device and installs Debian with debootstrap. This process is somewhat
+tricky because it requires privileges and kernel modules to access system
+network block devices. It also takes several minutes to install the system, for
+creating a new virtual machine it's much quicker and simpler to [copy a base
+image][create-domain]. Rather than get the script working, this time I'm just
+going to create a new virtual machine and use the graphical Debian installer to
+manually build a new image.
+
+The installation media is downloaded on the host system.
+
+    #!/bin/console
+    tarn@hypervisor:~/# curl -o /var/kvm/installers/debian-12.1.0-amd64-netinst.iso https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.1.0-amd64-netinst.iso
+
+A `qcow2` disk image is created on the server.
+
+    #!/bin/console
+    tarn@hypervisor:~/# qemu-img create -f qcow2 /var/kvm/images/debian-12-base.qcow2 20G
+
+As I've prevously configured [remote libvirt connections with
+TLS][libvirt-remote] I can connect to a remote host with `virt-install`,
+`virt-viewer` and `virsh` by exporting an environment variable.
+
+    #!/bin/console
+    tarn@thinkpad:~/# export LIBVIRT_DEFAULT_URI=qemu+tls://hypervisor.tarnbarford.net:16514/system
+
+I use `virt-install` to create a new virtual machine.
+
+    #!/bin/console
+    tarn@thinkpad:~/# virt-install \
+        --name debian-12-base \
+        --connect qemu+tls://hypervisor.tarnbarford.net:16514/system \
+        --network bridge=virbr0 \
+        --disk /var/kvm/images/debian-12-base.qcow2 \
+        --vcpu 4 \
+        --memory 4096 \
+        --os-variant debian11 \
+        --graphics vnc \
+        --console pty,target_type=virtio \
+        --serial pty \
+        --cdrom /var/kvm/installers/debian-12.1.0-amd64-netinst.iso
+    Starting install...
+    Creating domain...
+    Running graphical console command: virt-viewer --connect qemu+tls://hypervisor.tarnbarford.net:16514/system --wait debian-12-base
+
+The virtual machine will use a network bridge on the host machine called
+`virbr0` the DHCP service will allocate an IP address on an internal network
+and the bridge provides a route to the Internet. Both the installation media
+and the disk image are specified. I'll need graphics for the installation, I'll
+use VNC which I've previously configured to run remote over a secure TLS
+connection. The `--console` and `--serial` options will allow me to make a
+serial console connection once it's enabled on the virtual machine.
+
+This brings up a virt-viewer window on which I can run through the standard
+Debian graphic install process. I've taken some screenshot of the process.
+After completing the installation the system will reboot and the `virt-viewer`
+window will close.
+
+<section class="splide" aria-label="Debian installation">
+  <div class="splide__track">
+		<ul class="splide__list">
+      <li class="splide__slide"><img width="100%" src="images/1.png" alt="1.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/2.png" alt="2.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/3.png" alt="3.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/4.png" alt="4.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/5.png" alt="5.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/6.png" alt="6.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/7.png" alt="7.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/8.png" alt="8.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/9.png" alt="9.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/10.png" alt="10.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/11.png" alt="11.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/12.png" alt="12.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/13.png" alt="13.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/14.png" alt="14.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/15.png" alt="15.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/16.png" alt="16.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/17.png" alt="17.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/18.png" alt="18.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/19.png" alt="19.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/20.png" alt="20.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/21.png" alt="21.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/22.png" alt="22.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/23.png" alt="23.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/24.png" alt="24.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/25.png" alt="25.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/26.png" alt="26.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/27.png" alt="27.png"></li>
+      <li class="splide__slide"><img width="100%" src="images/28.png" alt="28.png"></li>
+    </ul>
+  </div>
+</section>
+
+
+For the rest of the setup I prefer to use a serial console rather than VNC,
+mostly because copy and paste works and I don't have to deal with a window the
+hijacks my mouse cursor, but this won't work just yet.
+
+First, I need a new VNC connection. I can either use `virt-manager` or `virt-viewer`.
+
+    #!/bin/console
+    tarn@thinkpad:~/# virt-viewer debain-12-base
+
+In the VNC window I just want to configure the system so it supports a serial
+console. Enabling the `serial-getty@ttyS0` serice _should_ be enough, but for
+some reason this _didn't_ work after I cloned the base image.
+
+    #!/bin/console
+    root@debian-12-base:~/# systemctl enable serial-getty@ttyS0.service
+
+It's also possible to configure this in `grub` which worked reliably for me.
+First edit `/etc/default/grub` and ensure the following to values are set.
+
+    #!/bin/bash
+    GRUB_CMDLINE_LINUX_DEFAULT="console=tty0 console=ttyS0,115200n8"
+    GRUB_TERMINAL=console
+
+Once that's done, `grub` needs to be updated.
+
+    #!/bin/console
+    root@debian-12-base:~/# update-grub
+
+Now it should be possible to get a serial console with `libvirt`.
+
+    #!/bin/console
+    tarn@thinkpad:~/# virsh console debian-12-base
+    Connected to domain 'debian-12-base'
+    Escape character is ^] (Ctrl + ])
+
+    debian-12-base login: root
+    Password:
+    Linux debian-12-base 6.1.0-13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.55-1 (2023-09-29) x86_64
+    root@debian-12-base:~#
+
+From this console we do the remaining configuration. Firstly install a couple of packages:
+
+    #!/bin/console
+    root@debian-12-base:~# apt install sudo vim curl
+
+Add the reguarly user `tarn` created during the install process to the `sudo`
+group.
+
+    #!/bin/console
+    root@debian-12-base:~# usermod -a -G sudo tarn
+
+Add my SSH key so I can SSH into the server as the `tarn` user.
+
+    #!/bin/console
+    root@debian-12-base:~# mkdir -p /home/tarn/.ssh
+    root@debian-12-base:~# curl -o /home/tarn/.ssh/authorized_keys https://github.com/tarnacious.keys
+    root@debian-12-base:~# chown -r tarn:tarn /home/tarn/.ssh
+    root@debian-12-base:~# chmod 600 /home/tarn/.ssh/authorized_keys
+
+Clear the history
+
+    #!/bin/console
+    root@debian-12-base:~# history -c && history -w
+
+The close the bash shell with `ctrl d` and then the serial console with `ctrl
+]`. The base image is now configured so we can shut down the VM and delete it's
+`libvirt` configuration, the disk is the only thing we care about.
+
+    #!/bin/console
+    tarn@thinkpad:~/# virsh destroy debian-12-base
+    tarn@thinkpad:~/# virsh undefined debian-12-base
+
+The file `/var/kvm/images/debian-12-base.qcow2` on the host is now a bootable
+Debian image that I can copy and create new virtual machines from.
+
+[libvirt-remote-vnc]: https://tarnbarford.net/journal/using-libvirtd-vnc-remotely/
+[libvirt-remote]: https://tarnbarford.net/journal/using-libvirtd-remotely/
+[build-vm]: https://github.com/tarnacious/server-configuration/blob/8b1c16da21241d26ac778403643ff63ed606748a/roles/libvirt/server/scripts/templates/build_vm#L1
+[create-domain]: https://github.com/tarnacious/server-configuration/blob/8b1c16da21241d26ac778403643ff63ed606748a/roles/libvirt/server/scripts/templates/create_domain#L3

@@ -1,0 +1,93 @@
+Creating virtual machines is one of the few things in [my
+infrastructure][server-configuration] I don't configure directly with Ansible.
+However, I have tried to make the process as fast and simple as possible . For
+generic Debian based virtual machines, I base new virtual machines off a [base
+disk image][base-image].
+
+I shell into the hypervisor to copy the base image.
+
+    #!/bin/console
+    tarn@hypervisor:~# cp /var/kvm/images/{debian-12-base.qcow2,demo.qcow2}
+
+I then create a new virtual machine with the new disk image.
+
+    #!/bin/console
+    tarn@thinkpad:~# virt-install \
+      --name demo \
+      --network bridge=virbr0 \
+      --network bridge=br0 \
+      --disk /var/kvm/images/demo.qcow2 \
+      --vcpu 4 \
+      --memory 4096 \
+      --os-variant debian11 \
+      --console pty,target_type=virtio \
+      --serial pty \
+      --graphics none \
+      --noautoconsole \
+      --import
+
+This will create a headless virtual machine with 4 vCPUs and 4GB RAM. On my
+host a standard virtual machine gets two network interfaces. The `virbr0`
+interface is a virtual IPv4 bridge with DHCP support, this network will be
+allocated an IP address on an internal network and have a route to the Internet
+when the machine starts. The `br0` inferface is a IPv6 bridge provided by the
+host system, the network doesn't have DHCP and will need to be configured. The
+`--serial` and `--console` options allow access to the machine via a serial
+console, the `--noautoconsole` prevents `virt-install` automatically connecting
+to serial console after creating the virtual machine.
+
+The next step is to work out what IP address was assigned to the NIC in the
+virtual machine. This can be found by looking the DHCP leases, but its made a
+bit more complicated because every new virtual machine will initially request a
+lease with the hostname `debian-12-base`.
+
+    #!/bin/console
+    tarn@thinkpad:~# virsh net-dhcp-leases default
+     Expiry Time           MAC address         Protocol   IP address          Hostname         Client ID or DUID
+    -----------------------------------------------------------------------------------------------------------------------------------------------------
+     2023-10-22 22:26:12   52:54:00:16:b6:7e   ipv4       192.168.122.34/24   debian-12-base   ff:00:16:b6:7e:00:01:00:01:2c:c1:6b:25:52:54:00:16:b6:7e
+     2023-10-22 22:33:44   52:54:00:b6:9d:8a   ipv4       192.168.122.66/24   debian-12-base   ff:00:b6:9d:8a:00:01:00:01:2c:c1:6b:25:52:54:00:16:b6:7e
+
+To workout which is the correct `IP address`, the MAC addresses assigned to the
+new virtual machine networks can be used.
+
+    #!/bin/console
+    tarn@thinkpad:~# virsh domiflist demo
+     Interface   Type     Source   Model    MAC
+    -----------------------------------------------------------
+     vnet85      bridge   virbr0   virtio   52:54:00:b6:9d:8a
+     vnet86      bridge   br0      virtio   52:54:00:07:91:8f
+
+
+This IP isn't is not directly accessable from over the Internet and I don't
+have a VPN setup with the host, however I do have an `sshd` daemon and I can
+use that as jump-host.
+
+    #!/bin/console
+    tarn@thinkpad:~# ssh -J hypervisor.tarnbarford.net 192.168.122.66
+
+I wouldn't usually SSH directly in at this point, but rather have Ansible use
+SSH to configure the system from here, including the [networking][networking]
+where I configure static IPv4 and IPv6 addresses. This means on the first run I
+use the DHCP assigned address as the `ansible_host` subsequently the staticly
+configured address.
+
+    #!/bin/yaml
+    hosts:
+      demo:
+        ansible_user: tarn
+        ansible_host: 192.168.122.66
+        ansible_ssh_common_args: "-o ProxyCommand='ssh -q -W %h:%p tarn@hypervisor.tarnbarford.net'"
+
+The virtual machine can then be accessed from the Internet via its static IPv6
+address. To make it accessable via IPv4 I use `iptables` rules to route a
+specific port to a specific virtual machine address. All HTTP/HTTPS traffic is
+routed to load balancer running HAProxy which uses the `Host` header or Server
+Name Indication (SNI) to route traffic to a specific VMs.
+
+The process is pretty quick but it is still significantly more fiddly than
+starting a virtual machine with a cloud provider.
+
+[networking]: https://github.com/tarnacious/server-configuration/blob/8b1c16da21241d26ac778403643ff63ed606748a/roles/vm-networking/templates/interfaces#L1-L16
+[server-configuration]: https://github.com/tarnacious/server-configuration
+[base-image]: /journal/building-a-debian-12-base-image
