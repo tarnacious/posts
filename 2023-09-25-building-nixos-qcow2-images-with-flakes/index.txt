@@ -81,7 +81,7 @@ input and uses the modules above to build an output.
 
 To run a flake all the configuration needs to be added to a git repository.
 
-    #!/bin/bash
+    #!/bin/console
     $ git init
     $ git add .
 
@@ -89,20 +89,20 @@ To build the `qcow2` images `nix build` is used. Here we use our `build_qcow2`
 configuration and the `system.build.qcow2` attribute from earlier which is now
 somehow available.
 
-    #!/bin/bash
+    #!/bin/console
     $ nix build .#nixosConfigurations.build-qcow2.config.system.build.qcow2
 
 This builds a qcow2 disk image in the nix store and creates a `result` symlink
 to the the containing directory in the store. To try out the disk image, we'll
 need a writable copy that can be mounted as a writable disk by `qemu`.
 
-    #!/bin/bash
+    #!/bin/console
     $ cp result/nixos.qcow2 root.qcow2
     $ chmod 644 root.qcow2
 
 The image can now be used to boot a qemu virtual machine
 
-    #!/bin/bash
+    #!/bin/console
     $ qemu-kvm -name nixos \
                -m 4G \
                -smp 2  \

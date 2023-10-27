@@ -64,8 +64,8 @@ To create a new virtual machines with a graphical installer, which is what I
 wanted to do, I still need to download the installer ISO disk image on the
 server.
 
-    #!/bin/bash
-    wget https://channels.nixos.org/nixos-23.05/latest-nixos-gnome-x86_64-linux.iso -P /var/kvm/installers/
+    #!/bin/console
+    $ wget https://channels.nixos.org/nixos-23.05/latest-nixos-gnome-x86_64-linux.iso -P /var/kvm/installers/
 
 It's now possible to create a new virtual machine with `virt-manager` and then
 use a graphical installer to install an operating system through a VNC display.
@@ -75,7 +75,7 @@ I can also script the virtual machine creation with `virt-install` which will
 launch the `virt-viewer` VNC client. A list of possible `--os-variant` values
 can be found run running `virt-install --osinfo list`.
 
-    #!/bin/bash
+    #!/bin/console
     $ virt-install \
       --connect 'qemu+tls://hypervisor.tarnbarford.net:16514/system' \
       --name demo \
