@@ -2,7 +2,7 @@ I found a [guide][guide] for cross-compiling [Rust][rustlang] which basically in
 configuring it with a `--target` option. The target needs to include the
 cross-compile target and the host target.
 
-    #!/bin/bash
+    #!/bin/console
     $ wget https://static.rust-lang.org/dist/rustc-1.5.0-src.tar.gz
     $ tar xf rustc-1.5.0-src.tar.gz
     $ ./configure --target=arm-unknown-linux-gnueabi,x86_64-unknown-linux-gnu --prefix "$(PWD)"/../bin
@@ -15,7 +15,7 @@ the build it started trying to use `arm-linux-gneabi-gcc` and
 is a problem with the build script, but I couldn't easily work out a fix, so I
 just created some symlinks with the names it was expecting. This worked well.
 
-    #!/bin/bash
+    #!/bin/console
     $ export LD_LIBRARY_PATH=~/projects/arm-rust-cross-compiler/bin/lib/
     $ export PATH=$PATH:~/projects/arm-rust-cross-compiler/bin/bin/
     $ bin/bin/rustc --version
@@ -25,7 +25,7 @@ just created some symlinks with the names it was expecting. This worked well.
 cross-compiled as it supports compiling for different targets and I don't
 actually want to run Cargo on the target machine.
 
-    #!/bin/bash
+    #!/bin/console
     $ git clone https://github.com/rust-lang/cargo
     $ cd cargo
     $ git submodule update --init
@@ -36,7 +36,7 @@ actually want to run Cargo on the target machine.
 
 To cross-compile with Cargo, a linker needs to be specified for the target. In my case:
 
-    #!/bin/bash
+    #!/bin/console
     $ cat > ~/.cargo/config << EOF
     [target.arm-unknown-linux-gnueabi]
     linker = "arm-unknown-linux-gnueabi-gcc-5.2.0"
@@ -44,7 +44,7 @@ To cross-compile with Cargo, a linker needs to be specified for the target. In m
 
 Now Cargo can be used to create a new project and build a binary for an ARM target.
 
-    #!/bin/bash
+    #!/bin/console
     $ cargo new --bin hello-rust
     $ cd hello
     $ cargo build --target=arm-unknown-linux-gnueabi
@@ -73,8 +73,8 @@ selected.
 Finally, after rebuilding the Kernel and adding the Rust built `hello` binary to
 the filesystem, the program can run in the emulator.
 
-    #!/bin/bash
-    qemu-system-arm -M versatilepb -cpu arm1176 -m 128M -kernel zImage -initrd ./rootfs.img.gz -append "root=/dev/ram rdinit=/sbin/init"
+    #!/bin/console
+    $ qemu-system-arm -M versatilepb -cpu arm1176 -m 128M -kernel zImage -initrd ./rootfs.img.gz -append "root=/dev/ram rdinit=/sbin/init"
 
 ![hello rust screenshot][hello-rust]
 
