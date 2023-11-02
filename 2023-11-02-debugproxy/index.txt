@@ -1,11 +1,11 @@
-debugProxy was a project I worked on with David in 2017, I hosted and supported
-the service at [debugproxy.com][debugproxy.com] for several years. I did a
-"Show HN" [thread][hackernews] when we released it which was on the front page
-for a few hours, this gave us plenty of initial users. Despite it working quite
-well once setup, configuring devices to use it and trust root certificates was
-always fiddly and very difficult if a certificate pinning technique was used. I
-made all the [code][github] public in 2019. By 2021 usage was sporadic and I
-shut it down.
+debugProxy was a project I worked on with [David][david] in 2017, I hosted and
+supported the service at [debugproxy.com][debugproxy.com] for several years. I
+did a "Show HN" [thread][hackernews] when we released it which was on the front
+page for a few hours, this gave us plenty of initial users. Despite it working
+quite well once setup, configuring devices to use it and trust root
+certificates was always fiddly and very difficult if a certificate pinning
+technique was used. I made all the [code][github] public in 2019. By 2021 usage
+was sporadic and I shut it down.
 
 <iframe width="900" height="500" src="https://www.youtube.com/embed/RxlvvuJv1sg?si=50uupyRUNemvc_Vh" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
@@ -31,3 +31,4 @@ with the proxy or the website, I'd be interested to hear about it.
 [python]: https://github.com/tarnacious/server-configuration/commit/cfdf4e12155a53426ab13fe038e16328c5dc0ff0
 [versions]: https://github.com/tarnacious/debugproxy/commit/69ed9e439301163e55026ccabe209b5eb410295d
 [debugproxy]: https://debugproxy.tarnbarford.net/
+[david]: https://twitter.com/D_J_Spencer
