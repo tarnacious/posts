@@ -7,11 +7,13 @@ The key-pair is used to SSH into the instance as root.
 The permissions on the key file must be set so only the owner can read it.
 I also move keys to my ~/.ssh directory.
 
+    #!/bin/console
     $ mv ~/Downloads/mykey.pem ~/.ssh/
     $ chmod 400 ~/.ssh/mykey.pem
 
 SSH into the public name using the key.
 
+    #!/bin/console
     $ ssh -i ~/.ssh/mykey.pem root@[ec2-instance-name]
     [root@ip-xx-xxx-xx-xx ~]$
 
@@ -19,6 +21,7 @@ SSH into the public name using the key.
 
 Firstly the system should be updated with the Arch Linux package management tool.
 
+    #!/bin/console
     [root@ec2]$ pacman -Syyu
 
 It asked me something about a dependency conflict, I said yes. Things seem to be fine.
@@ -35,11 +38,13 @@ The SSH configuration doesn't allow for plain text passwords sent through the tu
 
 The SSH daemon checks for the key in `~/.ssh/authorized_keys`. Put the users public key there.
 
+    #!/bin/console
     [root@ec2]$ mkdir /home/username/.ssh
     [root@ec2]$ mv pub-key /home/username/.ssh/authorized_keys
 
 The user can now login, the `-i` flag can be used if the default key is not used.
 
+    #!/bin/console
     $ ssh username@[ec2-instance-name]
 
 ## All users are not equal
@@ -49,18 +54,22 @@ This can be done by giving permission to the `wheel` group and then adding users
 
 These rules are in `/etc/sudoers`, because the file is important there is a tool called visudo which checks for syntax errors before saving.
 
+    #!/bin/console
     [root@ec2]$ visudo
 
 The line that allows the wheel group to perform actions as the root needs to be uncommented.
 
+    #!/bin/bash
     %wheel ALL=(ALL) ALL
 
 We can then add users we trust to the wheel group.
 
+    #!/bin/console
     [root@ec2]$ gpasswd username wheel
 
 The sudo package needs to be installed at sometime.
 
+    #!/bin/console
     [root@ec2]$ pacman -S sudo
 
 ## Prevent root login
@@ -69,12 +78,14 @@ Now a user can connect and perform actions as root, we can prevent logging in re
 To do this we update `/etc/ssh/sshd_config` and set `PermitRootLogin` to `no`.
 We need to restart the SSH process for this to take effect.
 
+    #!/bin/console
     [tarn@ec2]$ rc.d restart sshd
 
 ## Install some development tools system wide
 
 We will need heaps more, but here are some to get us started.
 
+    #!/bin/console
     [tarn@ec2]$ sudo pacman -S vim git screen gcc erlang /
                    python mono openjdk6 nodejs v8 patch /
                    curl zlib readline libxml2 libxslt /
@@ -88,18 +99,22 @@ only users with permission to sudo will be permitted to do it.
 
 To share a screen process, one user starts screen passing a socket name
 
+    #!/bin/console
     [person1@ec2]$ screen -S hack-session
 
 They then must enable multiuser by invoking screen with `CTRL-a` and typing
 
+    #!/bin/bash
     :multiuser on
 
 Finally they must explictly allow a user, again by invoke screen with `CTRL-a`.
 
+    #!/bin/bash
     :acladd person2
 
 The user `person2` can now attach to the screen session
 
+    #!/bin/console
     [person2@ec2]$ screen -x person1/hack-session
 
 You can then even split your screen `CTRL-S` and share two shells, perhaps Vim and a REPL? Awesome.
