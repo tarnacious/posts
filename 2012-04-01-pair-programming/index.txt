@@ -86,10 +86,10 @@ We need to restart the SSH process for this to take effect.
 We will need heaps more, but here are some to get us started.
 
     #!/bin/console
-    [tarn@ec2]$ sudo pacman -S vim git screen gcc erlang /
-                   python mono openjdk6 nodejs v8 patch /
-                   curl zlib readline libxml2 libxslt /
-                   autoconf automake diffutils make /
+    [tarn@ec2]$ sudo pacman -S vim git screen gcc erlang \
+                   python mono openjdk6 nodejs v8 patch \
+                   curl zlib readline libxml2 libxslt \
+                   autoconf automake diffutils make \
                    libtool bison subversion
 
 Installing packages requires root access as the packages install system wide,
