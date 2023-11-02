@@ -1,0 +1,33 @@
+debugProxy was a project I worked on with David in 2017, I hosted and supported
+the service at [debugproxy.com][debugproxy.com] for several years. I did a
+"Show HN" [thread][hackernews] when we released it which was on the front page
+for a few hours, this gave us plenty of initial users. Despite it working quite
+well once setup, configuring devices to use it and trust root certificates was
+always fiddly and very difficult if a certificate pinning technique was used. I
+made all the [code][github] public in 2019. By 2021 usage was sporadic and I
+shut it down.
+
+<iframe width="900" height="500" src="https://www.youtube.com/embed/RxlvvuJv1sg?si=50uupyRUNemvc_Vh" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+Despite the project not being wildly successful, I enjoyed working on it and am
+proud of what we built.
+
+Because I've apparently learned nothing, I decided to see if it would still
+work. It turns out I can't even install the packages to build the frontend code
+anymore (React 15.6, Webpack 4), but I could find a copy of the compiled
+JavaScript, which I've [added][frontend] to the repository. To run the backend
+code, I had to [build][python] Python 3.7 and [pin][versions] a few dependency
+versions.
+
+I regret to say that I have DebugProxy fully working at
+[debugproxy.tarnbarford.net][debugproxy]. I'm definitely not going to provide
+support for getting specific devices to use the proxy, but if there are issues
+with the proxy or the website, I'd be interested to hear about it.
+
+[debugproxy.com]: https://web.archive.org/web/20171210050450/https://debugproxy.com/
+[hackernews]: https://news.ycombinator.com/item?id=15885703
+[github]: https://github.com/tarnacious/debugproxy/commit/69ed9e439301163e55026ccabe209b5eb410295d
+[frontend]: https://github.com/tarnacious/debugproxy/commit/986f1b1f6f276371b02a094f1d18153a0edfd9bd
+[python]: https://github.com/tarnacious/server-configuration/commit/cfdf4e12155a53426ab13fe038e16328c5dc0ff0
+[versions]: https://github.com/tarnacious/debugproxy/commit/69ed9e439301163e55026ccabe209b5eb410295d
+[debugproxy]: https://debugproxy.tarnbarford.net/
