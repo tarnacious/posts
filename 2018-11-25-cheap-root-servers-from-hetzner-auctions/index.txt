@@ -18,7 +18,7 @@ Note: when SSHing into the rescue system you may want to disable "strict host
 checking" as the rescue system host key will be different than that of your
 host.
 
-    #!/bin/bash
+    #!/bin/console
     tarn@laptop $ ssh -o StrictHostKeyChecking=no [server IP address]
 
 It's possible to mount the disks connected to the server yourself and manually
@@ -28,24 +28,38 @@ the setup of various distributions and will handle partitioning, grub setup,
 software RAID, prompt for root password, network configuration, install sshd
 and add your SSH key as an authorized key.
 
-    #!/bin/bash
+    #!/bin/console
     root@rescue ~ # installimage
 
 I chose Debian 9 and took all the default options except the hostname, which I
 changed to demo. This isn't very interesting, but I took some screen shots of
 the process anyway. [1][1] [2][2] [3][3] [4][4] [5][5] [6][6] [7][7]
 
+<section class="splide" aria-label="Debian installation">
+  <div class="splide__track">
+		<ul class="splide__list">
+      <li class="splide__slide"><img width="100%" src="install_image1.png" alt="1.png"></li>
+      <li class="splide__slide"><img width="100%" src="install_image2.png" alt="2.png"></li>
+      <li class="splide__slide"><img width="100%" src="install_image3.png" alt="3.png"></li>
+      <li class="splide__slide"><img width="100%" src="install_image4.png" alt="4.png"></li>
+      <li class="splide__slide"><img width="100%" src="install_image5.png" alt="5.png"></li>
+      <li class="splide__slide"><img width="100%" src="install_image6.png" alt="6.png"></li>
+      <li class="splide__slide"><img width="100%" src="install_image7.png" alt="7.png"></li>
+    </ul>
+  </div>
+</section>
+
 After installing the image you can reboot from the rescue system and your
 server will boot up.
 
-    #!/bin/bash
+    #!/bin/console
     root@rescue ~ # reboot
 
 The next time you SSH to your IP address you'll be connecting to your own
 server. This time you want strict host checking so when we connect via SSH
 going forward you can be confident you're connecting to your server.
 
-    #!/bin/bash
+    #!/bin/console
     tarn@laptop $ ssh [server IP address]
     root@demo ~ #
 
