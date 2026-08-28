@@ -2,7 +2,7 @@ So [GNU Screen][3] has been around for a while (initially released in 1987!), bu
 
 For the last year or so I've used Linux exclusively for my personal computing where I play with a little Python, Ruby, Lisp, JavaScript and Erlang with Vim and a terminal. I do like [freeing myself from my mouse][4]. But there were a few area of my work flow that were bothering me:
 
-- I didn't like how I navigated up the terminal buffer to see what had happed, I could use Ctrl+PageUp/PageDown to avoid the using the mouse, but jumping by pages isn't always ideal.
+- I didn't like how I navigated up the terminal buffer to see what had happened, I could use Ctrl+PageUp/PageDown to avoid the using the mouse, but jumping by pages isn't always ideal.
 
 - I used the mouse to copy text from the terminal buffer. This constantly depressed me.
 
@@ -18,7 +18,7 @@ GNU Screen is a terminal multiplexer with windowing support. Programs created in
 
 The terminal buffers in Screen don't have scrollbars but they do support a copy mode (Ctrl+a [). This allows you to move up, down and around the window with Vim like keyboard navigation and copy text which can be pasted into other screen buffers (Ctrl+a ]). Yay, two of my problems solved!
 
-Screen provides many functions for creating and switching between programs. A new shell be be created (Ctrl+a c) and named (Ctrl+a a). The connected programs can be listed and selected into the foreground with (Ctrl+a "). Now I can create shells and have them running in the background, then switch to them when I need them.
+Screen provides many functions for creating and switching between programs. A new shell can be created (Ctrl+a c) and named (Ctrl+a a). The connected programs can be listed and selected into the foreground with (Ctrl+a "). Now I can create shells and have them running in the background, then switch to them when I need them.
 
 It supports splitting the current screen window horizontally and vertically (Ctrl+a S and Ctrl+a |). The focus can be switched between windows (Ctrl+a Tab). This allows me to have Vim on the top and a console on the bottom. Awesome, now I don't even need to run the console inside Vim itself.
 

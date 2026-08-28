@@ -33,12 +33,12 @@ solution.
 
   * [Source Download][6]
 
-I would like to add a post about supporting difference storage mechanisms and
+I would like to add a post about supporting different storage mechanisms and
 using the control, but I have other projects demanding my attention. Hopefully
 I'll get back to it sometime.
 
-I Hope you've found some of these articles useful or interesting. I'll keep
-and eye on the comments, contribute to further discussion, and update the
+I hope you've found some of these articles useful or interesting. I'll keep
+an eye on the comments, contribute to further discussion, and update the
 posts where errors or omissions are noted.
 
 Cheers

@@ -42,14 +42,14 @@ above.
 
 
 During the RenderContents event of the AdRotator we can serialize this list
-into a string of Json.
+into a string of JSON.
 
 
     JavaScriptSerializer serializer = new JavaScriptSerializer();
     string json = serializer.Serialize(Images);
 
 
-The Json will look something like this.
+The JSON will look something like this.
 
 
     [{"ImageUrl":"Images/Winter.jpg","LinkUrl":"#","DisplayTime":"1000"},
@@ -57,7 +57,7 @@ The Json will look something like this.
 
 
 The following script and corresponding output will hopefully demonstrate how
-we can use the Json on the client side as data.
+we can use the JSON on the client side as data.
 
 
     var imageList = [{"ImageUrl":"Images/Winter.jpg","LinkUrl":"#","DisplayTime":"1000"},
@@ -81,7 +81,7 @@ to go further into how the Json is used in the AdRotator but I've rambled on
 long enough. I think there is enough here to see that Json is a pretty cool
 language for communicating data between the server and client side Javascript.
 
-I should also note that the JavaScriptSerializer is marked as depreciated and
+I should also note that the JavaScriptSerializer is marked as deprecated and
 points towards the DataContractJsonSerializer. I briefly tried to get this
 working, but I couldn't seem to find the object in my system assemblies. To
 read more about that, check out [DataContractJsonSerializer in .NET 3.5][2]

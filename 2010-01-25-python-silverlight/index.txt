@@ -1,9 +1,9 @@
 ## Context
 
-I was asked do a presentation about developing Silverlight applications to the
+I was asked to do a presentation about developing Silverlight applications to the
 [Melbourne Python User-group][1]. Hell yeah, I love participating in user
 groups but I obviously needed some content. Unfortunately I didn't know this
-local user-group existed, so I've haven't been and have little idea of number
+local user-group existed, so I haven't been and have little idea of number
 of people or the type of stuff they do. This has made preparing relevant
 content a little challenging, but hopefully I can find the right mix.
 
@@ -96,7 +96,7 @@ described above.
 Download [this zip][3] containing the assemblies, scripts and templates and
 unzip it someone, anywhere.
 
-From the terminal/console/command-line go the the place you unzipped it to and
+From the terminal/console/command-line go to the place you unzipped it to and
 run the following command to build an xap.
 
     python xap.py samples.xap assemblies source
@@ -116,7 +116,7 @@ That's it. Now you can edit app.py to add functionality and repeat.
 
 Clearly this a very bare bones approach to development which has very limited
 development and debugging tools (and a server that can only serve files).
-There is more tooling out there, but surprisingly litte for Python developers.
+There is more tooling out there, but surprisingly little for Python developers.
 
 [MonoDevelop 2.2][4], the Moonlight SKD and Python bindings may provide some
 sort of IDE support but it's only just been released, it is not easy to get up
@@ -148,8 +148,8 @@ The Silverlight 2/Moonlight implementations of Python are still missing large
 parts of the Python standard library, which will come as a bit of a shock to
 Python developers and makes it difficult to import modules that depend on it.
 Almost the entire Silverlight 2 Base Class Library is accessible through
-Python but although the Python/.NET integratation is very impressive, working
-with the BCL does seem to limit the expressivness of the code.
+Python but although the Python/.NET integration is very impressive, working
+with the BCL does seem to limit the expressiveness of the code.
 
 Silverlight 3 appears to have some additional built-in support for interacting
 with the application at runtime through a Python REPL console, it supports
@@ -165,7 +165,7 @@ I do have some examples on PythonSilverScripting that can be run from the
 browser.
 
 I'd love to know the tools other people are using to develop
-Python/Silverlight and thoughts people have of it. If your in Melbourne and
+Python/Silverlight and thoughts people have of it. If you're in Melbourne and
 your at all interested you should come down to the [meeting][1].
 
 _Update 26/01/10: Updated scripts and templates to work in Windows_

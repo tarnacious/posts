@@ -97,8 +97,8 @@ prefix to every message it receives and sends the message back.
     message :: (JSString -> IO ()) -> IO ()
     message f = on_message $ mkCallback f
 
-    response :: JSString ->  JSString
-    response s = toJSString $ "Worker recieved, " ++ s'
+    response :: JSString ->  JSString 
+    response s = toJSString $ "Worker received, " ++ s'
         where Just s' = fromJSString s
 
     main = do

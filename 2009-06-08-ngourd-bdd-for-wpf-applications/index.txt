@@ -176,7 +176,7 @@ application and watching the behavior test turn green like a cucumber!
 
 ### Isolating scenarios in separate application domains
 
-Even though everything looked looks like it was working, I wanted to add
+Even though everything looked like it was working, I wanted to add
 another scenario (which wont surprise readers of my recent posts)
 
     Scenario: Can Execute Python statements
@@ -186,7 +186,7 @@ another scenario (which wont surprise readers of my recent posts)
     And I click GO
     Then I should see HELLO
 
-It turns out this extra test didnt need any additional step implementations or
+It turns out this extra test didn't need any additional step implementations or
 changes to the WPF application itself, but did show a very real deficiency in
 what I was doing. I was reminded of the rule enforced by InvalidOperationException:
 
@@ -267,11 +267,11 @@ NGourd to pick up.
 
 ### Running some tests with NGourd
 
-Im impressed with NGourd and have generally had a lot of fun and success
-playing with it. Its a little disappointing that no results are displayed
-until all the tests are complete. Perhaps its because my tests take ages and
-it would be nice to see what theyre doing (starting an AppDomain and running
-an Application in it isnt a lightweight task). Mainly though, I wanted to
+I'm impressed with NGourd and have generally had a lot of fun and success
+playing with it. It's a little disappointing that no results are displayed
+until all the tests are complete. Perhaps it's because my tests take ages and
+it would be nice to see what they're doing (starting an AppDomain and running
+an Application in it isn't a lightweight task). Mainly though, I wanted to
 include an action shot of it firing up windows during the test.
 
 ![image][7]

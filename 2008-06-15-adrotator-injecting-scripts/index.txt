@@ -10,18 +10,18 @@ System.Web.UI.Page object that will do this for us.
 
     Page.ClientScript.RegisterStartupScript(Type type, string key, string script)
 
-The keys here a crucial, there is only one script rendered for each key. If we
+The keys here are crucial, there is only one script rendered for each key. If we
 inject the definition script with a static key it means no matter how many
 instances control try to register it, only one instance of script will be sent
 to the output.
 
-To to insert a unique script for every instance of the AdRotator we need to
+To insert a unique script for every instance of the AdRotator we need to
 use a unique key. I use the server side controls ClientId property which will
-be difference for every instance of the control on any page. You could also
+be different for every instance of the control on any page. You could also
 use a GUID.
 
 This is clearly the weakest post of all the posts about the AdRotator. I just
-kind of got this working an never really got very inspired to learn anything
+kind of got this working and never really got very inspired to learn anything
 else about it. I posted it anyway as I felt I did need to cover this topic for
 completeness of the series. I'll try to update it soon.
 

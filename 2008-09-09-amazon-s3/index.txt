@@ -20,7 +20,7 @@ the entire site on S3 and use web services to get dynamic content. In this
 case I persisted and got dynamic behavior by [dynamically inserting dynamic
 script elements into the DOM][2].  While Google Maps does this very well to
 dynamically get map tiles, it doesn't work so well for scripts as the browsers
-blocks the page while a script is downloading. I would defiantly be looking at
+blocks the page while a script is downloading. I would definitely be looking at
 the alternatives before doing that again. In this case we just want some of
 the larger downloadable files off the web server and onto S3, which shouldn't
 be a problem.
@@ -31,12 +31,12 @@ I've always used [S3Fox][3] which is a Firefox plug-in to manage files on S3.
 But when I fired it up this morning it isn't accepting my credentials.
 
 I tried using [S3Drive][4] which is a Windows Desktop application. This
-defiantly wasn't what I wanted. It makes S3 look like a "drive" in Windows
+was definitely not what I wanted. It makes S3 look like a "drive" in Windows
 that has files and directories. This hides the fact the S3 is actually a flat
 file structure. It seems to use a database to manage the virtual file
 structure (like a file allocation table). Anyway this would be really good for
 backing stuff up as you can treat it like a normal drive and drag and drop
-entire folders. Its no good for us as our content needs to be accessed by HTTP
+entire folders. It's no good for us as our content needs to be accessed by HTTP
 GET Requests.
 
 I ended up using [s3:///][5] which is an "experimental" Firefox plug-in. It
@@ -66,7 +66,7 @@ servers
 I have an S3 project I used previously to read and write files to S3. I wrote
 it ages ago, copying large parts of Amazon examples from memory. Although it
 looks a little shabby, the one and only test still works, so I'm confident its
-still working OK. I'm sure there a better .NET wrappers around these days if
+still working OK. I'm sure there are better .NET wrappers around these days if
 you did a quick Google search.
 
 Here is the [source code][10]. You'll notice it still has the namespaces from

@@ -150,12 +150,12 @@ queue processing server.
     messageQueue.CreateQueue()
 
     # handle message from the queue
-    def MessageReceieved(sender, e):
+    def MessageReceived(sender, e):
        print e.Message.ContentAsString()
        messageQueue.DeleteMessage(e.Message)
 
-    # setup polling, should keep reading untill the queue is empty, then poll for 5 seconds
-    messageQueue.MessageReceived += MessageReceieved
+    # setup polling, should keep reading until the queue is empty, then poll for 5 seconds
+    messageQueue.MessageReceived += MessageReceived
     messageQueue.PollInterval = 10000;
     messageQueue.StartReceiving();
 
