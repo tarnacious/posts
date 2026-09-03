@@ -34,7 +34,7 @@ This is basic Haskell which can be compiled by [GHC][1].
     $ ./Main
     [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97]
 
-It can also be compiled by [UHC][2] which I found interesting because [UHC can compile to a JavaScript backend][6].
+It can also be compiled by [UHC][2] which I found interesting because [UHC can compile to a JavaScript backSend][6].
 
     #!/usr/bin/bash
     $ ls
